@@ -1,0 +1,22 @@
+# Go artifacts
+bin/
+core/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Godot artifacts
+.godot/
+*.tmp
+*.log
+*.import/
+export_presets.cfg
+*.pck
+
+# OS specific
+.DS_Store
+Thumbs.db

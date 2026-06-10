@@ -1,0 +1,10 @@
+{
+  "id": "level_4",
+  "title": "The Fork",
+  "description": "The goal is hidden behind a massive wall and could be above or below. Sense its Y position and choose the right path to navigate around the obstacle.",
+  "goal": { "x": 60000, "y": 10000 },
+  "allowed_builtins": ["move_forward", "move_backward", "move_up", "move_down", "get_x", "get_y", "get_goal_x", "get_goal_y", "print"],
+  "obstacles": [
+    { "x": 20000, "y": 20000, "w": 30000, "h": 20000 }
+  ]
+}

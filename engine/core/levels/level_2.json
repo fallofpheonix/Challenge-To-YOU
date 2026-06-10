@@ -1,0 +1,7 @@
+{
+  "id": "level_2",
+  "title": "The L-Turn",
+  "description": "Reach X=400 first, then drop to Y=300. Pure loops won't get you there cleanly.",
+  "goal": { "x": 40000, "y": 30000 },
+  "allowed_builtins": ["move_forward", "move_down", "get_x", "get_y", "print"]
+}
