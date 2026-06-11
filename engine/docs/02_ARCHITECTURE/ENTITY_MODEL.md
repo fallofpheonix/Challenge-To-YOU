@@ -6,79 +6,62 @@ This document defines the core simulated entities of *Project Chrysalis*. Becaus
 
 ---
 
-### 1. Drone
+### 1. Drone (Authoritative ECS Implementation)
 
-The physical actuator of the swarm. Highly fragile, strictly obedient, and possessing zero global awareness.
+The physical actuator of the swarm. Managed as contiguous component slices in `SwarmRegistry`.
 
-* **State:** `Idle` | `Executing_Instruction` | `Moving` | `Harvesting` | `Inert` (Out of power/Broken) | `Compromised` (Logic hijacked)
+* **State:** `Searching` (0) | `Returning` (1) | `Inert` (2) | `Compromised` (bool)
+* **Components:**
+    * `ID` (uint32)
+    * `PositionX / PositionY` (FixedPoint)
+    * `Battery` (int64) - Drains via movement and hazards.
+    * `Inventory` (int32) - Payload carrying silicates.
+    * `CorruptionFactor` (uint8) - Percent of logic manipulation [0-100].
+    * `TrustScore` (int32) - Peer-to-peer reliability metric.
+
+* **Lifecycle:** Fabricated at the Hub (5 silicates) -> Dispatched -> Loops P-Script -> Depletes battery or hits hazard -> Becomes `Inert` at zero power -> Compromised by Alien Nodes if nearby.
+
+### 2. Resource (Silicates)
+
+Physical materials existing on the grid, tracked in the `Cell` struct.
+
 * **Properties:**
-    * Unique ID
-    * Grid Coordinates `(X, Y)`
-    * Current Battery Level
-    * Payload (Carrying `None` or `Resource ID`)
-    * Active Protocol (The specific Architect script it is currently looping)
+    * `ResourceCount` (int32) - Per-cell silicate density.
+    * `GlobalSilicates` (int32) - Total pool stored at the Hub for fabrication.
 
-* **Lifecycle:** Fabricated at a Hub structure -> Dispatched onto the grid -> Loops assigned protocol -> Depletes battery or triggers a hazard -> Becomes an `Inert` physical obstacle -> Salvaged by other drones or permanently crushed by terrain.
+* **Lifecycle:** Seeded during initialization -> Harvested by Drone (`HARVEST()`) -> Decrements cell count, increments Drone inventory -> Transported to Base (`IsBase`) -> Increments Global pool -> Consumed to spawn new drones.
 
-### 2. Resource
+### 3. Pheromones & Signals
 
-Physical materials existing on the grid. They are strictly conserved; they cannot be teleported or globally pooled.
+Double-buffered grid layers for decentralized coordination.
 
-* **State:** `Embedded` (In rock) | `Carried` (By a drone) | `Stored` (At a Hub)
+* **Layers:**
+    * `HomePheromone`: Gradient back to the Hub (Base).
+    * `ResourcePheromone`: Gradient to detected silicate patches.
+    * `AlienSignal`: Misleading purple trails emitted by `Compromised` drones.
+* **Dynamics:**
+    * `Intensity` (int32): Fixed-point density.
+    * `Decay`: Fixed integer reduction per tick.
+    * `Sensing`: Neighbors sampled via `SenseHighestGradient`.
+
+### 4. Environmental Hazards
+
+Dynamic spatial triggers that mutate drone components.
+
+* **Type:** `HazardMagnetic` (Battery drain) | `HazardThermal` (Physical damage).
 * **Properties:**
-    * Type (`Silicate` for physical builds, `Isotope` for power/logic unlocks)
-    * Grid Coordinates `(X, Y)` (If embedded or dropped)
-    * Yield (Remaining extractable units)
+    * `Epicenter` (X, Y)
+    * `Radius` (int32)
+    * `Intensity` (int64) - Scaled effect per tick.
 
-* **Lifecycle:** Generated during world initialization or exposed by shifting crust hazards -> Extracted by a Drone -> Physically transported -> Deposited at a Hub -> Permanently consumed to fabricate new Drones, Structures, or Research.
+* **Loop:** Scans drones within radius -> Applies battery drain -> Forces state to `Inert` if empty.
 
-### 3. Signal (Pheromone)
+### 5. Alien Network (Act III)
 
-The localized, ephemeral data markers that facilitate decentralized swarm communication.
+The adversarial intelligence competeing for control of the swarm.
 
-* **State:** `Active` | `Decaying`
-* **Properties:**
-    * Signature Type (`Resource_Found`, `Hazard_Warning`, `Rally_Point`, `Spoofed_Data`)
-    * Grid Coordinates `(X, Y)`
-    * Intensity `[Integer: 0 to 100]`
-
-* **Lifecycle:** Emitted by a Drone onto a specific grid cell -> Intensity increases if other drones emit the same signature on that cell -> Automatically decays by a fixed integer rate every simulation tick -> Reaches `0` intensity -> Permanently wiped from the grid memory.
-
-### 4. Structure
-
-Immobile, multi-tile physical infrastructure built by the swarm to expand logistics.
-
-* **State:** `Blueprint` | `Constructing` | `Operational` | `Offline` (Damaged/Unpowered)
-* **Properties:**
-    * Type (`Hub`, `Relay_Node`, `Storage_Cache`)
-    * Grid Footprint (Occupied coordinates)
-    * Structural Integrity
-    * Contained Inventory
-
-* **Lifecycle:** Drone script dictates a blueprint placement -> Drones deposit required Resources into the blueprint -> Transitions to `Operational` -> Facilitates replication or extends telemetry range -> Destroyed by hazards or Alien logic -> Reverts to `Inert` salvage.
-
-### 5. Hazard
-
-Non-biological environmental threats that dynamically alter the play space.
-
-* **State:** `Dormant` | `Expanding` | `Active` | `Dissipating`
-* **Properties:**
-    * Threat Type (`Magnetic_Anomaly`, `Thermal_Geyser`, `Crust_Collapse`)
-    * Epicenter Coordinates
-    * Radius of Effect
-    * Damage Value (Applied per tick to overlapping entities)
-
-* **Lifecycle:** Triggered deterministically by the world seed -> Expands outward across the grid -> Applies immediate physical state changes to overlapping Drones/Structures -> Dissipates -> Leaves behind altered terrain or exposed Resources.
-
-### 6. Alien Node
-
-The physical hardware of the competing distributed intelligence. It obeys the exact same physical rules as player Structures.
-
-* **State:** `Dormant` | `Awake` | `Broadcasting` | `Quarantined` (Neutralized)
-* **Properties:**
-    * Grid Coordinates
-    * Corruption Radius
-    * Spoofing Signature (The false signal it emits)
-    * Injector Protocol (The malicious code it forces onto adjacent Drones)
-
-* **Lifecycle:** Exists hidden beneath deep crust -> Awakens upon swarm proximity (Act III) -> Emits spoofed signals and hijacks adjacent Drone logic -> Competes for grid space and resources -> Is surrounded, physically isolated, or out-computed by the Architect's counter-protocols -> Rendered `Quarantined`.
+* **Type:** `NodeInfector` (Logic Virus) | `NodeJammer` (Communication loss).
+* **Dynamics:**
+    * `InfectionRadius`: Area of wireless contagion.
+    * `Contagion`: 5% probability per tick to flip `Compromised` status and increase `CorruptionFactor`.
+    * `Spoofing`: Injects `AlienSignal` into the grid to reroute healthy drones.

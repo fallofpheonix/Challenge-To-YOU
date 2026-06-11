@@ -1,11 +1,32 @@
 ---
-Status: Planned
-Implementation: 0%
-Confidence: Conceptual
+Status: Active
+Implementation: 40%
+Confidence: Authoritative
 ---
-# Game Layer — Development Roadmap
+# Project Chrysalis — Development Roadmap
 
-Development phases:
-1. **Phase 1**: Godot interface bridge.
-2. **Phase 2**: pscript VM prototype.
-3. **Phase 3**: Multiplayer replication checks.
+## Phase 0: Emergence Foundation (COMPLETED)
+- Bit-perfect fixed-point math library (`crysmath`).
+- Double-buffered grid simulation core.
+- Basic swarm emergent behaviors (Home/Resource gradients).
+
+## Phase 1: High-Performance Infrastructure (COMPLETED)
+- Data-oriented ECS Data Layer (`SwarmRegistry`).
+- Pratt-parsed P-Script compiler with infix operator support.
+- Environmental Hazard Engine (Magnetic Anomalies).
+
+## Phase 2: Distributed Systems & Economics (COMPLETED)
+- Asynchronous WebSocket IPC for zero-latency bi-directional telemetry.
+- Logic Contagion system (Wireless viral spread & CorruptionFactor).
+- Byzantine Fault Tolerance (BFT) consensus builtin (`BROADCAST_VOTE()`).
+- Replica Matrix (Economic fabrication loop).
+
+## Phase 3: Visual & UX Hardening (IN PROGRESS)
+- [x] Swarm Inspector: Real-time logic hot-patching over network.
+- [ ] Shader Fluid Wave: GPU-based pheromone visualization.
+- [ ] Narrative Event Ledger: Record system history for Act-specific milestones.
+
+## Phase 4: Expansion & Integration (PLANNED)
+- Replay System: Bit-perfect state reconstruction.
+- Structure Blueprints: Multi-tile player-built logistics hubs.
+- Act III: The Ghost in the Swarm - Advanced adversarial node logic.
