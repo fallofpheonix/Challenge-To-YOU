@@ -18,13 +18,43 @@ func (g *Grid) TickPheromones() {
 			nextResource := currentCell.ResourcePheromone - PheromoneDecay
 			if nextResource < 0 { nextResource = 0 }
 
+			// Evaporate Alien Signal
+			nextAlien := currentCell.AlienSignal - (PheromoneDecay * 2) // Alien signals decay faster
+			if nextAlien < 0 { nextAlien = 0 }
+
 			// Stage into the double buffer without leaking into active execution
 			g.NextCells[idx].HomePheromone = nextHome
 			g.NextCells[idx].ResourcePheromone = nextResource
+			g.NextCells[idx].AlienSignal = nextAlien
 			g.NextCells[idx].ResourceCount = currentCell.ResourceCount
 			g.NextCells[idx].IsBase = currentCell.IsBase
 		}
 	}
+}
+
+// SenseHighestAlienGradient looks for the strongest alien signal in 3x3
+func (g *Grid) SenseHighestAlienGradient(startX, startY int) (targetX, targetY int, maxVal int32) {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+
+	bestVal := int32(-1)
+	bestX, bestY := startX, startY
+
+	for dy := -1; dy <= 1; dy++ {
+		for dx := -1; dx <= 1; dx++ {
+			nx, ny := startX+dx, startY+dy
+			if nx < 0 || nx >= g.Width || ny < 0 || ny >= g.Height {
+				continue
+			}
+			idx := g.GetIndex(nx, ny)
+			val := g.CurrentCells[idx].AlienSignal
+			if val > bestVal {
+				bestVal = val
+				bestX, bestY = nx, ny
+			}
+		}
+	}
+	return bestX, bestY, bestVal
 }
 
 // SenseHighestGradient looks at the immediate 8-cell neighborhood.

@@ -15,6 +15,7 @@ type Engine struct {
 	Grid            *Grid
 	Registry        *SwarmRegistry
 	Hazards         *HazardSystem
+	Aliens          *AlienNetwork
 	Tick            int64
 	GlobalSilicates int32
 	HistoricalTotal int32
@@ -25,6 +26,7 @@ func NewEngine(width, height int, droneCount int) *Engine {
 		Grid:     NewGrid(width, height),
 		Registry: NewSwarmRegistry(droneCount),
 		Hazards:  NewHazardSystem(10), // Support up to 10 active hazards
+		Aliens:   NewAlienNetwork(5),  // Support up to 5 alien nodes
 	}
 
 	// Initialize base in the center
@@ -44,6 +46,9 @@ func NewEngine(width, height int, droneCount int) *Engine {
 
 	// Add some initial hazards for testing
 	e.Hazards.Add(HazardMagnetic, int32(centerX+20), int32(centerY+20), 15, 1*crysmath.Precision)
+
+	// Add an initial alien node to spread logic virus
+	e.Aliens.Add(NodeInfector, int32(centerX-20), int32(centerY-20), 12)
 
 	return e
 }
@@ -72,6 +77,9 @@ func (e *Engine) Step() {
 
 	// 1.5 Process Hazards
 	e.processHazards()
+
+	// 1.6 Process Alien Infections
+	e.processInfections()
 
 	// 1.7 Check for Fabrication
 	e.CheckFabricationPool()
@@ -163,6 +171,8 @@ func (e *Engine) GetState() map[string]interface{} {
 			"state": e.Registry.State[i],
 			"inv":   e.Registry.Inventory[i],
 			"bat":   e.Registry.Battery[i],
+			"comp":  e.Registry.Compromised[i],
+			"trust": e.Registry.TrustScore[i],
 		}
 	}
 
@@ -174,13 +184,14 @@ func (e *Engine) GetState() map[string]interface{} {
 			cell := e.Grid.CurrentCells[idx]
 
 			// Only stream cells that have active metrics to save bandwidth
-			if cell.HomePheromone > 0 || cell.ResourcePheromone > 0 || cell.ResourceCount > 0 {
+			if cell.HomePheromone > 0 || cell.ResourcePheromone > 0 || cell.ResourceCount > 0 || cell.AlienSignal > 0 {
 				activeTrails = append(activeTrails, map[string]interface{}{
-					"x":    x,
-					"y":    y,
-					"home": cell.HomePheromone,
-					"res":  cell.ResourcePheromone,
-					"cnt":  cell.ResourceCount,
+					"x":     x,
+					"y":     y,
+					"home":  cell.HomePheromone,
+					"res":   cell.ResourcePheromone,
+					"alien": cell.AlienSignal,
+					"cnt":   cell.ResourceCount,
 				})
 			}
 		}
@@ -199,11 +210,25 @@ func (e *Engine) GetState() map[string]interface{} {
 		}
 	}
 
+	// Collection of active alien nodes
+	var activeAliens []map[string]interface{}
+	for i := 0; i < e.Aliens.Capacity; i++ {
+		if e.Aliens.Active[i] {
+			activeAliens = append(activeAliens, map[string]interface{}{
+				"type": e.Aliens.Type[i],
+				"x":    e.Aliens.X[i],
+				"y":    e.Aliens.Y[i],
+				"rad":  e.Aliens.Radius[i],
+			})
+		}
+	}
+
 	return map[string]interface{}{
 		"tick":       e.Tick,
 		"drones":     drones,
 		"grid":       activeTrails,
 		"hazards":    activeHazards,
+		"aliens":     activeAliens,
 		"colony_res": e.GlobalSilicates,
 		"swarm_size": e.Registry.Count,
 	}
@@ -238,6 +263,37 @@ func (e *Engine) processHazards() {
 	}
 }
 
+func (e *Engine) processInfections() {
+	for n := 0; n < e.Aliens.Capacity; n++ {
+		if !e.Aliens.Active[n] {
+			continue
+		}
+
+		nx := e.Aliens.X[n]
+		ny := e.Aliens.Y[n]
+		nr := e.Aliens.Radius[n]
+
+		for i := 0; i < e.Registry.Count; i++ {
+			if e.Registry.Compromised[i] {
+				continue
+			}
+
+			dx := int32(e.Registry.PositionX[i].V/crysmath.Precision) - nx
+			dy := int32(e.Registry.PositionY[i].V/crysmath.Precision) - ny
+			distSq := dx*dx + dy*dy
+
+			if distSq <= nr*nr {
+				// 5% chance to become compromised per tick while in radius
+				if rand.Float32() < 0.05 {
+					e.Registry.Compromised[i] = true
+					e.Registry.TrustScore[i] = 50 // Initial drop in trust
+					fmt.Printf("[ALIEN VIRUS] Drone %d Compromised at (%d, %d)\n", i, nx, ny)
+				}
+			}
+		}
+	}
+}
+
 func (e *Engine) stepDrones() {
 	for i := 0; i < e.Registry.Count; i++ {
 		if e.Registry.State[i] == StateSearching {
@@ -246,6 +302,13 @@ func (e *Engine) stepDrones() {
 			e.stepReturning(i)
 		}
 	}
+}
+
+func (e *Engine) SenseAlienSignal(i int) bool {
+	x := int(e.Registry.PositionX[i].V / crysmath.Precision)
+	y := int(e.Registry.PositionY[i].V / crysmath.Precision)
+	_, _, val := e.Grid.SenseHighestAlienGradient(x, y)
+	return val > 0
 }
 
 func (e *Engine) stepSearching(i int) {
@@ -282,8 +345,12 @@ func (e *Engine) stepSearching(i int) {
 	e.Registry.PositionX[i] = crysmath.NewFixedPoint(int64(x))
 	e.Registry.PositionY[i] = crysmath.NewFixedPoint(int64(y))
 
-	// Deposit Home Pheromone to mark the way back
-	e.Grid.NextCells[idx].HomePheromone = saturateAdd(e.Grid.NextCells[idx].HomePheromone, 100_000) // 0.1
+	// Deposit signals
+	if e.Registry.Compromised[i] {
+		e.Grid.NextCells[idx].AlienSignal = saturateAdd(e.Grid.NextCells[idx].AlienSignal, 150_000)
+	} else {
+		e.Grid.NextCells[idx].HomePheromone = saturateAdd(e.Grid.NextCells[idx].HomePheromone, 100_000)
+	}
 }
 
 func (e *Engine) stepReturning(i int) {
@@ -320,8 +387,12 @@ func (e *Engine) stepReturning(i int) {
 	e.Registry.PositionX[i] = crysmath.NewFixedPoint(int64(x))
 	e.Registry.PositionY[i] = crysmath.NewFixedPoint(int64(y))
 
-	// Deposit Resource Pheromone to mark the way to food
-	e.Grid.NextCells[idx].ResourcePheromone = saturateAdd(e.Grid.NextCells[idx].ResourcePheromone, 100_000) // 0.1
+	// Deposit signals
+	if e.Registry.Compromised[i] {
+		e.Grid.NextCells[idx].AlienSignal = saturateAdd(e.Grid.NextCells[idx].AlienSignal, 150_000)
+	} else {
+		e.Grid.NextCells[idx].ResourcePheromone = saturateAdd(e.Grid.NextCells[idx].ResourcePheromone, 100_000)
+	}
 }
 
 func (e *Engine) PrintTelemetry() {

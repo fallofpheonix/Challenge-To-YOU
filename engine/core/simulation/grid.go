@@ -12,8 +12,11 @@ type Cell struct {
 	ResourceCount     int32 // Total silicates available
 	HomePheromone     int32 // Fixed-point gradient back to base
 	ResourcePheromone int32 // Fixed-point gradient to resources
+	AlienSignal       int32 // Misleading signals from compromised drones
 	IsBase            bool
 }
+
+// ... in TickPheromones or similar
 
 type Grid struct {
 	Width  int
