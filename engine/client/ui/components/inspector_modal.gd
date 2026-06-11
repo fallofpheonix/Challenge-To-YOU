@@ -52,16 +52,27 @@ func _on_lock_toggled() -> void:
 		lock_btn.text = "🔓 Code Unlocked (Editable)"
 
 func _on_apply_patch() -> void:
-	var script_path = OS.get_environment("PHX_SCRIPT_PATH")
-	if script_path == "":
-		script_path = "res://../core/scripts/agent.ps"
-		
-	# Overwrite the script file directly
-	var file = FileAccess.open(script_path, FileAccess.WRITE)
-	if file:
-		file.store_string(code_buffer.text)
-		file.close()
-		print("[Telemetry] Patch deployed for entity group. Resuming core loop.")
+	# Use the global network bridge to push the new code directly to the Go core
+	var network = get_node_or_null("/root/Main/NetworkBridge")
+	if not network:
+		# Try to find it in the current scene if not in the expected path
+		network = get_tree().root.find_child("NetworkBridge", true, false)
+	
+	if network:
+		var patch_payload = {
+			"code": code_buffer.text
+		}
+		network.send_command("COMMAND_INJECTION", patch_payload)
+		print("[Telemetry] Patch transmitted via WebSocket. Awaiting core confirmation.")
+	else:
+		# Fallback to legacy file-system reload if networking is down
+		var script_path = OS.get_environment("PHX_SCRIPT_PATH")
+		if script_path == "": script_path = "res://../core/scripts/agent.ps"
+		var file = FileAccess.open(script_path, FileAccess.WRITE)
+		if file:
+			file.store_string(code_buffer.text)
+			file.close()
+			print("[Telemetry] Network down. Fallback to Disk Patch.")
 	
 	# Unpause the simulation and hide modal window
 	get_tree().paused = false

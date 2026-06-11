@@ -23,7 +23,18 @@ func main() {
 	// 1.5 Setup Networking
 	hub := network.NewNetworkHub()
 	go hub.Run()
-	http.HandleFunc("/telemetry", hub.HandleConnections)
+
+	commandChan := make(chan network.InboundCommand, 32)
+	http.HandleFunc("/telemetry", func(w http.ResponseWriter, r *http.Request) {
+		conn, err := network.Upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "[NETWORK ERROR] Upgrade failed: %v\n", err)
+			return
+		}
+		hub.Register <- conn
+		go hub.StartReader(conn, commandChan)
+	})
+
 	go func() {
 		fmt.Fprintln(os.Stderr, "[NETWORK] Starting WebSocket server on :8080")
 		if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -77,6 +88,25 @@ func main() {
 
 	for {
 		select {
+		case cmd := <-commandChan:
+			if cmd.Type == "COMMAND_INJECTION" {
+				fmt.Fprintln(os.Stderr, "[NETWORK] Remote script override received. Parsing new AST tokens...")
+				var payload struct {
+					Code string `json:"code"`
+				}
+				if err := json.Unmarshal(cmd.Payload, &payload); err == nil {
+					l := lexer.New(payload.Code)
+					p := parser.New(l)
+					newProg := p.ParseProgram()
+					if len(p.Errors()) == 0 {
+						program = newProg
+						fmt.Fprintln(os.Stderr, "[NETWORK] Hot-patch applied successfully.")
+					} else {
+						fmt.Fprintf(os.Stderr, "[NETWORK ERROR] Patch failed validation: %v\n", p.Errors())
+					}
+				}
+			}
+
 		case <-ticker.C:
 			// 4.1 Check for Script Reload
 			info, err := os.Stat(scriptPath)

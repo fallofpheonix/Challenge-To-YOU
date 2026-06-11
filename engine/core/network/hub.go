@@ -1,16 +1,23 @@
 package network
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
+var Upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 4096,
 	CheckOrigin:     func(r *http.Request) bool { return true }, // Local IPC validation
+}
+
+type InboundCommand struct {
+	Type    string          `json:"packet_type"`
+	Tick    int64           `json:"tick"`
+	Payload json.RawMessage `json:"payload"`
 }
 
 type NetworkHub struct {
@@ -61,10 +68,28 @@ func (h *NetworkHub) Run() {
 }
 
 func (h *NetworkHub) HandleConnections(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Printf("[NETWORK ERROR] Upgrade failed: %v\n", err)
 		return
 	}
 	h.Register <- conn
+}
+
+// StartReader Listening Loop runs per connected client thread
+func (h *NetworkHub) StartReader(conn *websocket.Conn, commandChannel chan<- InboundCommand) {
+	for {
+		_, message, err := conn.ReadMessage()
+		if err != nil {
+			h.Unregister <- conn
+			break
+		}
+
+		var cmd InboundCommand
+		if err := json.Unmarshal(message, &cmd); err == nil {
+			commandChannel <- cmd
+		} else {
+			fmt.Printf("[NETWORK ERROR] Failed to unmarshal client frame: %v\n", err)
+		}
+	}
 }

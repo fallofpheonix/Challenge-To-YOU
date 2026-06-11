@@ -9,16 +9,19 @@ This ledger tracks the evolutionary roadmap of the engine backend and client vis
 * **Logic Subsystem:** Pratt syntax compiler handling inline mathematical evaluation (`<`, `+`, `==`).
 * **Visual Presentation:** Sparse RLE telemetry pipeline displaying home/resource vector fields directly inside Godot.
 
-## [Milestone 1: The Trust Mesh] ──► 🟡 IN PROGRESS (Phase 3)
-* **Goal:** Byzantine Fault Tolerance and peer-to-peer verification loops.
+## [Milestone 3: The Network Boundary (WebSocket IPC)] ──► 🟢 100% COMPLETED
+* **Goal:** Asynchronous, bi-directional network communication layer for zero-latency telemetry.
 * **Backend Tasks:**
-  * [x] Initialize component memory arrays for tracking `CorruptionFactor` structures.
-  * [x] Build the wireless proximity infection system pass inside `alien.go`.
-  * [x] Expose `SENSE_CORRUPTION()` function parameters to the P-Script parsing toolchain.
-  * [x] Map `BROADCAST_VOTE()` quorum validation loops into the runtime execution engine.
+  * [x] Construct the concurrent `NetworkHub` state machine and client connection registries.
+  * [x] Bind the network server loop to `http.ListenAndServe` inside `main.go`.
+  * [x] Divert `engine.GetState()` outputs from stdout into the concurrent broadcast channel.
+  * [x] Implement asynchronous connection reader threads to intercept incoming client commands.
+  * [x] Wire the incoming code strings directly to the P-Script Hot-Reload parser gateway.
 * **Frontend Tasks:**
-  * [ ] Visualize `AlienSignal` (Purple) in the Pheromone Overlay.
-  * [ ] Map the live `corr` array metrics into the visual color modifiers on the Godot inspector panel rows.
+  * [x] Draft the custom asynchronous `WebSocketPeer` connection engine script in Godot.
+  * [x] Re-route `main.gd` pipeline reads away from local process pipe polling onto network signals.
+  * [x] Re-wire the Swarm Inspector `ApplyBtn` to push patches via `send_command()` over the socket.
+
 
 ## [Milestone 2: The Replica Matrix] ──► 🟢 100% COMPLETED
 * **Goal:** Dynamic component array expansion driven by physical resource delivery metrics.
