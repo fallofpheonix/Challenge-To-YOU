@@ -123,18 +123,32 @@ func update_ui(data):
 	if data.has("tick"):
 		telemetry_label.text = "TICK: %03d" % data["tick"]
 
-	# 2. Handle Drones
+# 2. Handle Drones
 	if data.has("drones"):
-		# Update legacy sprites for first drone
-		if data["drones"].size() > 0:
-			var d = data["drones"][0]
-			agent_sprite.position = Vector2(d["x"] / 1000000.0, d["y"] / 1000000.0)
+		_update_drones_visuals(data["drones"])
 		
-		# Breakpoint condition: Drone battery critically low inside anomaly zone
+		# Breakpoint condition: Drone battery critically low
 		for drone in data["drones"]:
 			if drone["state"] == 0 and drone["bat"] < 25000000: 
 				_trigger_breakpoint_halt(drone["id"])
 				return
+
+func _update_drones_visuals(drones: Array):
+	# Clear old legacy trail logic or sprites if needed
+	# For the MVP, we'll just update the first sprite and then handle a swarm layer
+	if drones.size() > 0:
+		var d = drones[0]
+		agent_sprite.position = Vector2(d["x"] / 1000000.0, d["y"] / 1000000.0)
+		
+		# Tint based on corruption
+		var corr = d.get("corr", 0) / 100.0
+		var is_comp = d.get("comp", false)
+		
+		if is_comp:
+			agent_sprite.modulate = Color(0.8, 0, 1, 1) # Viral Purple
+		else:
+			# Lerp from Clean Cyan (0,1,0.62) to Warning Pink/Purple
+			agent_sprite.modulate = Color(0, 1, 0.62).lerp(Color(0.8, 0, 1), corr)
 
 func _trigger_breakpoint_halt(drone_id: int) -> void:
 	var inspector = get_node_or_null("/root/GameHub/InspectorModal")

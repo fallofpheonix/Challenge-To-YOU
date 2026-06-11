@@ -49,14 +49,18 @@ func _populate_list() -> void:
 
 	for d in swarm_registry.get("drones", []):
 		var row = preload("res://ui/components/entity_row.tscn").instantiate()
-		var state = d.get("state", "inert")
-		var color = _state_color(state)
-		var pos = d.get("position", {"x": 0, "y": 0})
+		var state_idx = d.get("state", 2)
+		var is_comp = d.get("comp", false)
+		
+		var color = _state_color(state_idx, is_comp)
+		var x = d.get("x", 0) / 1000000
+		var y = d.get("y", 0) / 1000000
+		
 		row.set_data(
 			"Drone #%d" % d.get("id", 0),
-			state.capitalize(),
+			_state_name(state_idx),
 			color,
-			"(%d, %d)" % [pos.x, pos.y]
+			"(%d, %d)" % [x, y]
 		)
 		var drone_id = d.get("id", -1)
 		row.clicked.connect(func(): _select_drone(drone_id))
@@ -69,30 +73,31 @@ func _select_drone(drone_id: int) -> void:
 		return
 
 	detail_panel.show()
-	detail_id.text = "Drone #%d" % d.id
-	detail_pos.text = "Position: (%d, %d)" % [d.position.x, d.position.y]
-	detail_battery.text = "Battery: %d" % d.battery
-	detail_state.text = "State: %s" % d.state.capitalize()
-	detail_payload.text = "Payload: %s" % d.get("payload", "None")
-	detail_protocol.text = "Protocol: %s" % d.get("protocol", "N/A")
+	detail_id.text = "Drone #%d %s" % [d.id, "[COMPROMISED]" if d.get("comp", false) else "[SECURE]"]
+	detail_pos.text = "Pos: (%d, %d) | Corr: %d%%" % [d.x/1000000, d.y/1000000, d.get("corr", 0)]
+	detail_battery.text = "Battery: %d | Trust: %d" % [d.bat/1000000, d.get("trust", 100)]
+	detail_state.text = "State: %s" % _state_name(d.state)
+	detail_payload.text = "Inventory: %d" % d.inv
+	detail_protocol.text = "System Health: %d%%" % (100 - d.get("corr", 0))
 
-	var state_color = _state_color(d.state)
+	var state_color = _state_color(d.state, d.get("comp", false))
 	$VBoxContainer/DetailPanel/MarginContainer/VBoxContainer/StateIndicator.color = state_color
 
-func _find_drone(drone_id: int) -> Dictionary:
-	for d in swarm_registry.get("drones", []):
-		if d.get("id", -1) == drone_id:
-			return d
-	return {}
+func _state_name(idx: int) -> String:
+	match idx:
+		0: return "Searching"
+		1: return "Returning"
+		2: return "Inert"
+		_: return "Unknown"
 
-func _state_color(state: String) -> Color:
-	match state:
-		"idle": return Color(0.5, 0.5, 0.5, 1)
-		"moving": return Color(0, 1, 0.62, 1)
-		"harvesting": return Color(1, 0.75, 0, 1)
-		"returning": return Color(0.2, 0.4, 1, 1)
-		"inert": return Color(1, 0.2, 0.2, 1)
-		"compromised": return Color(1, 0, 0.5, 1)
+func _state_color(idx: int, compromised: bool) -> Color:
+	if compromised:
+		return Color(0.8, 0, 1, 1) # Viral Purple
+	
+	match idx:
+		0: return Color(0, 1, 0.62, 1) # Cyan
+		1: return Color(0.2, 0.4, 1, 1) # Blue
+		2: return Color(1, 0.2, 0.2, 1) # Red (Inert)
 		_: return Color(0.5, 0.5, 0.5, 1)
 
 func _on_view_swarm_pressed() -> void:
