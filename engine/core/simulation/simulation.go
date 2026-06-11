@@ -6,11 +6,18 @@ import (
 	"math/rand"
 )
 
+const (
+	FabricationThreshold int32 = 5   // 5 silicates required to construct a new unit
+	MaxSwarmCapacity     int   = 500 // Safety cap for the MVP engine pass
+)
+
 type Engine struct {
-	Grid     *Grid
-	Registry *SwarmRegistry
-	Hazards  *HazardSystem
-	Tick     int64
+	Grid            *Grid
+	Registry        *SwarmRegistry
+	Hazards         *HazardSystem
+	Tick            int64
+	GlobalSilicates int32
+	HistoricalTotal int32
 }
 
 func NewEngine(width, height int, droneCount int) *Engine {
@@ -33,11 +40,28 @@ func NewEngine(width, height int, droneCount int) *Engine {
 	for i := 0; i < droneCount; i++ {
 		e.Registry.Spawn(centerX, centerY, 100*crysmath.Precision) // 100% battery
 	}
+	e.HistoricalTotal = int32(droneCount)
 
 	// Add some initial hazards for testing
 	e.Hazards.Add(HazardMagnetic, int32(centerX+20), int32(centerY+20), 15, 1*crysmath.Precision)
 
 	return e
+}
+
+func (e *Engine) CheckFabricationPool() {
+	width, height := e.Grid.Width, e.Grid.Height
+	centerX, centerY := width/2, height/2
+
+	if e.GlobalSilicates >= FabricationThreshold && e.Registry.Count < MaxSwarmCapacity {
+		e.GlobalSilicates -= FabricationThreshold
+		e.HistoricalTotal++
+
+		// Trigger slice inflation inside the runtime registry
+		e.Registry.Spawn(centerX, centerY, 100*crysmath.Precision)
+
+		fmt.Printf("[REPLICATION SUCCESS] Resources Consumed. New Entity Created. Swarm Count: %d | Global Cache: %d\n",
+			e.Registry.Count, e.GlobalSilicates)
+	}
 }
 
 func (e *Engine) Step() {
@@ -48,6 +72,9 @@ func (e *Engine) Step() {
 
 	// 1.5 Process Hazards
 	e.processHazards()
+
+	// 1.7 Check for Fabrication
+	e.CheckFabricationPool()
 
 	// 2. Reinforce Base Pheromone (Base is a constant source)
 	width, height := e.Grid.Width, e.Grid.Height
@@ -95,7 +122,10 @@ func (e *Engine) DropResource(i int) {
 	y := int(e.Registry.PositionY[i].V / crysmath.Precision)
 	idx := e.Grid.GetIndex(x, y)
 	if e.Grid.CurrentCells[idx].IsBase {
-		e.Registry.Inventory[i] = 0
+		if e.Registry.Inventory[i] > 0 {
+			e.GlobalSilicates += e.Registry.Inventory[i]
+			e.Registry.Inventory[i] = 0
+		}
 		e.Registry.State[i] = StateSearching
 	}
 }
@@ -170,10 +200,12 @@ func (e *Engine) GetState() map[string]interface{} {
 	}
 
 	return map[string]interface{}{
-		"tick":    e.Tick,
-		"drones":  drones,
-		"grid":    activeTrails,
-		"hazards": activeHazards,
+		"tick":       e.Tick,
+		"drones":     drones,
+		"grid":       activeTrails,
+		"hazards":    activeHazards,
+		"colony_res": e.GlobalSilicates,
+		"swarm_size": e.Registry.Count,
 	}
 }
 
@@ -261,7 +293,10 @@ func (e *Engine) stepReturning(i int) {
 
 	// If at base: drop resource
 	if e.Grid.CurrentCells[idx].IsBase {
-		e.Registry.Inventory[i] = 0
+		if e.Registry.Inventory[i] > 0 {
+			e.GlobalSilicates += e.Registry.Inventory[i]
+			e.Registry.Inventory[i] = 0
+		}
 		e.Registry.State[i] = StateSearching
 		return
 	}

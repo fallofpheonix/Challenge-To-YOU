@@ -39,6 +39,8 @@ func main() {
 		"SENSE_RESOURCE": func(e *simulation.Engine, i int) interface{} { return e.SenseResource(i) },
 		"SENSE_HOME":     func(e *simulation.Engine, i int) interface{} { return e.SenseHome(i) },
 		"SENSE_BATTERY":  func(e *simulation.Engine, i int) interface{} { return e.Registry.Battery[i] },
+		"SENSE_SWARM_SIZE": func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.Count) },
+		"SENSE_COLONY_RESOURCES": func(e *simulation.Engine, i int) interface{} { return int64(e.GlobalSilicates) },
 		"HARVEST":        func(e *simulation.Engine, i int) interface{} { e.Harvest(i); return true },
 		"DROP_RESOURCE":  func(e *simulation.Engine, i int) interface{} { e.DropResource(i); return true },
 		"MOVE_RANDOM":    func(e *simulation.Engine, i int) interface{} { e.MoveRandom(i); return true },

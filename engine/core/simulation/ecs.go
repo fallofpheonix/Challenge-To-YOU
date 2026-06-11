@@ -41,9 +41,33 @@ func NewSwarmRegistry(capacity int) *SwarmRegistry {
 }
 
 // Spawn adds a new drone to the registry at the given position.
+// If capacity is reached, slices are automatically expanded.
 func (r *SwarmRegistry) Spawn(x, y int, battery int64) {
 	if r.Count >= len(r.ID) {
-		return // Capacity reached
+		// Expand capacity (double the current size)
+		newCap := len(r.ID) * 2
+		if newCap == 0 { newCap = 1 }
+		
+		newID := make([]uint32, newCap)
+		newPX := make([]crysmath.FixedPoint, newCap)
+		newPY := make([]crysmath.FixedPoint, newCap)
+		newBat := make([]int64, newCap)
+		newState := make([]DroneState, newCap)
+		newInv := make([]int32, newCap)
+
+		copy(newID, r.ID)
+		copy(newPX, r.PositionX)
+		copy(newPY, r.PositionY)
+		copy(newBat, r.Battery)
+		copy(newState, r.State)
+		copy(newInv, r.Inventory)
+
+		r.ID = newID
+		r.PositionX = newPX
+		r.PositionY = newPY
+		r.Battery = newBat
+		r.State = newState
+		r.Inventory = newInv
 	}
 
 	i := r.Count

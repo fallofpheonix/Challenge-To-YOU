@@ -54,8 +54,8 @@ func _draw_heatmap() -> void:
 
 func _update_stats() -> void:
 	tick_counter.text = "Tick: %d" % telemetry_data.get("tick", 0)
-	drone_count.text = "Drones: %d" % telemetry_data.get("drone_count", 0)
-	resource_rate.text = "Resources/tick: %d" % telemetry_data.get("resource_rate", 0)
+	drone_count.text = "Drones: %d" % telemetry_data.get("swarm_size", 0)
+	resource_rate.text = "Colony Silicates: %d" % telemetry_data.get("colony_res", 0)
 	bandwidth_usage.text = "BW: %d%%" % (telemetry_data.get("bandwidth_used", 0) * 100 / max(telemetry_data.get("bandwidth_max", 1), 1))
 
 func _update_log() -> void:
