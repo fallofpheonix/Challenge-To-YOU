@@ -15,6 +15,7 @@ var telemetry_label: Label
 var trail_container: Node2D
 var trail_positions = []
 const MAX_TRAIL = 5
+var network_bridge: Node
 
 var current_lang = "ps"
 var current_script_path = ""
@@ -40,6 +41,13 @@ func _ready():
 	setup_highlighter()
 	complete_label.hide()
 	set_language("ps")
+	
+	# Initialize Networking
+	network_bridge = preload("res://network_bridge.gd").new()
+	network_bridge.name = "NetworkBridge"
+	add_child(network_bridge)
+	network_bridge.packet_received.connect(_on_network_packet)
+	
 	start_go_core()
 
 func setup_highlighter():
@@ -85,31 +93,25 @@ func _on_lang_java(): print("Java agent support not yet implemented")
 func start_go_core():
 	var go_bin = "go"
 	var core_path = ProjectSettings.globalize_path("res://../core/main.go")
-	
 	current_script_path = ProjectSettings.globalize_path("res://../core/scripts/agent.ps")
-
 	OS.set_environment("PHX_SCRIPT_PATH", current_script_path)
 
-	# In a production build, we'd use a compiled binary. For dev, go run is fine.
-	active_pipe = OS.execute_with_pipe(go_bin, ["run", core_path], true)
-	
-	if active_pipe.has("stdio"):
-		go_stdout = active_pipe["stdio"]
-		print("Pipe opened successfully to Go core.")
+	# Start Go core as a background process (uses WebSockets)
+	# Using create_process to get the PID for cleanup later
+	var pid = OS.create_process(go_bin, ["run", core_path])
+	if pid != -1:
+		active_pipe = {"pid": pid}
+		print("[Network] Launched Go core (PID: %d). Awaiting WebSocket handshake..." % pid)
 	else:
-		print("Failed to open pipe to Go core.")
+		print("[Network Error] Failed to launch Go core.")
+
+func _on_network_packet(type: String, data: Dictionary):
+	if type == "EMISSION_SNAPSHOT":
+		update_ui(data["payload"])
 
 func _process(_delta):
-	if go_stdout and go_stdout.get_length() > 0:
-		var line = go_stdout.get_line().strip_edges()
-		if line.begins_with("{"):
-			var json = JSON.new()
-			var error = json.parse(line)
-			if error == OK:
-				var data = json.get_data()
-				update_ui(data)
-			else:
-				print("JSON Parse Error: ", json.get_error_message(), " in line: ", line)
+	# Handled by network_bridge.gd asynchronously
+	pass
 
 func update_ui(data):
 	# Forward data to the Game Hub if it exists

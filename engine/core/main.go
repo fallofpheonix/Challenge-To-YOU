@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
+	"chrysalis-engine/core/network"
 	"chrysalis-engine/core/pscript/ast"
 	"chrysalis-engine/core/pscript/interpreter"
 	"chrysalis-engine/core/pscript/lexer"
@@ -17,6 +19,17 @@ func main() {
 	width, height := 100, 100
 	droneCount := 100
 	engine := simulation.NewEngine(width, height, droneCount)
+
+	// 1.5 Setup Networking
+	hub := network.NewNetworkHub()
+	go hub.Run()
+	http.HandleFunc("/telemetry", hub.HandleConnections)
+	go func() {
+		fmt.Fprintln(os.Stderr, "[NETWORK] Starting WebSocket server on :8080")
+		if err := http.ListenAndServe(":8080", nil); err != nil {
+			fmt.Fprintf(os.Stderr, "[NETWORK ERROR] Server failed: %v\n", err)
+		}
+	}()
 
 	// Seed some resources
 	for i := 0; i < 5; i++ {
@@ -93,12 +106,21 @@ func main() {
 
 			// 5. Emit state to Telemetry Bridge
 			state := engine.GetState()
-			data, err := json.Marshal(state)
+			
+			packet := map[string]interface{}{
+				"packet_type": "EMISSION_SNAPSHOT",
+				"tick":        engine.Tick,
+				"payload":     state,
+			}
+
+			data, err := json.Marshal(packet)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "JSON marshal error: %v\n", err)
 				continue
 			}
-			fmt.Println(string(data))
+			
+			// Broadcast to all connected Godot clients
+			hub.Broadcast <- data
 		}
 	}
 }
