@@ -19,28 +19,30 @@ type SwarmRegistry struct {
 	Count int
 
 	// Component Slices
-	ID          []uint32
-	PositionX   []crysmath.FixedPoint
-	PositionY   []crysmath.FixedPoint
-	Battery     []int64 // Scaled by crysmath.Precision
-	State       []DroneState
-	Inventory   []int32
-	Compromised []bool  // Logic virus infection status
-	TrustScore  []int32 // Peer-to-peer validation score
+	ID               []uint32
+	PositionX        []crysmath.FixedPoint
+	PositionY        []crysmath.FixedPoint
+	Battery          []int64 // Scaled by crysmath.Precision
+	State            []DroneState
+	Inventory        []int32
+	Compromised      []bool  // Logic virus infection status
+	TrustScore       []int32 // Peer-to-peer validation score
+	CorruptionFactor []uint8 // Percentage tracking local logic manipulation [0 to 100]
 }
 
 // NewSwarmRegistry initializes a registry with a fixed capacity.
 func NewSwarmRegistry(capacity int) *SwarmRegistry {
 	return &SwarmRegistry{
-		Count:       0,
-		ID:          make([]uint32, capacity),
-		PositionX:   make([]crysmath.FixedPoint, capacity),
-		PositionY:   make([]crysmath.FixedPoint, capacity),
-		Battery:     make([]int64, capacity),
-		State:       make([]DroneState, capacity),
-		Inventory:   make([]int32, capacity),
-		Compromised: make([]bool, capacity),
-		TrustScore:  make([]int32, capacity),
+		Count:            0,
+		ID:               make([]uint32, capacity),
+		PositionX:        make([]crysmath.FixedPoint, capacity),
+		PositionY:        make([]crysmath.FixedPoint, capacity),
+		Battery:          make([]int64, capacity),
+		State:            make([]DroneState, capacity),
+		Inventory:        make([]int32, capacity),
+		Compromised:      make([]bool, capacity),
+		TrustScore:       make([]int32, capacity),
+		CorruptionFactor: make([]uint8, capacity),
 	}
 }
 
@@ -60,6 +62,7 @@ func (r *SwarmRegistry) Spawn(x, y int, battery int64) {
 		newInv := make([]int32, newCap)
 		newComp := make([]bool, newCap)
 		newTrust := make([]int32, newCap)
+		newCorr := make([]uint8, newCap)
 
 		copy(newID, r.ID)
 		copy(newPX, r.PositionX)
@@ -69,6 +72,7 @@ func (r *SwarmRegistry) Spawn(x, y int, battery int64) {
 		copy(newInv, r.Inventory)
 		copy(newComp, r.Compromised)
 		copy(newTrust, r.TrustScore)
+		copy(newCorr, r.CorruptionFactor)
 
 		r.ID = newID
 		r.PositionX = newPX
@@ -78,6 +82,7 @@ func (r *SwarmRegistry) Spawn(x, y int, battery int64) {
 		r.Inventory = newInv
 		r.Compromised = newComp
 		r.TrustScore = newTrust
+		r.CorruptionFactor = newCorr
 	}
 
 	i := r.Count
@@ -89,7 +94,7 @@ func (r *SwarmRegistry) Spawn(x, y int, battery int64) {
 	r.Inventory[i] = 0
 	r.Compromised[i] = false
 	r.TrustScore[i] = 100 // Default full trust
+	r.CorruptionFactor[i] = 0
 
 	r.Count++
 }
-

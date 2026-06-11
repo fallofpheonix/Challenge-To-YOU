@@ -9,13 +9,12 @@ This ledger tracks the evolutionary roadmap of the engine backend and client vis
 * **Logic Subsystem:** Pratt syntax compiler handling inline mathematical evaluation (`<`, `+`, `==`).
 * **Visual Presentation:** Sparse RLE telemetry pipeline displaying home/resource vector fields directly inside Godot.
 
-## [Milestone 1: The Trust Mesh] ──► 🟡 IN PROGRESS (Phase 1)
-* **Goal:** Byzantine Fault Tolerance and logic virus containment.
+## [Milestone 1: The Trust Mesh] ──► 🟡 IN PROGRESS (Phase 2)
+* **Goal:** Decentralized trust validation and wireless logic infection vectoring.
 * **Backend Tasks:**
-  * [x] Implement `AlienNetwork` for infector node management.
-  * [x] Add `Compromised` and `TrustScore` components to ECS registry.
-  * [x] Create `AlienSignal` grid layer for misleading pheromone emission.
-  * [x] Map `SENSE_TRUST()` and `SENSE_ALIEN_SIGNAL()` builtin hooks.
+  * [x] Initialize component memory arrays for tracking `CorruptionFactor` structures.
+  * [x] Build the wireless proximity infection system pass inside `alien.go`.
+  * [x] Expose `SENSE_CORRUPTION()` function parameters to the P-Script parsing toolchain.
 * **Frontend Tasks:**
   * [ ] Visualize `AlienSignal` (Purple) in the Pheromone Overlay.
   * [ ] Wire `AlienNetwork` epicenters to the Alien Network screen.

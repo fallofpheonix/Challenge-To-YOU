@@ -80,6 +80,7 @@ func (e *Engine) Step() {
 
 	// 1.6 Process Alien Infections
 	e.processInfections()
+	e.SpreadsInfection()
 
 	// 1.7 Check for Fabrication
 	e.CheckFabricationPool()
@@ -173,6 +174,7 @@ func (e *Engine) GetState() map[string]interface{} {
 			"bat":   e.Registry.Battery[i],
 			"comp":  e.Registry.Compromised[i],
 			"trust": e.Registry.TrustScore[i],
+			"corr":  e.Registry.CorruptionFactor[i],
 		}
 	}
 

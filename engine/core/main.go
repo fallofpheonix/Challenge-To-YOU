@@ -40,6 +40,7 @@ func main() {
 		"SENSE_HOME":     func(e *simulation.Engine, i int) interface{} { return e.SenseHome(i) },
 		"SENSE_BATTERY":  func(e *simulation.Engine, i int) interface{} { return e.Registry.Battery[i] },
 		"SENSE_TRUST":    func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.TrustScore[i]) },
+		"SENSE_CORRUPTION": func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.CorruptionFactor[i]) },
 		"SENSE_COMPROMISED": func(e *simulation.Engine, i int) interface{} { return e.Registry.Compromised[i] },
 		"SENSE_ALIEN_SIGNAL": func(e *simulation.Engine, i int) interface{} { return e.SenseAlienSignal(i) },
 		"SENSE_SWARM_SIZE": func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.Count) },

@@ -1,11 +1,56 @@
 package simulation
 
+import (
+	"chrysalis-engine/core/crysmath"
+	"math/rand"
+)
+
 type AlienNodeType uint8
 
 const (
-	NodeInfector AlienNodeType = iota // Spreads logic virus
-	NodeJammer                        // Jams communications
+	NodeInfector    AlienNodeType = iota // Spreads logic virus
+	NodeJammer                           // Jams communications
+	InfectionRadius int32         = 3    // Proximity bounds for wireless viral spread (in grid cells)
 )
+
+// SpreadsInfection scans the registry for compromised entities and bleeds corruption
+func (e *Engine) SpreadsInfection() {
+	for i := 0; i < e.Registry.Count; i++ {
+		if !e.Registry.Compromised[i] {
+			continue
+		}
+
+		ix := int32(e.Registry.PositionX[i].V / crysmath.Precision)
+		iy := int32(e.Registry.PositionY[i].V / crysmath.Precision)
+
+		// Search for nearby healthy drones to infect
+		for j := 0; j < e.Registry.Count; j++ {
+			if i == j || e.Registry.Compromised[j] {
+				continue
+			}
+
+			jx := int32(e.Registry.PositionX[j].V / crysmath.Precision)
+			jy := int32(e.Registry.PositionY[j].V / crysmath.Precision)
+
+			dx, dy := ix-jx, iy-jy
+			distSq := dx*dx + dy*dy
+
+			if distSq <= InfectionRadius*InfectionRadius {
+				// Bleed corruption: increase factor by 1-5% per tick
+				factor := uint8(rand.Intn(5) + 1)
+				current := e.Registry.CorruptionFactor[j]
+				
+				if uint32(current) + uint32(factor) >= 100 {
+					e.Registry.CorruptionFactor[j] = 100
+					e.Registry.Compromised[j] = true
+					e.Registry.TrustScore[j] = 50
+				} else {
+					e.Registry.CorruptionFactor[j] += factor
+				}
+			}
+		}
+	}
+}
 
 type AlienNetwork struct {
 	Capacity  int
