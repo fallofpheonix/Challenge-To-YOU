@@ -9,15 +9,16 @@ This ledger tracks the evolutionary roadmap of the engine backend and client vis
 * **Logic Subsystem:** Pratt syntax compiler handling inline mathematical evaluation (`<`, `+`, `==`).
 * **Visual Presentation:** Sparse RLE telemetry pipeline displaying home/resource vector fields directly inside Godot.
 
-## [Milestone 1: The Trust Mesh] ──► 🟡 IN PROGRESS (Phase 2)
-* **Goal:** Decentralized trust validation and wireless logic infection vectoring.
+## [Milestone 1: The Trust Mesh] ──► 🟡 IN PROGRESS (Phase 3)
+* **Goal:** Byzantine Fault Tolerance and peer-to-peer verification loops.
 * **Backend Tasks:**
   * [x] Initialize component memory arrays for tracking `CorruptionFactor` structures.
   * [x] Build the wireless proximity infection system pass inside `alien.go`.
   * [x] Expose `SENSE_CORRUPTION()` function parameters to the P-Script parsing toolchain.
+  * [x] Map `BROADCAST_VOTE()` quorum validation loops into the runtime execution engine.
 * **Frontend Tasks:**
   * [ ] Visualize `AlienSignal` (Purple) in the Pheromone Overlay.
-  * [ ] Wire `AlienNetwork` epicenters to the Alien Network screen.
+  * [ ] Map the live `corr` array metrics into the visual color modifiers on the Godot inspector panel rows.
 
 ## [Milestone 2: The Replica Matrix] ──► 🟢 100% COMPLETED
 * **Goal:** Dynamic component array expansion driven by physical resource delivery metrics.

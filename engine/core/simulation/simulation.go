@@ -313,6 +313,39 @@ func (e *Engine) SenseAlienSignal(i int) bool {
 	return val > 0
 }
 
+// SenseQuorum Consensus Pass: Evaluates nearest 8-neighbor vectors for logic drift
+func (e *Engine) SenseQuorum(entityIndex int) bool {
+	ix := int32(e.Registry.PositionX[entityIndex].V / crysmath.Precision)
+	iy := int32(e.Registry.PositionY[entityIndex].V / crysmath.Precision)
+
+	votesForTrue := 0
+	totalPeers := 0
+
+	for j := 0; j < e.Registry.Count; j++ {
+		if entityIndex == j || e.Registry.State[j] == StateInert {
+			continue
+		}
+
+		jx := int32(e.Registry.PositionX[j].V / crysmath.Precision)
+		jy := int32(e.Registry.PositionY[j].V / crysmath.Precision)
+
+		dx, dy := ix-jx, iy-jy
+		if dx*dx+dy*dy <= InfectionRadius*InfectionRadius {
+			totalPeers++
+			// Drones check if their neighbor's logic registry appears sound
+			if e.Registry.TrustScore[j] >= 70 && !e.Registry.Compromised[j] {
+				votesForTrue++
+			}
+		}
+	}
+
+	// Quorum consensus: If more than 50% of verified local peers are sound, return true
+	if totalPeers == 0 {
+		return true
+	}
+	return (votesForTrue * 100 / totalPeers) > 50
+}
+
 func (e *Engine) stepSearching(i int) {
 	x := int(e.Registry.PositionX[i].V / crysmath.Precision)
 	y := int(e.Registry.PositionY[i].V / crysmath.Precision)

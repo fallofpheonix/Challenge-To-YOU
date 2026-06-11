@@ -43,6 +43,7 @@ func main() {
 		"SENSE_CORRUPTION": func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.CorruptionFactor[i]) },
 		"SENSE_COMPROMISED": func(e *simulation.Engine, i int) interface{} { return e.Registry.Compromised[i] },
 		"SENSE_ALIEN_SIGNAL": func(e *simulation.Engine, i int) interface{} { return e.SenseAlienSignal(i) },
+		"BROADCAST_VOTE": func(e *simulation.Engine, i int) interface{} { return e.SenseQuorum(i) },
 		"SENSE_SWARM_SIZE": func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.Count) },
 		"SENSE_COLONY_RESOURCES": func(e *simulation.Engine, i int) interface{} { return int64(e.GlobalSilicates) },
 		"HARVEST":        func(e *simulation.Engine, i int) interface{} { e.Harvest(i); return true },
