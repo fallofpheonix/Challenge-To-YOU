@@ -41,10 +41,18 @@ func NewGrid(width, height int) *Grid {
 // GetIndex flattens 2D coordinates into a 1D slice layout
 func (g *Grid) GetIndex(x, y int) int {
 	// Rigid simulation boundary safety
-	if x < 0 { x = 0 }
-	if x >= g.Width { x = g.Width - 1 }
-	if y < 0 { y = 0 }
-	if y >= g.Height { y = g.Height - 1 }
+	if x < 0 {
+		x = 0
+	}
+	if x >= g.Width {
+		x = g.Width - 1
+	}
+	if y < 0 {
+		y = 0
+	}
+	if y >= g.Height {
+		y = g.Height - 1
+	}
 	return y*g.Width + x
 }
 

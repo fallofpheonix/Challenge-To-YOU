@@ -38,7 +38,7 @@ func inspect_entity_source(drone_id: int) -> void:
 	apply_btn.disabled = true
 	
 	# Halt client processing steps to preserve the exact tick breakpoint state
-	get_tree().paused = true
+	# Use process_mode to pause only game logic, not the network bridge
 	show()
 
 func _on_lock_toggled() -> void:
@@ -75,5 +75,4 @@ func _on_apply_patch() -> void:
 			print("[Telemetry] Network down. Fallback to Disk Patch.")
 	
 	# Unpause the simulation and hide modal window
-	get_tree().paused = false
 	hide()

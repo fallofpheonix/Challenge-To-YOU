@@ -20,8 +20,20 @@ Use the provided `Makefile` for common tasks:
 - `make run-all`: Launches the Godot client (which spawns the Go core).
 - `make run-core`: Runs only the Go simulation (check stdout).
 - `make test-core`: Runs Go unit tests.
+- `make test-race`: Runs Go tests with the race detector.
+- `make check`: Runs tests, `go vet`, and Godot validation.
 - `make build-core`: Compiles the Go core into `bin/`.
 
 ## Development Standards
 - **Determinism:** All logic in `core/` must be deterministic. No floats in state paths.
 - **Contract-First:** Changes to the JSON bridge must be updated in both `core/` and `client/`.
+
+## Runtime Contract
+
+- Core: `ws://127.0.0.1:8080/telemetry`
+- Tick rate: 10 Hz
+- Client dependency: `bin/chrysalis-core`
+- Active behavior: `core/scripts/agent.ps`
+- Maximum inbound frame: 64 KiB
+
+See [docs/RUNBOOK.md](./docs/RUNBOOK.md).

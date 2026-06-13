@@ -12,15 +12,21 @@ func (g *Grid) TickPheromones() {
 
 			// Evaporate Home Pheromone
 			nextHome := currentCell.HomePheromone - PheromoneDecay
-			if nextHome < 0 { nextHome = 0 }
+			if nextHome < 0 {
+				nextHome = 0
+			}
 
 			// Evaporate Resource Pheromone
 			nextResource := currentCell.ResourcePheromone - PheromoneDecay
-			if nextResource < 0 { nextResource = 0 }
+			if nextResource < 0 {
+				nextResource = 0
+			}
 
 			// Evaporate Alien Signal
 			nextAlien := currentCell.AlienSignal - (PheromoneDecay * 2) // Alien signals decay faster
-			if nextAlien < 0 { nextAlien = 0 }
+			if nextAlien < 0 {
+				nextAlien = 0
+			}
 
 			// Stage into the double buffer without leaking into active execution
 			g.NextCells[idx].HomePheromone = nextHome
@@ -70,7 +76,7 @@ func (g *Grid) SenseHighestGradient(startX, startY int, lookForResource bool) (t
 	for dy := -1; dy <= 1; dy++ {
 		for dx := -1; dx <= 1; dx++ {
 			nx, ny := startX+dx, startY+dy
-			
+
 			// Rigid simulation walls check
 			if nx < 0 || nx >= g.Width || ny < 0 || ny >= g.Height {
 				continue

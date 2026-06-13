@@ -9,6 +9,7 @@ import (
 const (
 	FabricationThreshold int32 = 5   // 5 silicates required to construct a new unit
 	MaxSwarmCapacity     int   = 500 // Safety cap for the MVP engine pass
+	DefaultWorldSeed     int64 = 1
 )
 
 type Engine struct {
@@ -19,14 +20,20 @@ type Engine struct {
 	Tick            int64
 	GlobalSilicates int32
 	HistoricalTotal int32
+	rng             *rand.Rand
 }
 
 func NewEngine(width, height int, droneCount int) *Engine {
+	return NewEngineWithSeed(width, height, droneCount, DefaultWorldSeed)
+}
+
+func NewEngineWithSeed(width, height int, droneCount int, seed int64) *Engine {
 	e := &Engine{
 		Grid:     NewGrid(width, height),
 		Registry: NewSwarmRegistry(droneCount),
 		Hazards:  NewHazardSystem(10), // Support up to 10 active hazards
 		Aliens:   NewAlienNetwork(5),  // Support up to 5 alien nodes
+		rng:      rand.New(rand.NewSource(seed)),
 	}
 
 	// Initialize base in the center
@@ -69,36 +76,36 @@ func (e *Engine) CheckFabricationPool() {
 	}
 }
 
-func (e *Engine) Step() {
-	e.Tick++
-
-	// 1. Environment & Pheromone Pass (Decay and stage Next layer)
+// BeginTick stages the environment and applies all involuntary systems.
+// Architect logic executes after this call and before CommitTick.
+func (e *Engine) BeginTick() {
 	e.Grid.TickPheromones()
-
-	// 1.5 Process Hazards
 	e.processHazards()
-
-	// 1.6 Process Alien Infections
 	e.processInfections()
 	e.SpreadsInfection()
-
-	// 1.7 Check for Fabrication
 	e.CheckFabricationPool()
 
-	// 2. Reinforce Base Pheromone (Base is a constant source)
 	width, height := e.Grid.Width, e.Grid.Height
 	idx := e.Grid.GetIndex(width/2, height/2)
 	e.Grid.NextCells[idx].HomePheromone = MaxPheromone
+}
 
-	// 3. Drone Logic Pass (Read Current, Write Next)
-	// This will be replaced by P-Script execution in the main loop
-	e.stepDrones()
-
-	// 4. Swap Buffers (Commit mutations simultaneously)
+func (e *Engine) CommitTick() {
 	e.Grid.SwapBuffers()
+	e.Tick++
+}
+
+// Step advances the built-in fallback AI by one authoritative tick.
+func (e *Engine) Step() {
+	e.BeginTick()
+	e.stepDrones()
+	e.CommitTick()
 }
 
 func (e *Engine) SenseResource(i int) bool {
+	if !e.validDrone(i) {
+		return false
+	}
 	x := int(e.Registry.PositionX[i].V / crysmath.Precision)
 	y := int(e.Registry.PositionY[i].V / crysmath.Precision)
 	_, _, val := e.Grid.SenseHighestGradient(x, y, true)
@@ -106,6 +113,9 @@ func (e *Engine) SenseResource(i int) bool {
 }
 
 func (e *Engine) SenseHome(i int) bool {
+	if !e.validDrone(i) {
+		return false
+	}
 	x := int(e.Registry.PositionX[i].V / crysmath.Precision)
 	y := int(e.Registry.PositionY[i].V / crysmath.Precision)
 	_, _, val := e.Grid.SenseHighestGradient(x, y, false)
@@ -113,6 +123,9 @@ func (e *Engine) SenseHome(i int) bool {
 }
 
 func (e *Engine) Harvest(i int) {
+	if !e.canAct(i) {
+		return
+	}
 	if e.Registry.Inventory[i] != 0 {
 		return
 	}
@@ -127,6 +140,9 @@ func (e *Engine) Harvest(i int) {
 }
 
 func (e *Engine) DropResource(i int) {
+	if !e.canAct(i) {
+		return
+	}
 	x := int(e.Registry.PositionX[i].V / crysmath.Precision)
 	y := int(e.Registry.PositionY[i].V / crysmath.Precision)
 	idx := e.Grid.GetIndex(x, y)
@@ -140,26 +156,47 @@ func (e *Engine) DropResource(i int) {
 }
 
 func (e *Engine) MoveTowardsResource(i int) {
+	if !e.canAct(i) {
+		return
+	}
 	e.stepSearching(i)
 }
 
 func (e *Engine) MoveTowardsHome(i int) {
+	if !e.canAct(i) {
+		return
+	}
 	e.stepReturning(i)
 }
 
 func (e *Engine) MoveRandom(i int) {
+	if !e.canAct(i) {
+		return
+	}
 	x := int(e.Registry.PositionX[i].V / crysmath.Precision)
 	y := int(e.Registry.PositionY[i].V / crysmath.Precision)
-	dx := rand.Intn(3) - 1
-	dy := rand.Intn(3) - 1
+	dx := e.rng.Intn(3) - 1
+	dy := e.rng.Intn(3) - 1
 	x += dx
 	y += dy
-	if x < 0 { x = 0 }
-	if x >= e.Grid.Width { x = e.Grid.Width - 1 }
-	if y < 0 { y = 0 }
-	if y >= e.Grid.Height { y = e.Grid.Height - 1 }
+	if x < 0 {
+		x = 0
+	}
+	if x >= e.Grid.Width {
+		x = e.Grid.Width - 1
+	}
+	if y < 0 {
+		y = 0
+	}
+	if y >= e.Grid.Height {
+		y = e.Grid.Height - 1
+	}
 	e.Registry.PositionX[i] = crysmath.NewFixedPoint(int64(x))
 	e.Registry.PositionY[i] = crysmath.NewFixedPoint(int64(y))
+}
+
+func (e *Engine) SenseCargo(i int) bool {
+	return e.validDrone(i) && e.Registry.Inventory[i] > 0
 }
 
 func (e *Engine) GetState() map[string]interface{} {
@@ -250,13 +287,13 @@ func (e *Engine) processHazards() {
 		for i := 0; i < e.Registry.Count; i++ {
 			dx := int32(e.Registry.PositionX[i].V/crysmath.Precision) - hx
 			dy := int32(e.Registry.PositionY[i].V/crysmath.Precision) - hy
-			
+
 			// Simple squared distance check to avoid sqrt
 			distSq := dx*dx + dy*dy
 			if distSq <= hr*hr {
 				// Apply mutation: Drain battery
 				e.Registry.Battery[i] -= intensity
-				if e.Registry.Battery[i] < 0 {
+				if e.Registry.Battery[i] <= 0 {
 					e.Registry.Battery[i] = 0
 					e.Registry.State[i] = StateInert
 				}
@@ -286,7 +323,7 @@ func (e *Engine) processInfections() {
 
 			if distSq <= nr*nr {
 				// 5% chance to become compromised per tick while in radius
-				if rand.Float32() < 0.05 {
+				if e.rng.Intn(100) < 5 {
 					e.Registry.Compromised[i] = true
 					e.Registry.TrustScore[i] = 50 // Initial drop in trust
 					fmt.Printf("[ALIEN VIRUS] Drone %d Compromised at (%d, %d)\n", i, nx, ny)
@@ -307,6 +344,9 @@ func (e *Engine) stepDrones() {
 }
 
 func (e *Engine) SenseAlienSignal(i int) bool {
+	if !e.validDrone(i) {
+		return false
+	}
 	x := int(e.Registry.PositionX[i].V / crysmath.Precision)
 	y := int(e.Registry.PositionY[i].V / crysmath.Precision)
 	_, _, val := e.Grid.SenseHighestAlienGradient(x, y)
@@ -315,6 +355,9 @@ func (e *Engine) SenseAlienSignal(i int) bool {
 
 // SenseQuorum Consensus Pass: Evaluates nearest 8-neighbor vectors for logic drift
 func (e *Engine) SenseQuorum(entityIndex int) bool {
+	if !e.validDrone(entityIndex) {
+		return false
+	}
 	ix := int32(e.Registry.PositionX[entityIndex].V / crysmath.Precision)
 	iy := int32(e.Registry.PositionY[entityIndex].V / crysmath.Precision)
 
@@ -359,20 +402,36 @@ func (e *Engine) stepSearching(i int) {
 		return
 	}
 
+	// Drain battery for movement (1 unit per tick)
+	e.Registry.Battery[i] -= 1 * crysmath.Precision / 1000
+	if e.Registry.Battery[i] <= 0 {
+		e.Registry.Battery[i] = 0
+		e.Registry.State[i] = StateInert
+		return
+	}
+
 	// Move: Sense highest resource gradient
 	targetX, targetY, val := e.Grid.SenseHighestGradient(x, y, true)
 
 	if val <= 0 {
 		// Random walk if no trail found
-		dx := rand.Intn(3) - 1
-		dy := rand.Intn(3) - 1
+		dx := e.rng.Intn(3) - 1
+		dy := e.rng.Intn(3) - 1
 		x += dx
 		y += dy
 		// Clamp to grid bounds
-		if x < 0 { x = 0 }
-		if x >= e.Grid.Width { x = e.Grid.Width - 1 }
-		if y < 0 { y = 0 }
-		if y >= e.Grid.Height { y = e.Grid.Height - 1 }
+		if x < 0 {
+			x = 0
+		}
+		if x >= e.Grid.Width {
+			x = e.Grid.Width - 1
+		}
+		if y < 0 {
+			y = 0
+		}
+		if y >= e.Grid.Height {
+			y = e.Grid.Height - 1
+		}
 	} else {
 		x, y = targetX, targetY
 	}
@@ -403,18 +462,34 @@ func (e *Engine) stepReturning(i int) {
 		return
 	}
 
+	// Drain battery for movement (1 unit per tick)
+	e.Registry.Battery[i] -= 1 * crysmath.Precision / 1000
+	if e.Registry.Battery[i] <= 0 {
+		e.Registry.Battery[i] = 0
+		e.Registry.State[i] = StateInert
+		return
+	}
+
 	// Move: Sense highest home gradient
 	targetX, targetY, val := e.Grid.SenseHighestGradient(x, y, false)
 
 	if val <= 0 {
-		dx := rand.Intn(3) - 1
-		dy := rand.Intn(3) - 1
+		dx := e.rng.Intn(3) - 1
+		dy := e.rng.Intn(3) - 1
 		x += dx
 		y += dy
-		if x < 0 { x = 0 }
-		if x >= e.Grid.Width { x = e.Grid.Width - 1 }
-		if y < 0 { y = 0 }
-		if y >= e.Grid.Height { y = e.Grid.Height - 1 }
+		if x < 0 {
+			x = 0
+		}
+		if x >= e.Grid.Width {
+			x = e.Grid.Width - 1
+		}
+		if y < 0 {
+			y = 0
+		}
+		if y >= e.Grid.Height {
+			y = e.Grid.Height - 1
+		}
 	} else {
 		x, y = targetX, targetY
 	}
@@ -441,9 +516,20 @@ func (e *Engine) PrintTelemetry() {
 }
 
 func saturateAdd(a, b int32) int32 {
-	res := a + b
-	if res > MaxPheromone {
+	res := int64(a) + int64(b)
+	if res > int64(MaxPheromone) {
 		return MaxPheromone
 	}
-	return res
+	if res < 0 {
+		return 0
+	}
+	return int32(res)
+}
+
+func (e *Engine) validDrone(i int) bool {
+	return i >= 0 && i < e.Registry.Count
+}
+
+func (e *Engine) canAct(i int) bool {
+	return e.validDrone(i) && e.Registry.State[i] != StateInert && e.Registry.Battery[i] > 0
 }

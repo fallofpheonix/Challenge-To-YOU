@@ -37,7 +37,7 @@ func _update_summary() -> void:
 	for d in drones:
 		if d.get("state", "inert") != "inert":
 			active += 1
-		total_bat += d.get("battery", 0)
+		total_bat += d.get("bat", 0)
 
 	drone_count_label.text = "Drones: %d" % total
 	active_count_label.text = "Active: %d" % active

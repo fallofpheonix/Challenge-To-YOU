@@ -62,12 +62,24 @@ func (l *Lexer) NextToken() token.Token {
 			l.readChar()
 			tok = token.Token{Type: token.NOT_EQ, Literal: string(ch) + string(l.ch)}
 		} else {
-			tok = token.Token{Type: token.ILLEGAL, Literal: string(l.ch)}
+			tok = token.Token{Type: token.NOT, Literal: string(l.ch)}
 		}
 	case '<':
-		tok = token.Token{Type: token.LT, Literal: string(l.ch)}
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.LT_EQ, Literal: string(ch) + string(l.ch)}
+		} else {
+			tok = token.Token{Type: token.LT, Literal: string(l.ch)}
+		}
 	case '>':
-		tok = token.Token{Type: token.GT, Literal: string(l.ch)}
+		if l.peekChar() == '=' {
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.GT_EQ, Literal: string(ch) + string(l.ch)}
+		} else {
+			tok = token.Token{Type: token.GT, Literal: string(l.ch)}
+		}
 	case ',':
 		tok = token.Token{Type: token.COMMA, Literal: string(l.ch)}
 	case ';':

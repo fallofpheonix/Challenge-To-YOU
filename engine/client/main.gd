@@ -22,11 +22,15 @@ var current_script_path = ""
 var active_pipe = null
 
 var templates = {
-	"ps": "fn main() {\n    HARVEST()\n    DROP_RESOURCE()\n    \n    if (SENSE_RESOURCE()) {\n        MOVE_TOWARDS_RESOURCE()\n    } else {\n        if (SENSE_HOME()) {\n            MOVE_TOWARDS_HOME()\n        } else {\n            MOVE_RANDOM()\n        }\n    }\n}\n",
+	"ps": "fn main() {\n    if (SENSE_BATTERY() < 25000000) {\n        MOVE_TOWARDS_HOME()\n    } else {\n        if (SENSE_CARGO()) {\n            DROP_RESOURCE()\n            MOVE_TOWARDS_HOME()\n        } else {\n            HARVEST()\n            if (SENSE_CARGO()) {\n                MOVE_TOWARDS_HOME()\n            } else {\n                MOVE_TOWARDS_RESOURCE()\n            }\n        }\n    }\n}\n",
 	"py": "# Chrysalis Agent Loop\nwhile get_x() < get_goal_x():\n    move_forward()\n",
 }
 
 func _ready():
+	var hub = get_node_or_null("/root/GameHub")
+	if hub:
+		hub.show()
+
 	agent_sprite = $HBoxContainer/WorldView/SimulationSpace/Agent
 	goal_sprite = $HBoxContainer/WorldView/SimulationSpace/Goal
 	obstacles_container = $HBoxContainer/WorldView/SimulationSpace/Obstacles
@@ -61,7 +65,7 @@ func setup_highlighter():
 		highlighter.add_keyword_color(kw, kw_color)
 		
 	var api_color = Color(0, 1, 0.2, 1)
-	var api_funcs = ["HARVEST", "DROP_RESOURCE", "SENSE_RESOURCE", "SENSE_HOME", "MOVE_RANDOM", "MOVE_TOWARDS_RESOURCE", "MOVE_TOWARDS_HOME"]
+	var api_funcs = ["HARVEST", "DROP_RESOURCE", "SENSE_RESOURCE", "SENSE_HOME", "SENSE_CARGO", "MOVE_RANDOM", "MOVE_TOWARDS_RESOURCE", "MOVE_TOWARDS_HOME"]
 	for fn in api_funcs:
 		highlighter.add_keyword_color(fn, api_color)
 		
@@ -91,14 +95,15 @@ func _on_lang_cpp(): print("C++ agent support not yet implemented")
 func _on_lang_java(): print("Java agent support not yet implemented")
 
 func start_go_core():
-	var go_bin = "go"
-	var core_path = ProjectSettings.globalize_path("res://../core/main.go")
+	var core_bin = ProjectSettings.globalize_path("res://../bin/chrysalis-core")
 	current_script_path = ProjectSettings.globalize_path("res://../core/scripts/agent.ps")
 	OS.set_environment("PHX_SCRIPT_PATH", current_script_path)
 
-	# Start Go core as a background process (uses WebSockets)
-	# Using create_process to get the PID for cleanup later
-	var pid = OS.create_process(go_bin, ["run", core_path])
+	if not FileAccess.file_exists(core_bin):
+		push_error("[Network Error] Missing core binary. Run `make build-core` from engine/.")
+		return
+
+	var pid = OS.create_process(core_bin, [])
 	if pid != -1:
 		active_pipe = {"pid": pid}
 		print("[Network] Launched Go core (PID: %d). Awaiting WebSocket handshake..." % pid)
@@ -152,9 +157,6 @@ func _update_drones_visuals(drones: Array):
 
 func _trigger_breakpoint_halt(drone_id: int) -> void:
 	var inspector = get_node_or_null("/root/GameHub/InspectorModal")
-	if not inspector:
-		# Fallback to local if not in Hub
-		inspector = get_node_or_null("UI/InspectorModal")
 	
 	if inspector:
 		print("[Breakpoint] Entity %d critical power threshold achieved. Halting core." % drone_id)
@@ -162,12 +164,13 @@ func _trigger_breakpoint_halt(drone_id: int) -> void:
 
 func kill_core():
 	if active_pipe:
-		if active_pipe.has("stdio") and is_instance_valid(active_pipe["stdio"]):
-			active_pipe["stdio"].close()
 		if active_pipe.has("pid"):
 			var pid = active_pipe["pid"]
 			OS.kill(pid)
 		active_pipe = null
+
+func _exit_tree():
+	kill_core()
 
 func _on_deploy_pressed():
 	print("Deploying new script...")

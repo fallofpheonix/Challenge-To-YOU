@@ -2,7 +2,6 @@ package simulation
 
 import (
 	"chrysalis-engine/core/crysmath"
-	"math/rand"
 )
 
 type AlienNodeType uint8
@@ -37,10 +36,10 @@ func (e *Engine) SpreadsInfection() {
 
 			if distSq <= InfectionRadius*InfectionRadius {
 				// Bleed corruption: increase factor by 1-5% per tick
-				factor := uint8(rand.Intn(5) + 1)
+				factor := uint8(e.rng.Intn(5) + 1)
 				current := e.Registry.CorruptionFactor[j]
-				
-				if uint32(current) + uint32(factor) >= 100 {
+
+				if uint32(current)+uint32(factor) >= 100 {
 					e.Registry.CorruptionFactor[j] = 100
 					e.Registry.Compromised[j] = true
 					e.Registry.TrustScore[j] = 50
@@ -53,12 +52,12 @@ func (e *Engine) SpreadsInfection() {
 }
 
 type AlienNetwork struct {
-	Capacity  int
-	Active    []bool
-	Type      []AlienNodeType
-	X         []int32
-	Y         []int32
-	Radius    []int32
+	Capacity int
+	Active   []bool
+	Type     []AlienNodeType
+	X        []int32
+	Y        []int32
+	Radius   []int32
 }
 
 func NewAlienNetwork(capacity int) *AlienNetwork {

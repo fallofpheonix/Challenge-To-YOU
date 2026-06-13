@@ -12,3 +12,15 @@ You are the Architect, stationed in orbit above Kepler-452b. You do not pilot dr
 
 ## Technical Foundation
 This project utilizes a custom Go-based scripting language (**P-Script**) and a deterministic simulation engine to manage thousands of autonomous units.
+
+## Run
+
+Requirements: Go 1.26+ and Godot 4.x at `/Applications/Godot.app`.
+
+```bash
+cd engine
+make check
+make run-all
+```
+
+Implemented scope and gaps are tracked in [Current State](./engine/docs/CURRENT_STATE.md) and [Known Limitations](./engine/docs/KNOWN_LIMITATIONS.md).

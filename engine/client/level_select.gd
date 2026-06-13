@@ -3,6 +3,10 @@ extends Control
 var levels_dir = "res://../core/levels/"
 
 func _ready():
+	var hub = get_node_or_null("/root/GameHub")
+	if hub:
+		hub.hide()
+
 	# Scan the levels directory and create buttons
 	var dir = DirAccess.open(ProjectSettings.globalize_path(levels_dir))
 	if dir:

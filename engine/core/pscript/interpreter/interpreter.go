@@ -25,6 +25,7 @@ func New(builtins map[string]BuiltinFn) *Interpreter {
 
 // Eval: Walks the program and executes its statements for a specific entity.
 func (i *Interpreter) Eval(program *ast.Program, e *simulation.Engine, entityIndex int) {
+	clear(i.variables)
 	for _, stmt := range program.Statements {
 		i.evalStatement(stmt, e, entityIndex)
 	}
@@ -42,6 +43,12 @@ func (i *Interpreter) evalStatement(stmt ast.Statement, e *simulation.Engine, en
 		i.evalWhileStatement(s, e, entityIndex)
 	case *ast.LetStatement:
 		i.evalLetStatement(s, e, entityIndex)
+	case *ast.ReturnStatement:
+		// Return exits the current function scope; in our flat interpreter this is a no-op
+		// but we evaluate the expression for side effects
+		if s.ReturnValue != nil {
+			i.evalExpression(s.ReturnValue, e, entityIndex)
+		}
 	case *ast.BlockStatement:
 		for _, statement := range s.Statements {
 			i.evalStatement(statement, e, entityIndex)
@@ -64,6 +71,9 @@ func (i *Interpreter) evalExpression(expr ast.Expression, e *simulation.Engine, 
 		left := i.evalExpression(e_node.Left, e, entityIndex)
 		right := i.evalExpression(e_node.Right, e, entityIndex)
 		return i.evalInfixExpression(e_node.Operator, left, right)
+	case *ast.PrefixExpression:
+		right := i.evalExpression(e_node.Right, e, entityIndex)
+		return i.evalPrefixExpression(e_node.Operator, right)
 	}
 	return false
 }
@@ -106,10 +116,34 @@ func (i *Interpreter) evalInfixExpression(operator string, left, right interface
 		if lOk && rOk {
 			return lVal > rVal
 		}
+	case operator == "<=":
+		lVal, lOk := left.(int64)
+		rVal, rOk := right.(int64)
+		if lOk && rOk {
+			return lVal <= rVal
+		}
+	case operator == ">=":
+		lVal, lOk := left.(int64)
+		rVal, rOk := right.(int64)
+		if lOk && rOk {
+			return lVal >= rVal
+		}
 	case operator == "==":
 		return left == right
 	case operator == "!=":
 		return left != right
+	}
+	return false
+}
+
+func (i *Interpreter) evalPrefixExpression(operator string, right interface{}) interface{} {
+	switch operator {
+	case "-":
+		if val, ok := right.(int64); ok {
+			return -val
+		}
+	case "!":
+		return !isTruthy(right)
 	}
 	return false
 }

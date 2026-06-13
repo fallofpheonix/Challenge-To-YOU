@@ -1,16 +1,16 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"os"
 	"chrysalis-engine/core/network"
 	"chrysalis-engine/core/pscript/ast"
 	"chrysalis-engine/core/pscript/interpreter"
 	"chrysalis-engine/core/pscript/lexer"
 	"chrysalis-engine/core/pscript/parser"
 	"chrysalis-engine/core/simulation"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
 	"time"
 )
 
@@ -36,8 +36,8 @@ func main() {
 	})
 
 	go func() {
-		fmt.Fprintln(os.Stderr, "[NETWORK] Starting WebSocket server on :8080")
-		if err := http.ListenAndServe(":8080", nil); err != nil {
+		fmt.Fprintln(os.Stderr, "[NETWORK] Starting WebSocket server on 127.0.0.1:8080")
+		if err := http.ListenAndServe("127.0.0.1:8080", nil); err != nil {
 			fmt.Fprintf(os.Stderr, "[NETWORK ERROR] Server failed: %v\n", err)
 		}
 	}()
@@ -55,28 +55,11 @@ func main() {
 	if scriptPath == "" {
 		scriptPath = "scripts/agent.ps"
 	}
-	
+
 	program := loadScript(scriptPath)
 
 	// 3. Setup Interpreter and Builtins
-	builtins := map[string]interpreter.BuiltinFn{
-		"SENSE_RESOURCE": func(e *simulation.Engine, i int) interface{} { return e.SenseResource(i) },
-		"SENSE_HOME":     func(e *simulation.Engine, i int) interface{} { return e.SenseHome(i) },
-		"SENSE_BATTERY":  func(e *simulation.Engine, i int) interface{} { return e.Registry.Battery[i] },
-		"SENSE_TRUST":    func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.TrustScore[i]) },
-		"SENSE_CORRUPTION": func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.CorruptionFactor[i]) },
-		"SENSE_COMPROMISED": func(e *simulation.Engine, i int) interface{} { return e.Registry.Compromised[i] },
-		"SENSE_ALIEN_SIGNAL": func(e *simulation.Engine, i int) interface{} { return e.SenseAlienSignal(i) },
-		"BROADCAST_VOTE": func(e *simulation.Engine, i int) interface{} { return e.SenseQuorum(i) },
-		"SENSE_SWARM_SIZE": func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.Count) },
-		"SENSE_COLONY_RESOURCES": func(e *simulation.Engine, i int) interface{} { return int64(e.GlobalSilicates) },
-		"HARVEST":        func(e *simulation.Engine, i int) interface{} { e.Harvest(i); return true },
-		"DROP_RESOURCE":  func(e *simulation.Engine, i int) interface{} { e.DropResource(i); return true },
-		"MOVE_RANDOM":    func(e *simulation.Engine, i int) interface{} { e.MoveRandom(i); return true },
-		"MOVE_TOWARDS_RESOURCE": func(e *simulation.Engine, i int) interface{} { e.MoveTowardsResource(i); return true },
-		"MOVE_TOWARDS_HOME":     func(e *simulation.Engine, i int) interface{} { e.MoveTowardsHome(i); return true },
-	}
-	interp := interpreter.New(builtins)
+	interp := interpreter.New(newBuiltins())
 
 	// 4. Main Simulation Loop (10 Hz as per spec)
 	ticker := time.NewTicker(100 * time.Millisecond)
@@ -84,7 +67,11 @@ func main() {
 
 	fmt.Fprintln(os.Stderr, "--- Project Chrysalis Go Core Started ---")
 
+	// Initialize lastMod to avoid double-load on first tick
 	var lastMod time.Time
+	if info, err := os.Stat(scriptPath); err == nil {
+		lastMod = info.ModTime()
+	}
 
 	for {
 		select {
@@ -108,7 +95,6 @@ func main() {
 			}
 
 		case <-ticker.C:
-			// 4.1 Check for Script Reload
 			info, err := os.Stat(scriptPath)
 			if err == nil && info.ModTime().After(lastMod) {
 				fmt.Fprintln(os.Stderr, "Reloading Architect script...")
@@ -116,31 +102,18 @@ func main() {
 				lastMod = info.ModTime()
 			}
 
-			// 4.2 Step Simulation Environment
-			engine.Grid.TickPheromones()
-			
-			// Reinforce Base Pheromone
-			bIdx := engine.Grid.GetIndex(width/2, height/2)
-			engine.Grid.NextCells[bIdx].HomePheromone = simulation.MaxPheromone
-
-			// 4.3 Execute P-Script for every Drone in the Registry
+			engine.BeginTick()
 			if program != nil {
 				for i := 0; i < engine.Registry.Count; i++ {
 					interp.Eval(program, engine, i)
 				}
 			}
+			engine.CommitTick()
 
-			// 4.4 Commit mutations
-			engine.Grid.SwapBuffers()
-			engine.Tick++
-
-			// 5. Emit state to Telemetry Bridge
-			state := engine.GetState()
-			
 			packet := map[string]interface{}{
 				"packet_type": "EMISSION_SNAPSHOT",
 				"tick":        engine.Tick,
-				"payload":     state,
+				"payload":     engine.GetState(),
 			}
 
 			data, err := json.Marshal(packet)
@@ -148,10 +121,29 @@ func main() {
 				fmt.Fprintf(os.Stderr, "JSON marshal error: %v\n", err)
 				continue
 			}
-			
-			// Broadcast to all connected Godot clients
 			hub.Broadcast <- data
 		}
+	}
+}
+
+func newBuiltins() map[string]interpreter.BuiltinFn {
+	return map[string]interpreter.BuiltinFn{
+		"SENSE_RESOURCE":         func(e *simulation.Engine, i int) interface{} { return e.SenseResource(i) },
+		"SENSE_HOME":             func(e *simulation.Engine, i int) interface{} { return e.SenseHome(i) },
+		"SENSE_BATTERY":          func(e *simulation.Engine, i int) interface{} { return e.Registry.Battery[i] },
+		"SENSE_TRUST":            func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.TrustScore[i]) },
+		"SENSE_CORRUPTION":       func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.CorruptionFactor[i]) },
+		"SENSE_COMPROMISED":      func(e *simulation.Engine, i int) interface{} { return e.Registry.Compromised[i] },
+		"SENSE_ALIEN_SIGNAL":     func(e *simulation.Engine, i int) interface{} { return e.SenseAlienSignal(i) },
+		"BROADCAST_VOTE":         func(e *simulation.Engine, i int) interface{} { return e.SenseQuorum(i) },
+		"SENSE_SWARM_SIZE":       func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.Count) },
+		"SENSE_COLONY_RESOURCES": func(e *simulation.Engine, i int) interface{} { return int64(e.GlobalSilicates) },
+		"SENSE_CARGO":            func(e *simulation.Engine, i int) interface{} { return e.SenseCargo(i) },
+		"HARVEST":                func(e *simulation.Engine, i int) interface{} { e.Harvest(i); return true },
+		"DROP_RESOURCE":          func(e *simulation.Engine, i int) interface{} { e.DropResource(i); return true },
+		"MOVE_RANDOM":            func(e *simulation.Engine, i int) interface{} { e.MoveRandom(i); return true },
+		"MOVE_TOWARDS_RESOURCE":  func(e *simulation.Engine, i int) interface{} { e.MoveTowardsResource(i); return true },
+		"MOVE_TOWARDS_HOME":      func(e *simulation.Engine, i int) interface{} { e.MoveTowardsHome(i); return true },
 	}
 }
 
@@ -173,6 +165,6 @@ func loadScript(path string) *ast.Program {
 		}
 		return nil
 	}
-	
+
 	return program
 }

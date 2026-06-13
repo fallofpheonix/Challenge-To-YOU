@@ -1,36 +1,28 @@
-# Project Chrysalis: Strategic System Progress Log
+Original prompt: build this game brick by brick and proper working ai and use it and find loopholes and fix them all and docuements everything
 
-This ledger tracks the evolutionary roadmap of the engine backend and client visualizer states.
+# Work Log
 
----
+## 2026-06-12
 
-## [Milestone 0: Emergence Validation] ──► 🟢 100% COMPLETED
-* **Backend Status:** Deterministic fixed-point math (`crysmath`) and double-buffered cell memory processing safely at 10Hz.
-* **Logic Subsystem:** Pratt syntax compiler handling inline mathematical evaluation (`<`, `+`, `==`).
-* **Visual Presentation:** Sparse RLE telemetry pipeline displaying home/resource vector fields directly inside Godot.
+- Audited Go core, P-Script, WebSocket bridge, and Godot client.
+- Repaired omitted production systems and the default AI base deadlock.
+- Added explicit tick lifecycle, seeded RNG, cargo sensing, inert guards, and tests.
+- Isolated P-Script variables per drone.
+- Switched Godot to the built core binary.
+- Fixed GDScript compilation, telemetry mappings, dashboard visibility, and app icon.
+- Restricted IPC to loopback and bounded inbound frames.
+- Added current-state, runbook, testing, and limitation documents.
 
-## [Milestone 3: The Network Boundary (WebSocket IPC)] ──► 🟢 100% COMPLETED
-* **Goal:** Asynchronous, bi-directional network communication layer for zero-latency telemetry.
-* **Backend Tasks:**
-  * [x] Construct the concurrent `NetworkHub` state machine and client connection registries.
-  * [x] Bind the network server loop to `http.ListenAndServe` inside `main.go`.
-  * [x] Divert `engine.GetState()` outputs from stdout into the concurrent broadcast channel.
-  * [x] Implement asynchronous connection reader threads to intercept incoming client commands.
-  * [x] Wire the incoming code strings directly to the P-Script Hot-Reload parser gateway.
-* **Frontend Tasks:**
-  * [x] Draft the custom asynchronous `WebSocketPeer` connection engine script in Godot.
-  * [x] Re-route `main.gd` pipeline reads away from local process pipe polling onto network signals.
-  * [x] Re-wire the Swarm Inspector `ApplyBtn` to push patches via `send_command()` over the socket.
+## Verification
 
+- Go tests, race detector, and vet: pass.
+- Godot headless validation: pass.
+- Direct client/core handshake: pass.
+- Desktop visual inspection: blocked by macOS Computer Use permissions.
 
-## [Milestone 2: The Replica Matrix] ──► 🟢 100% COMPLETED
-* **Goal:** Dynamic component array expansion driven by physical resource delivery metrics.
-* **Backend Tasks:**
-  * [x] Add `GlobalSilicates` tracking metrics to simulation manager execution passes.
-  * [x] Implement slice reallocation tracking inside `ecs.go` to safely pass capacity buffers.
-  * [x] Map `SENSE_SWARM_SIZE()` compiler function hooks into interpreter environment blocks.
-* **Frontend Tasks:**
-  * [x] Wire Go JSON payload tracking to the live metrics counters on the Telemetry HUD node.
+## Next Work
 
----
-*Last Core Verification Tick: 500 Pass*
+- Scenario and mission state.
+- Replay/save state.
+- Occupancy and collision.
+- WebSocket and Godot interaction tests.

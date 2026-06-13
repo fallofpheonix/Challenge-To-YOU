@@ -11,7 +11,7 @@ func _ready():
 
 func connect_to_core():
 	var err = socket.connect_to_url(ws_url)
-	if err != nil:
+	if err != OK:
 		print("[Network Error] Failed to map socket: ", err)
 		return
 	set_process(true)

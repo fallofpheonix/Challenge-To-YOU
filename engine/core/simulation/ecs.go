@@ -52,7 +52,9 @@ func (r *SwarmRegistry) Spawn(x, y int, battery int64) {
 	if r.Count >= len(r.ID) {
 		// Expand capacity (double the current size)
 		newCap := len(r.ID) * 2
-		if newCap == 0 { newCap = 1 }
+		if newCap == 0 {
+			newCap = 1
+		}
 
 		newID := make([]uint32, newCap)
 		newPX := make([]crysmath.FixedPoint, newCap)

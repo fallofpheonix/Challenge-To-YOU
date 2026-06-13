@@ -115,10 +115,21 @@ func forward_data(data: Dictionary) -> void:
 
 	for screen_name in screen_instances:
 		var inst = screen_instances[screen_name]
+		if inst.has_method("load_telemetry"):
+			inst.load_telemetry(data)
 		if inst.has_method("load_swarm") and data.has("drones"):
 			inst.load_swarm({"drones": data["drones"]})
-		if inst.has_method("load_resources") and data.has("resources"):
-			inst.load_resources({"resources": data["resources"]})
+		if inst.has_method("load_resources") and data.has("grid"):
+			var resources = []
+			for cell in data["grid"]:
+				if cell.get("cnt", 0) > 0:
+					resources.append({
+						"type": "silicate",
+						"yield": cell["cnt"],
+						"position": {"x": cell["x"], "y": cell["y"]},
+						"state": "embedded",
+					})
+			inst.load_resources({"resources": resources})
 		if inst.has_method("load_pheromones") and data.has("signals"):
 			inst.load_pheromones({"signals": data["signals"]})
 		if inst.has_method("load_grid") and data.has("grid"):
@@ -127,13 +138,19 @@ func forward_data(data: Dictionary) -> void:
 			inst.load_hazards({"hazards": data["hazards"]})
 		if inst.has_method("load_structures") and data.has("structures"):
 			inst.load_structures({"structures": data["structures"]})
-		if inst.has_method("load_alien_nodes") and data.has("alien_nodes"):
-			inst.load_alien_nodes({"nodes": data["alien_nodes"]})
+		if inst.has_method("load_alien_nodes") and data.has("aliens"):
+			var nodes = []
+			for alien in data["aliens"]:
+				nodes.append({
+					"type": alien.get("type", 0),
+					"position": {"x": alien.get("x", 0), "y": alien.get("y", 0)},
+					"corruption_radius": alien.get("rad", 0),
+					"state": "broadcasting",
+				})
+			inst.load_alien_nodes({"nodes": nodes})
 		if inst.has_method("load_research") and data.has("research"):
 			inst.load_research({"research": data["research"]})
 		if inst.has_method("load_uplink") and data.has("uplink"):
 			inst.load_uplink({"uplink": data["uplink"]})
-		if inst.has_method("load_telemetry") and data.has("telemetry"):
-			inst.load_telemetry({"telemetry": data["telemetry"]})
 		if inst.has_method("load_replay") and data.has("replay"):
 			inst.load_replay({"replay": data["replay"]})

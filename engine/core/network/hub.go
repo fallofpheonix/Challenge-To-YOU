@@ -5,13 +5,21 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+
 	"github.com/gorilla/websocket"
 )
+
+const MaxInboundMessageBytes int64 = 64 * 1024
 
 var Upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 4096,
-	CheckOrigin:     func(r *http.Request) bool { return true }, // Local IPC validation
+	CheckOrigin: func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		return origin == "" ||
+			origin == "http://127.0.0.1" ||
+			origin == "http://localhost"
+	},
 }
 
 type InboundCommand struct {
@@ -78,6 +86,7 @@ func (h *NetworkHub) HandleConnections(w http.ResponseWriter, r *http.Request) {
 
 // StartReader Listening Loop runs per connected client thread
 func (h *NetworkHub) StartReader(conn *websocket.Conn, commandChannel chan<- InboundCommand) {
+	conn.SetReadLimit(MaxInboundMessageBytes)
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
@@ -87,6 +96,10 @@ func (h *NetworkHub) StartReader(conn *websocket.Conn, commandChannel chan<- Inb
 
 		var cmd InboundCommand
 		if err := json.Unmarshal(message, &cmd); err == nil {
+			if cmd.Type == "" {
+				fmt.Println("[NETWORK ERROR] Rejected command without packet_type.")
+				continue
+			}
 			commandChannel <- cmd
 		} else {
 			fmt.Printf("[NETWORK ERROR] Failed to unmarshal client frame: %v\n", err)

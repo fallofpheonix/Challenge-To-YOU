@@ -97,3 +97,40 @@ while (five) {
 		}
 	}
 }
+
+func TestNewOperators(t *testing.T) {
+	input := `! x <= 5 >= 10 != 3 == 3`
+
+	tests := []struct {
+		expectedType    token.Type
+		expectedLiteral string
+	}{
+		{token.NOT, "!"},
+		{token.IDENT, "x"},
+		{token.LT_EQ, "<="},
+		{token.INT, "5"},
+		{token.GT_EQ, ">="},
+		{token.INT, "10"},
+		{token.NOT_EQ, "!="},
+		{token.INT, "3"},
+		{token.EQ, "=="},
+		{token.INT, "3"},
+		{token.EOF, ""},
+	}
+
+	l := New(input)
+
+	for i, tt := range tests {
+		tok := l.NextToken()
+
+		if tok.Type != tt.expectedType {
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
+				i, tt.expectedType, tok.Type)
+		}
+
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
+				i, tt.expectedLiteral, tok.Literal)
+		}
+	}
+}

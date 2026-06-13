@@ -1,35 +1,52 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "GameState",
+  "title": "ChrysalisTelemetryPacket",
   "type": "object",
+  "required": ["packet_type", "tick", "payload"],
   "properties": {
+    "packet_type": {
+      "const": "EMISSION_SNAPSHOT"
+    },
     "tick": {
       "type": "integer",
       "minimum": 0
     },
-    "status": {
-      "type": "string",
-      "enum": ["active", "complete", "crashed", "compile_error", "runtime_error"]
-    },
-    "error_msg": {
-      "type": "string"
-    },
-    "agent": {
+    "payload": {
       "type": "object",
+      "required": [
+        "tick",
+        "drones",
+        "grid",
+        "hazards",
+        "aliens",
+        "colony_res",
+        "swarm_size"
+      ],
       "properties": {
-        "x": { "type": "integer" },
-        "y": { "type": "integer" }
-      },
-      "required": ["x", "y"]
-    },
-    "goal": {
-      "type": "object",
-      "properties": {
-        "x": { "type": "integer" },
-        "y": { "type": "integer" }
-      },
-      "required": ["x", "y"]
+        "tick": { "type": "integer", "minimum": 0 },
+        "colony_res": { "type": "integer", "minimum": 0 },
+        "swarm_size": { "type": "integer", "minimum": 0 },
+        "drones": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "x",
+              "y",
+              "state",
+              "inv",
+              "bat",
+              "comp",
+              "trust",
+              "corr"
+            ]
+          }
+        },
+        "grid": { "type": "array" },
+        "hazards": { "type": "array" },
+        "aliens": { "type": "array" }
+      }
     }
-  },
-  "required": ["tick", "status", "agent", "goal"]
+  }
 }

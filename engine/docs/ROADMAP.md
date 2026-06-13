@@ -16,10 +16,10 @@ Confidence: Authoritative
 - Environmental Hazard Engine (Magnetic Anomalies).
 
 ## Phase 2: Distributed Systems & Economics (COMPLETED)
-- Asynchronous WebSocket IPC for zero-latency bi-directional telemetry.
+- Asynchronous WebSocket IPC for ~1ms latency bi-directional telemetry.
 - Logic Contagion system (Wireless viral spread & CorruptionFactor).
-- Byzantine Fault Tolerance (BFT) consensus builtin (`BROADCAST_VOTE()`).
-- Replica Matrix (Economic fabrication loop).
+- Majority-Vote Quorum consensus builtin (`BROADCAST_VOTE()`).
+- Resource-based Fabrication loop.
 
 ## Phase 3: Visual & UX Hardening (IN PROGRESS)
 - [x] Swarm Inspector: Real-time logic hot-patching over network.
