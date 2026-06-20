@@ -1,10 +1,10 @@
 # Chrysalis Engine Layer - Development Orchestration
 # Use this Makefile to run the Go core and Godot client.
 
-.PHONY: run-core run-client run-all test-core test-race check build-core
+.PHONY: run-core run-client run-all test-core test-race vet-core check check-fast check-godot smoke-godot build-core
 
 # Paths
-GODOT_BIN = /Applications/Godot.app/Contents/MacOS/Godot
+GODOT_BIN ?= /Applications/Godot.app/Contents/MacOS/Godot
 CORE_DIR = ./core
 CLIENT_DIR = ./client
 
@@ -19,9 +19,18 @@ test-core:
 test-race:
 	cd $(CORE_DIR) && go test -race ./...
 
-check: test-core
+vet-core:
 	cd $(CORE_DIR) && go vet ./...
+
+check-fast: test-core vet-core
+
+check-godot:
 	$(GODOT_BIN) --headless --path $(CLIENT_DIR) --editor --quit
+
+smoke-godot:
+	$(GODOT_BIN) --headless --path $(CLIENT_DIR) --quit
+
+check: check-fast check-godot
 
 # Build the Go core binary
 build-core:

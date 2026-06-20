@@ -20,6 +20,7 @@ var network_bridge: Node
 var current_lang = "ps"
 var current_script_path = ""
 var active_pipe = null
+var mission_terminal := false
 
 var templates = {
 	"ps": "fn main() {\n    if (SENSE_BATTERY() < 25000000) {\n        MOVE_TOWARDS_HOME()\n    } else {\n        if (SENSE_CARGO()) {\n            DROP_RESOURCE()\n            MOVE_TOWARDS_HOME()\n        } else {\n            HARVEST()\n            if (SENSE_CARGO()) {\n                MOVE_TOWARDS_HOME()\n            } else {\n                MOVE_TOWARDS_RESOURCE()\n            }\n        }\n    }\n}\n",
@@ -124,6 +125,9 @@ func update_ui(data):
 	if hub:
 		hub.forward_data(data)
 
+	if data.has("mission"):
+		_update_mission_status(data["mission"])
+
 	# 1. Handle Tick
 	if data.has("tick"):
 		telemetry_label.text = "TICK: %03d" % data["tick"]
@@ -134,9 +138,32 @@ func update_ui(data):
 		
 		# Breakpoint condition: Drone battery critically low
 		for drone in data["drones"]:
-			if drone["state"] == 0 and drone["bat"] < 25000000: 
+			if not mission_terminal and drone["state"] == 0 and drone["bat"] < 25000000: 
 				_trigger_breakpoint_halt(drone["id"])
 				return
+
+func _update_mission_status(mission: Dictionary) -> void:
+	var status = mission.get("status", "running")
+	if status == "running":
+		mission_terminal = false
+		complete_label.hide()
+		return
+
+	mission_terminal = true
+	var reason = str(mission.get("reason", "")).replace("_", " ").to_upper()
+	if status == "victory":
+		complete_label.text = "VICTORY"
+		complete_label.modulate = Color(0, 1, 0.62, 1)
+	elif status == "defeat":
+		complete_label.text = "DEFEAT"
+		complete_label.modulate = Color(1, 0.2, 0.2, 1)
+	else:
+		complete_label.text = str(status).to_upper()
+		complete_label.modulate = Color(1, 1, 1, 1)
+
+	if not reason.is_empty():
+		complete_label.text += "\n%s" % reason
+	complete_label.show()
 
 func _update_drones_visuals(drones: Array):
 	# Clear old legacy trail logic or sprites if needed

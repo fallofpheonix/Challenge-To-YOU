@@ -2,10 +2,16 @@ extends Node
 
 var socket := WebSocketPeer.new()
 var ws_url := "ws://127.0.0.1:8080/telemetry"
+var reconnect_timer: Timer
 
 signal packet_received(type: String, data: Dictionary)
 
 func _ready():
+	reconnect_timer = Timer.new()
+	reconnect_timer.one_shot = true
+	reconnect_timer.wait_time = 2.0
+	reconnect_timer.timeout.connect(connect_to_core)
+	add_child(reconnect_timer)
 	set_process(false)
 	connect_to_core()
 
@@ -28,8 +34,14 @@ func _process(_delta):
 	elif state == WebSocketPeer.STATE_CLOSED:
 		set_process(false)
 		print("[Network] Core socket disconnected. Re-connecting...")
-		await get_tree().create_timer(2.0).timeout
-		connect_to_core()
+		if not reconnect_timer.is_stopped():
+			return
+		reconnect_timer.start()
+
+func _exit_tree():
+	if reconnect_timer and not reconnect_timer.is_stopped():
+		reconnect_timer.stop()
+	socket.close()
 
 func send_command(type: String, command_payload: Dictionary):
 	if socket.get_ready_state() == WebSocketPeer.STATE_OPEN:

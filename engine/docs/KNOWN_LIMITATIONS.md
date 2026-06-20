@@ -3,9 +3,10 @@
 ## P0: Complete Game Blockers
 
 - Scenario files do not configure the simulation.
-- No victory, defeat, scoring, persistence, or campaign progression.
+- Victory/defeat is hardcoded for the v0 mission; no scoring, persistence, or campaign progression.
 - Replay, research, and structure dashboards exceed the backend model.
 - Drones may overlap because occupancy and collision are absent.
+- Return-to-base behavior is only reliable for the v0 adjacent-resource setup; resources beyond the guaranteed home-gradient neighborhood can strand loaded drones until trail/pathing is improved.
 
 ## P1: Correctness And Security
 
@@ -24,7 +25,7 @@
 ## Recommended Build Order
 
 1. Versioned scenario schema loaded by the Go core.
-2. Deterministic mission state and win/loss evaluation.
+2. Scenario-driven mission state and win/loss evaluation.
 3. Save/replay format including RNG state.
 4. Occupancy and collision arbitration.
 5. Aggregate density telemetry.

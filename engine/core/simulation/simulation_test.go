@@ -99,4 +99,72 @@ func TestCargoLoopReturnsResourceToBase(t *testing.T) {
 		t.Fatalf("resource was not deposited: colony=%d cargo=%v",
 			e.GlobalSilicates, e.SenseCargo(0))
 	}
+	if e.TotalDeposited != 1 {
+		t.Fatalf("total deposited was not tracked: got %d", e.TotalDeposited)
+	}
+}
+
+func TestMissionVictoryPrecedesSameTickDefeat(t *testing.T) {
+	e := NewEngineWithSeed(9, 9, 2, 13)
+	e.Mission.TargetResources = 1
+	e.Mission.InfectionLossThreshold = 0.50
+	e.TotalDeposited = 1
+	e.Registry.Compromised[0] = true
+	e.Tick = e.Mission.MaxTicks
+
+	e.EvaluateMission()
+
+	if e.Mission.Status != MissionVictory || e.Mission.Reason != MissionReasonResourceTarget {
+		t.Fatalf("mission did not prefer victory: status=%s reason=%s",
+			e.Mission.Status, e.Mission.Reason)
+	}
+}
+
+func TestMissionDoesNotInstantLoseToInitialInfection(t *testing.T) {
+	e := NewEngineWithSeed(9, 9, 2, 17)
+	e.Mission.InfectionLossThreshold = 0.50
+	e.Registry.Compromised[0] = true
+
+	e.EvaluateMission()
+
+	if e.Mission.Status != MissionRunning {
+		t.Fatalf("mission lost at tick zero: status=%s reason=%s",
+			e.Mission.Status, e.Mission.Reason)
+	}
+
+	e.Tick = 1
+	e.EvaluateMission()
+	if e.Mission.Status != MissionDefeat || e.Mission.Reason != MissionReasonInfectionExceeded {
+		t.Fatalf("mission did not lose after tick zero: status=%s reason=%s",
+			e.Mission.Status, e.Mission.Reason)
+	}
+}
+
+func TestAdjacentCarrierReturnsAndDeposits(t *testing.T) {
+	e := NewEngineWithSeed(9, 9, 1, 19)
+	e.Hazards = NewHazardSystem(0)
+	e.Aliens = NewAlienNetwork(0)
+	e.Registry.PositionX[0] = crysmath.NewFixedPoint(5)
+	e.Registry.PositionY[0] = crysmath.NewFixedPoint(4)
+	e.Registry.Inventory[0] = 1
+	e.Registry.State[0] = StateReturning
+
+	e.BeginTick()
+	e.MoveTowardsHome(0)
+	e.CommitTick()
+
+	x := int(e.Registry.PositionX[0].V / crysmath.Precision)
+	y := int(e.Registry.PositionY[0].V / crysmath.Precision)
+	if x != 4 || y != 4 {
+		t.Fatalf("adjacent carrier did not move to base: got (%d,%d)", x, y)
+	}
+
+	e.BeginTick()
+	e.DropResource(0)
+	e.CommitTick()
+
+	if e.TotalDeposited != 1 || e.GlobalSilicates != 1 || e.Registry.Inventory[0] != 0 {
+		t.Fatalf("adjacent carrier did not deposit: total=%d colony=%d cargo=%d",
+			e.TotalDeposited, e.GlobalSilicates, e.Registry.Inventory[0])
+	}
 }

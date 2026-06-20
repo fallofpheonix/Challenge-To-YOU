@@ -17,8 +17,10 @@ type Engine struct {
 	Registry        *SwarmRegistry
 	Hazards         *HazardSystem
 	Aliens          *AlienNetwork
+	Mission         MissionState
 	Tick            int64
 	GlobalSilicates int32
+	TotalDeposited  int32
 	HistoricalTotal int32
 	rng             *rand.Rand
 }
@@ -33,6 +35,7 @@ func NewEngineWithSeed(width, height int, droneCount int, seed int64) *Engine {
 		Registry: NewSwarmRegistry(droneCount),
 		Hazards:  NewHazardSystem(10), // Support up to 10 active hazards
 		Aliens:   NewAlienNetwork(5),  // Support up to 5 alien nodes
+		Mission:  NewDefaultMissionState(),
 		rng:      rand.New(rand.NewSource(seed)),
 	}
 
@@ -93,6 +96,7 @@ func (e *Engine) BeginTick() {
 func (e *Engine) CommitTick() {
 	e.Grid.SwapBuffers()
 	e.Tick++
+	e.EvaluateMission()
 }
 
 // Step advances the built-in fallback AI by one authoritative tick.
@@ -149,6 +153,7 @@ func (e *Engine) DropResource(i int) {
 	if e.Grid.CurrentCells[idx].IsBase {
 		if e.Registry.Inventory[i] > 0 {
 			e.GlobalSilicates += e.Registry.Inventory[i]
+			e.TotalDeposited += e.Registry.Inventory[i]
 			e.Registry.Inventory[i] = 0
 		}
 		e.Registry.State[i] = StateSearching
@@ -269,6 +274,7 @@ func (e *Engine) GetState() map[string]interface{} {
 		"hazards":    activeHazards,
 		"aliens":     activeAliens,
 		"colony_res": e.GlobalSilicates,
+		"mission":    e.Mission,
 		"swarm_size": e.Registry.Count,
 	}
 }
@@ -456,6 +462,7 @@ func (e *Engine) stepReturning(i int) {
 	if e.Grid.CurrentCells[idx].IsBase {
 		if e.Registry.Inventory[i] > 0 {
 			e.GlobalSilicates += e.Registry.Inventory[i]
+			e.TotalDeposited += e.Registry.Inventory[i]
 			e.Registry.Inventory[i] = 0
 		}
 		e.Registry.State[i] = StateSearching

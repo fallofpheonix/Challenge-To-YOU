@@ -42,13 +42,10 @@ func main() {
 		}
 	}()
 
-	// Seed some resources
-	for i := 0; i < 5; i++ {
-		rx, ry := 70+i, 70+i
-		idx := engine.Grid.GetIndex(rx, ry)
-		engine.Grid.CurrentCells[idx].ResourceCount = 500
-		engine.Grid.NextCells[idx].ResourceCount = 500
-	}
+	// Seed one guaranteed v0 resource node adjacent to base.
+	resourceIdx := engine.Grid.GetIndex(51, 50)
+	engine.Grid.CurrentCells[resourceIdx].ResourceCount = 500
+	engine.Grid.NextCells[resourceIdx].ResourceCount = 500
 
 	// 2. Load and Parse P-Script
 	scriptPath := os.Getenv("PHX_SCRIPT_PATH")
