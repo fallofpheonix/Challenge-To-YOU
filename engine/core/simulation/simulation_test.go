@@ -168,3 +168,68 @@ func TestAdjacentCarrierReturnsAndDeposits(t *testing.T) {
 			e.TotalDeposited, e.GlobalSilicates, e.Registry.Inventory[0])
 	}
 }
+
+func TestLoadedDroneReturnsWithinBoundWithoutHomeTrail(t *testing.T) {
+	cases := []struct {
+		name string
+		x    int
+		y    int
+	}{
+		{name: "straight_distance_5", x: 55, y: 50},
+		{name: "straight_distance_10", x: 60, y: 50},
+		{name: "diagonal_distance_5", x: 55, y: 55},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			e := NewEngineWithSeed(100, 100, 1, 23)
+			e.Hazards = NewHazardSystem(0)
+			e.Aliens = NewAlienNetwork(0)
+			e.Registry.PositionX[0] = crysmath.NewFixedPoint(int64(tc.x))
+			e.Registry.PositionY[0] = crysmath.NewFixedPoint(int64(tc.y))
+			e.Registry.Inventory[0] = 1
+			e.Registry.State[0] = StateReturning
+
+			baseX, baseY := e.Grid.Width/2, e.Grid.Height/2
+			distance := chebyshevDistance(tc.x, tc.y, baseX, baseY)
+			maxTicks := 2*distance + 4
+
+			for tick := 0; tick < maxTicks && e.TotalDeposited == 0; tick++ {
+				e.BeginTick()
+				e.MoveTowardsHome(0)
+				e.CommitTick()
+			}
+
+			if e.TotalDeposited != 1 {
+				x := int(e.Registry.PositionX[0].V / crysmath.Precision)
+				y := int(e.Registry.PositionY[0].V / crysmath.Precision)
+				t.Fatalf("loaded drone did not deposit within %d ticks: start=(%d,%d) end=(%d,%d) cargo=%d",
+					maxTicks, tc.x, tc.y, x, y, e.Registry.Inventory[0])
+			}
+		})
+	}
+}
+
+func TestReturningDroneIgnoresHomeTrailThatDoesNotImproveDistance(t *testing.T) {
+	e := NewEngineWithSeed(100, 100, 1, 29)
+	e.Hazards = NewHazardSystem(0)
+	e.Aliens = NewAlienNetwork(0)
+	e.Registry.PositionX[0] = crysmath.NewFixedPoint(60)
+	e.Registry.PositionY[0] = crysmath.NewFixedPoint(50)
+	e.Registry.Inventory[0] = 1
+	e.Registry.State[0] = StateReturning
+
+	awayIdx := e.Grid.GetIndex(61, 50)
+	e.Grid.CurrentCells[awayIdx].HomePheromone = MaxPheromone
+	e.Grid.NextCells[awayIdx].HomePheromone = MaxPheromone
+
+	e.BeginTick()
+	e.MoveTowardsHome(0)
+	e.CommitTick()
+
+	x := int(e.Registry.PositionX[0].V / crysmath.Precision)
+	y := int(e.Registry.PositionY[0].V / crysmath.Precision)
+	if x != 59 || y != 50 {
+		t.Fatalf("returning drone followed non-improving stale trail: got (%d,%d)", x, y)
+	}
+}

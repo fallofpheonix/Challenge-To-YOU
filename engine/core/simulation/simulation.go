@@ -479,26 +479,13 @@ func (e *Engine) stepReturning(i int) {
 
 	// Move: Sense highest home gradient
 	targetX, targetY, val := e.Grid.SenseHighestGradient(x, y, false)
+	baseX, baseY := e.Grid.Width/2, e.Grid.Height/2
 
-	if val <= 0 {
-		dx := e.rng.Intn(3) - 1
-		dy := e.rng.Intn(3) - 1
-		x += dx
-		y += dy
-		if x < 0 {
-			x = 0
-		}
-		if x >= e.Grid.Width {
-			x = e.Grid.Width - 1
-		}
-		if y < 0 {
-			y = 0
-		}
-		if y >= e.Grid.Height {
-			y = e.Grid.Height - 1
-		}
-	} else {
+	if val > 0 && chebyshevDistance(targetX, targetY, baseX, baseY) < chebyshevDistance(x, y, baseX, baseY) {
 		x, y = targetX, targetY
+	} else {
+		x = stepTowardsCoord(x, baseX)
+		y = stepTowardsCoord(y, baseY)
 	}
 
 	e.Registry.PositionX[i] = crysmath.NewFixedPoint(int64(x))
@@ -531,6 +518,31 @@ func saturateAdd(a, b int32) int32 {
 		return 0
 	}
 	return int32(res)
+}
+
+func stepTowardsCoord(current, target int) int {
+	if current < target {
+		return current + 1
+	}
+	if current > target {
+		return current - 1
+	}
+	return current
+}
+
+func chebyshevDistance(ax, ay, bx, by int) int {
+	dx := ax - bx
+	if dx < 0 {
+		dx = -dx
+	}
+	dy := ay - by
+	if dy < 0 {
+		dy = -dy
+	}
+	if dx > dy {
+		return dx
+	}
+	return dy
 }
 
 func (e *Engine) validDrone(i int) bool {
