@@ -40,9 +40,11 @@ func (e *Engine) SpreadsInfection() {
 				current := e.Registry.CorruptionFactor[j]
 
 				if uint32(current)+uint32(factor) >= 100 {
+					oldTrust := e.Registry.TrustScore[j]
 					e.Registry.CorruptionFactor[j] = 100
 					e.Registry.Compromised[j] = true
 					e.Registry.TrustScore[j] = 50
+					e.emitInfection(j, jx, jy, "peer_spread", oldTrust)
 				} else {
 					e.Registry.CorruptionFactor[j] += factor
 				}

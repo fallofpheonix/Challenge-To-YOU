@@ -57,6 +57,10 @@ func (e *Engine) EvaluateMission() {
 		e.Mission.Status = MissionDefeat
 		e.Mission.Reason = MissionReasonTickLimit
 	}
+
+	if e.Mission.Status != MissionRunning {
+		e.emitMissionChanged(string(e.Mission.Status), e.Mission.Reason)
+	}
 }
 
 func (e *Engine) InfectedRatio() float64 {

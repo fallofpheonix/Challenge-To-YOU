@@ -153,4 +153,10 @@ func forward_data(data: Dictionary) -> void:
 		if inst.has_method("load_uplink") and data.has("uplink"):
 			inst.load_uplink({"uplink": data["uplink"]})
 		if inst.has_method("load_replay") and data.has("replay"):
-			inst.load_replay({"replay": data["replay"]})
+			inst.load_replay(data["replay"])
+		if inst.has_method("load_trace") and data.has("trace"):
+			inst.load_trace(data["trace"])
+		if inst.has_method("load_events") and data.has("events"):
+			var events = data["events"]
+			if events is Array:
+				inst.load_events(events)

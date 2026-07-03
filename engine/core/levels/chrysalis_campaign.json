@@ -1,0 +1,10 @@
+{
+  "id": "chrysalis_act_1",
+  "title": "Project Chrysalis — Act I: Wonder",
+  "levels": [
+    {
+      "level_file": "chrysalis_1.json",
+      "level_id": "chrysalis_1"
+    }
+  ]
+}

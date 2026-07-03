@@ -3,7 +3,6 @@ package simulation
 import (
 	"chrysalis-engine/core/crysmath"
 	"fmt"
-	"math/rand"
 )
 
 const (
@@ -18,46 +17,57 @@ type Engine struct {
 	Hazards         *HazardSystem
 	Aliens          *AlienNetwork
 	Mission         MissionState
+	Bus             *EventBus
 	Tick            int64
 	GlobalSilicates int32
 	TotalDeposited  int32
 	HistoricalTotal int32
-	rng             *rand.Rand
+	rng             *DetRNG
+	Seed            int64 // stored so SetState can reconstruct the RNG
 }
 
 func NewEngine(width, height int, droneCount int) *Engine {
 	return NewEngineWithSeed(width, height, droneCount, DefaultWorldSeed)
 }
 
-func NewEngineWithSeed(width, height int, droneCount int, seed int64) *Engine {
+// NewBaseEngineWithSeed creates an engine with the grid, registry, and mission
+// initialized but no hazards or alien nodes placed. Use this when populating the
+// world from an external level definition (levels.Level.CreateEngine). Tests and
+// the legacy NewEngineWithSeed path use this internally.
+func NewBaseEngineWithSeed(width, height, droneCount int, seed int64) *Engine {
 	e := &Engine{
 		Grid:     NewGrid(width, height),
 		Registry: NewSwarmRegistry(droneCount),
-		Hazards:  NewHazardSystem(10), // Support up to 10 active hazards
-		Aliens:   NewAlienNetwork(5),  // Support up to 5 alien nodes
+		Hazards:  NewHazardSystem(10),
+		Aliens:   NewAlienNetwork(5),
 		Mission:  NewDefaultMissionState(),
-		rng:      rand.New(rand.NewSource(seed)),
+		Bus:      NewEventBus(),
+		rng:      newDetRNG(seed),
+		Seed:     seed,
 	}
 
-	// Initialize base in the center
 	centerX, centerY := width/2, height/2
 	idx := e.Grid.GetIndex(centerX, centerY)
 	e.Grid.CurrentCells[idx].IsBase = true
 	e.Grid.NextCells[idx].IsBase = true
-	// Seed initial home pheromone at base
 	e.Grid.CurrentCells[idx].HomePheromone = MaxPheromone
 	e.Grid.NextCells[idx].HomePheromone = MaxPheromone
 
-	// Spawn drones at base
 	for i := 0; i < droneCount; i++ {
-		e.Registry.Spawn(centerX, centerY, 100*crysmath.Precision) // 100% battery
+		e.Registry.Spawn(centerX, centerY, 100*crysmath.Precision)
+		e.emitSpawn(i, centerX, centerY, i+1)
 	}
 	e.HistoricalTotal = int32(droneCount)
 
-	// Add some initial hazards for testing
-	e.Hazards.Add(HazardMagnetic, int32(centerX+20), int32(centerY+20), 15, 1*crysmath.Precision)
+	e.Bus.Commit()
+	return e
+}
 
-	// Add an initial alien node to spread logic virus
+func NewEngineWithSeed(width, height int, droneCount int, seed int64) *Engine {
+	e := NewBaseEngineWithSeed(width, height, droneCount, seed)
+
+	centerX, centerY := width/2, height/2
+	e.Hazards.Add(HazardMagnetic, int32(centerX+20), int32(centerY+20), 15, 1*crysmath.Precision)
 	e.Aliens.Add(NodeInfector, int32(centerX-20), int32(centerY-20), 12)
 
 	return e
@@ -73,6 +83,7 @@ func (e *Engine) CheckFabricationPool() {
 
 		// Trigger slice inflation inside the runtime registry
 		e.Registry.Spawn(centerX, centerY, 100*crysmath.Precision)
+		e.emitFabricated(e.Registry.Count-1, centerX, centerY, e.Registry.Count)
 
 		fmt.Printf("[REPLICATION SUCCESS] Resources Consumed. New Entity Created. Swarm Count: %d | Global Cache: %d\n",
 			e.Registry.Count, e.GlobalSilicates)
@@ -82,6 +93,7 @@ func (e *Engine) CheckFabricationPool() {
 // BeginTick stages the environment and applies all involuntary systems.
 // Architect logic executes after this call and before CommitTick.
 func (e *Engine) BeginTick() {
+	e.Bus.BeginTick()
 	e.Grid.TickPheromones()
 	e.processHazards()
 	e.processInfections()
@@ -97,6 +109,7 @@ func (e *Engine) CommitTick() {
 	e.Grid.SwapBuffers()
 	e.Tick++
 	e.EvaluateMission()
+	e.Bus.Commit()
 }
 
 // Step advances the built-in fallback AI by one authoritative tick.
@@ -140,6 +153,7 @@ func (e *Engine) Harvest(i int) {
 		e.Grid.NextCells[idx].ResourceCount--
 		e.Registry.Inventory[i] = 1
 		e.Registry.State[i] = StateReturning
+		e.emitHarvest(i, x, y, e.Grid.NextCells[idx].ResourceCount)
 	}
 }
 
@@ -152,9 +166,11 @@ func (e *Engine) DropResource(i int) {
 	idx := e.Grid.GetIndex(x, y)
 	if e.Grid.CurrentCells[idx].IsBase {
 		if e.Registry.Inventory[i] > 0 {
-			e.GlobalSilicates += e.Registry.Inventory[i]
-			e.TotalDeposited += e.Registry.Inventory[i]
+			amount := e.Registry.Inventory[i]
+			e.GlobalSilicates += amount
+			e.TotalDeposited += amount
 			e.Registry.Inventory[i] = 0
+			e.emitDeposit(i, x, y, amount, e.GlobalSilicates)
 		}
 		e.Registry.State[i] = StateSearching
 	}
@@ -227,8 +243,8 @@ func (e *Engine) GetState() map[string]interface{} {
 			idx := e.Grid.GetIndex(x, y)
 			cell := e.Grid.CurrentCells[idx]
 
-			// Only stream cells that have active metrics to save bandwidth
-			if cell.HomePheromone > 0 || cell.ResourcePheromone > 0 || cell.ResourceCount > 0 || cell.AlienSignal > 0 {
+			// Stream cells with any non-zero metric, plus the base cell (IsBase must survive round-trips).
+			if cell.HomePheromone > 0 || cell.ResourcePheromone > 0 || cell.ResourceCount > 0 || cell.AlienSignal > 0 || cell.IsBase {
 				activeTrails = append(activeTrails, map[string]interface{}{
 					"x":     x,
 					"y":     y,
@@ -236,20 +252,22 @@ func (e *Engine) GetState() map[string]interface{} {
 					"res":   cell.ResourcePheromone,
 					"alien": cell.AlienSignal,
 					"cnt":   cell.ResourceCount,
+					"base":  cell.IsBase,
 				})
 			}
 		}
 	}
 
-	// Collection of active hazards
+	// Collection of active hazards (include intensity for SetState reconstruction)
 	var activeHazards []map[string]interface{}
 	for i := 0; i < e.Hazards.Capacity; i++ {
 		if e.Hazards.Active[i] {
 			activeHazards = append(activeHazards, map[string]interface{}{
-				"type": e.Hazards.Type[i],
-				"x":    e.Hazards.X[i],
-				"y":    e.Hazards.Y[i],
-				"rad":  e.Hazards.Radius[i],
+				"type":      e.Hazards.Type[i],
+				"x":         e.Hazards.X[i],
+				"y":         e.Hazards.Y[i],
+				"rad":       e.Hazards.Radius[i],
+				"intensity": e.Hazards.Intensity[i],
 			})
 		}
 	}
@@ -267,15 +285,21 @@ func (e *Engine) GetState() map[string]interface{} {
 		}
 	}
 
+	rngSeed, rngCalls := e.rng.snapshot()
 	return map[string]interface{}{
-		"tick":       e.Tick,
-		"drones":     drones,
-		"grid":       activeTrails,
-		"hazards":    activeHazards,
-		"aliens":     activeAliens,
-		"colony_res": e.GlobalSilicates,
-		"mission":    e.Mission,
-		"swarm_size": e.Registry.Count,
+		"tick":             e.Tick,
+		"drones":           drones,
+		"grid":             activeTrails,
+		"hazards":          activeHazards,
+		"aliens":           activeAliens,
+		"colony_res":       e.GlobalSilicates,
+		"total_deposited":  e.TotalDeposited,
+		"historical_total": e.HistoricalTotal,
+		"mission":          e.Mission,
+		"swarm_size":       e.Registry.Count,
+		"seed":             e.Seed,
+		"rng_seed":         rngSeed,
+		"rng_calls":        rngCalls,
 	}
 }
 
@@ -297,11 +321,13 @@ func (e *Engine) processHazards() {
 			// Simple squared distance check to avoid sqrt
 			distSq := dx*dx + dy*dy
 			if distSq <= hr*hr {
-				// Apply mutation: Drain battery
 				e.Registry.Battery[i] -= intensity
 				if e.Registry.Battery[i] <= 0 {
 					e.Registry.Battery[i] = 0
 					e.Registry.State[i] = StateInert
+					e.emitDeath(i, "hazard")
+				} else {
+					e.emitHazardDamage(i, intensity, e.Registry.Battery[i])
 				}
 			}
 		}
@@ -330,8 +356,12 @@ func (e *Engine) processInfections() {
 			if distSq <= nr*nr {
 				// 5% chance to become compromised per tick while in radius
 				if e.rng.Intn(100) < 5 {
+					oldTrust := e.Registry.TrustScore[i]
 					e.Registry.Compromised[i] = true
-					e.Registry.TrustScore[i] = 50 // Initial drop in trust
+					e.Registry.TrustScore[i] = 50
+					droneX := int32(e.Registry.PositionX[i].V / crysmath.Precision)
+					droneY := int32(e.Registry.PositionY[i].V / crysmath.Precision)
+					e.emitInfection(i, droneX, droneY, "alien_node", oldTrust)
 					fmt.Printf("[ALIEN VIRUS] Drone %d Compromised at (%d, %d)\n", i, nx, ny)
 				}
 			}
@@ -405,6 +435,7 @@ func (e *Engine) stepSearching(i int) {
 		e.Grid.NextCells[idx].ResourceCount--
 		e.Registry.Inventory[i] = 1 // MaxCargo
 		e.Registry.State[i] = StateReturning
+		e.emitHarvest(i, x, y, e.Grid.NextCells[idx].ResourceCount)
 		return
 	}
 
@@ -413,6 +444,7 @@ func (e *Engine) stepSearching(i int) {
 	if e.Registry.Battery[i] <= 0 {
 		e.Registry.Battery[i] = 0
 		e.Registry.State[i] = StateInert
+		e.emitDeath(i, "battery")
 		return
 	}
 
@@ -461,9 +493,11 @@ func (e *Engine) stepReturning(i int) {
 	// If at base: drop resource
 	if e.Grid.CurrentCells[idx].IsBase {
 		if e.Registry.Inventory[i] > 0 {
-			e.GlobalSilicates += e.Registry.Inventory[i]
-			e.TotalDeposited += e.Registry.Inventory[i]
+			amount := e.Registry.Inventory[i]
+			e.GlobalSilicates += amount
+			e.TotalDeposited += amount
 			e.Registry.Inventory[i] = 0
+			e.emitDeposit(i, x, y, amount, e.GlobalSilicates)
 		}
 		e.Registry.State[i] = StateSearching
 		return
@@ -474,6 +508,7 @@ func (e *Engine) stepReturning(i int) {
 	if e.Registry.Battery[i] <= 0 {
 		e.Registry.Battery[i] = 0
 		e.Registry.State[i] = StateInert
+		e.emitDeath(i, "battery")
 		return
 	}
 

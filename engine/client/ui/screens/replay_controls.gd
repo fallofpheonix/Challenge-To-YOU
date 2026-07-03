@@ -1,16 +1,9 @@
 extends Control
 
-signal play_pressed
-signal pause_pressed
-signal step_forward_pressed
-signal step_backward_pressed
-signal reset_pressed
-signal seek_requested(tick: int)
-
-var replay_data: Dictionary = {}
 var is_playing: bool = false
 var current_tick: int = 0
 var total_ticks: int = 0
+var is_recording: bool = false
 
 @onready var theme_ctrl = get_node("/root/ChrysalisTheme")
 @onready var tick_label: Label = $VBoxContainer/TimelineBar/HBoxContainer/TickLabel
@@ -19,95 +12,122 @@ var total_ticks: int = 0
 @onready var play_btn: Button = $VBoxContainer/ControlsBar/PlayBtn
 @onready var event_log: VBoxContainer = $VBoxContainer/ScrollContainer/EventLog
 
+var _speed: float = 1.0
+
 func _ready() -> void:
 	theme_ctrl.apply_panel_style($VBoxContainer/TimelineBar, theme_ctrl.colors.secondary_background, theme_ctrl.colors.border)
 	seek_slider.min_value = 0
 	seek_slider.max_value = 1
-	seek_slider.step = 0.001
+	seek_slider.step = 1
 	seek_slider.value = 0
 
+# Called by game_hub.gd every tick with data["replay"] from EMISSION_SNAPSHOT.
+# During live simulation: {recording, total_ticks, current_tick}
+# After REPLAY_SEEK:      {recording:false, total_ticks, current_tick, seek_to, events:[...]}
 func load_replay(data: Dictionary) -> void:
-	replay_data = data
-	total_ticks = data.get("total_ticks", 0)
-	current_tick = data.get("current_tick", 0)
-	seek_slider.max_value = max(total_ticks, 1)
-	seek_slider.value = current_tick
+	is_recording = data.get("recording", false)
+	var total = int(data.get("total_ticks", 0))
+	if total > 0:
+		total_ticks = total
+		seek_slider.max_value = float(total)
+
+	current_tick = int(data.get("current_tick", current_tick))
 	_update_tick_display()
-	_populate_event_log()
+
+	if data.has("events"):
+		_populate_event_log(data["events"])
 
 func _update_tick_display() -> void:
-	tick_label.text = "Tick: %d / %d" % [current_tick, total_ticks]
-	seek_slider.value = current_tick
+	var rec_tag = " [REC]" if is_recording else " [REPLAY]"
+	tick_label.text = "Tick: %d / %d%s" % [current_tick, total_ticks, rec_tag]
+	seek_slider.set_block_signals(true)
+	seek_slider.value = float(current_tick)
+	seek_slider.set_block_signals(false)
 
-func _populate_event_log() -> void:
+func _populate_event_log(events: Array) -> void:
 	for child in event_log.get_children():
 		child.queue_free()
 
-	var events = replay_data.get("events", [])
-	for e in events:
+	# Events arrive oldest-first; show newest first in the log
+	var sorted = events.duplicate()
+	sorted.reverse()
+
+	for e in sorted:
 		var row = preload("res://ui/components/entity_row.tscn").instantiate()
 		var event_type = e.get("type", "unknown")
 		var color = _event_color(event_type)
+		var drone_tag = "" if e.get("drone_id", -1) < 0 else " #%d" % e.get("drone_id", 0)
 		row.set_data(
-			"@ Tick %d" % e.get("tick", 0),
+			"T%d%s" % [e.get("tick", 0), drone_tag],
 			_event_icon(event_type),
 			color,
-			e.get("description", "")
+			event_type.replace("_", " ").to_upper()
 		)
 		event_log.add_child(row)
 
-func _event_color(event_type: String) -> Color:
-	match event_type:
-		"drone_spawned": return Color(0, 1, 0.62, 1)
-		"drone_died": return Color(1, 0.2, 0.2, 1)
-		"resource_depleted": return Color(1, 0.75, 0, 1)
-		"structure_built": return Color(0.2, 0.4, 1, 1)
-		"hazard_triggered": return Color(1, 0.4, 0, 1)
-		"alien_activity": return Color(1, 0, 0.5, 1)
-		_: return Color(0.5, 0.5, 0.5, 1)
-
-func _event_icon(event_type: String) -> String:
-	match event_type:
-		"drone_spawned": return "⊕"
-		"drone_died": return "⊗"
-		"resource_depleted": return "∅"
-		"structure_built": return "▲"
-		"hazard_triggered": return "⚡"
-		"alien_activity": return "◆"
-		_: return "●"
+func _get_net() -> Node:
+	return get_tree().root.find_child("NetworkBridge", true, false)
 
 func _on_play_pressed() -> void:
 	is_playing = not is_playing
 	play_btn.text = "⏸" if is_playing else "▶"
-	if is_playing:
-		play_pressed.emit()
-	else:
-		pause_pressed.emit()
 
 func _on_step_forward_pressed() -> void:
-	step_forward_pressed.emit()
+	var target = current_tick + 1
+	_seek_to(target)
 
 func _on_step_back_pressed() -> void:
-	step_backward_pressed.emit()
+	var target = max(0, current_tick - 1)
+	_seek_to(target)
 
 func _on_reset_pressed() -> void:
-	reset_pressed.emit()
-	current_tick = 0
-	_update_tick_display()
+	_seek_to(0)
 
 func _on_seek_slider_changed(value: float) -> void:
-	current_tick = int(value)
+	var target = int(value)
+	if target != current_tick:
+		_seek_to(target)
+
+func _on_save_pressed() -> void:
+	var net = _get_net()
+	if net:
+		net.send_command("REPLAY_SAVE", {})
+
+func _seek_to(tick: int) -> void:
+	current_tick = tick
 	_update_tick_display()
-	seek_requested.emit(current_tick)
+	var net = _get_net()
+	if net:
+		net.send_command("REPLAY_SEEK", {"tick": tick})
 
 func _on_speed_up_pressed() -> void:
-	var speed = replay_data.get("speed", 1.0)
-	speed = min(speed * 2, 64.0)
-	replay_data["speed"] = speed
-	speed_label.text = "%.1fx" % speed
+	_speed = min(_speed * 2.0, 64.0)
+	speed_label.text = "%.1fx" % _speed
 
 func _on_speed_down_pressed() -> void:
-	var speed = replay_data.get("speed", 1.0)
-	speed = max(speed / 2, 0.25)
-	replay_data["speed"] = speed
-	speed_label.text = "%.1fx" % speed
+	_speed = max(_speed / 2.0, 0.25)
+	speed_label.text = "%.1fx" % _speed
+
+func _event_color(event_type: String) -> Color:
+	match event_type:
+		"drone_spawned", "fabricated": return Color(0, 1, 0.62, 1)
+		"drone_died":                  return Color(1, 0.2, 0.2, 1)
+		"harvested":                   return Color(1, 0.75, 0, 1)
+		"deposited":                   return Color(0.2, 0.4, 1, 1)
+		"drone_infected":              return Color(0.8, 0, 1, 1)
+		"hazard_damage":               return Color(1, 0.4, 0, 1)
+		"trust_changed":               return Color(0.5, 0.5, 1, 1)
+		"mission_changed":             return Color(1, 1, 0.2, 1)
+		_:                             return Color(0.6, 0.6, 0.6, 1)
+
+func _event_icon(event_type: String) -> String:
+	match event_type:
+		"drone_spawned", "fabricated": return "⊕"
+		"drone_died":                  return "⊗"
+		"harvested":                   return "◆"
+		"deposited":                   return "▲"
+		"drone_infected":              return "◆"
+		"hazard_damage":               return "⚡"
+		"trust_changed":               return "~"
+		"mission_changed":             return "★"
+		_:                             return "●"
