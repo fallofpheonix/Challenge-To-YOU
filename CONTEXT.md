@@ -65,6 +65,8 @@
 
 **Consequence**: new canonical state (persistent drone memory, message inboxes, alien memory) MUST be added to `GetState`/`SetState`/`WorldHash` together with a `TestWorldHashCovers*` test in the same PR.
 
+**Verification oracle (temporary)**: the tree-walk interpreter (`pscript/interpreter`) is retained as a semantic oracle for the VM, not a production runtime. Both backends share the same aggregate runaway budget (`pscript/budget.MaxExecutionSteps`); the `TestBackendParity*` tests assert they agree on any program terminating within budget. Behavior exactly at the safety cutoff may differ (the VM meters bytecode instructions, the interpreter meters AST evaluations) — acceptable for a runaway net. **Exit criterion**: remove the interpreter once P-Script 2.0 is feature-complete, backend parity has held across releases, and fuzz/property tests provide equivalent confidence.
+
 ## System Boundaries
 
 ```

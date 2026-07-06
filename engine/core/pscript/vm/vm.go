@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"chrysalis-engine/core/pscript/budget"
 	"chrysalis-engine/core/simulation"
 	"fmt"
 )
@@ -48,7 +49,8 @@ type Program struct {
 }
 
 // MaxSteps is the safety limit for VM execution per tick (prevents infinite loops).
-const MaxSteps = 1000
+// Sourced from the shared budget so the interpreter oracle uses the same limit.
+const MaxSteps = budget.MaxExecutionSteps
 
 // BuiltinFn is the Go function signature for P-Script built-in calls.
 type BuiltinFn func(e *simulation.Engine, entityIndex int) interface{}

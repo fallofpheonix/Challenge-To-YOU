@@ -2,6 +2,7 @@ package interpreter
 
 import (
 	"chrysalis-engine/core/pscript/ast"
+	"chrysalis-engine/core/pscript/budget"
 	"chrysalis-engine/core/simulation"
 	"fmt"
 	"strconv"
@@ -55,6 +56,12 @@ type Interpreter struct {
 	builtins  map[string]BuiltinFn
 	variables map[string]interface{}
 	builder   *traceBuilder // nil when not tracing
+
+	// steps counts AST evaluations for the current Eval call and bounds total work
+	// by budget.MaxExecutionSteps — the same aggregate limit the VM enforces on
+	// bytecode instructions. This replaces the old per-loop iteration cap so the
+	// interpreter and VM share one runaway-protection contract (see ADR-006).
+	steps int
 }
 
 // New creates a new Interpreter with the given built-in functions.
@@ -68,9 +75,17 @@ func New(builtins map[string]BuiltinFn) *Interpreter {
 // Eval walks the program and executes its statements for a specific entity.
 func (i *Interpreter) Eval(program *ast.Program, e *simulation.Engine, entityIndex int) {
 	clear(i.variables)
+	i.steps = 0
 	for _, stmt := range program.Statements {
 		i.evalStatement(stmt, e, entityIndex)
 	}
+}
+
+// budgetExceeded reports whether this Eval has spent its aggregate step budget.
+// Once exceeded, statement/expression evaluation becomes a no-op so a runaway
+// program halts safely — the interpreter analogue of the VM's MaxSteps cutoff.
+func (i *Interpreter) budgetExceeded() bool {
+	return i.steps >= budget.MaxExecutionSteps
 }
 
 // EvalTraced runs Eval and returns a completed, immutable DecisionFrame describing
@@ -89,6 +104,10 @@ func (i *Interpreter) EvalTraced(program *ast.Program, e *simulation.Engine, ent
 }
 
 func (i *Interpreter) evalStatement(stmt ast.Statement, e *simulation.Engine, entityIndex int) {
+	if i.budgetExceeded() {
+		return
+	}
+	i.steps++
 	switch s := stmt.(type) {
 	case *ast.FunctionDeclaration:
 		i.evalFunctionDeclaration(s, e, entityIndex)
@@ -112,6 +131,10 @@ func (i *Interpreter) evalStatement(stmt ast.Statement, e *simulation.Engine, en
 }
 
 func (i *Interpreter) evalExpression(expr ast.Expression, e *simulation.Engine, entityIndex int) interface{} {
+	if i.budgetExceeded() {
+		return false
+	}
+	i.steps++
 	switch e_node := expr.(type) {
 	case *ast.CallExpression:
 		return i.evalCallExpression(e_node, e, entityIndex)
@@ -123,6 +146,17 @@ func (i *Interpreter) evalExpression(expr ast.Expression, e *simulation.Engine, 
 	case *ast.IntegerLiteral:
 		return e_node.Value
 	case *ast.InfixExpression:
+		// Variable reassignment: `x = expr`. The parser models this as an infix
+		// "=" node (see parser.parseIdentifier); the VM compiler lowers it to
+		// OpStore. The interpreter must mirror that or it silently drops the
+		// assignment — a backend divergence caught by the parity oracle (ADR-006).
+		if e_node.Operator == "=" {
+			if ident, ok := e_node.Left.(*ast.Identifier); ok {
+				val := i.evalExpression(e_node.Right, e, entityIndex)
+				i.variables[ident.Value] = val
+				return val
+			}
+		}
 		left := i.evalExpression(e_node.Left, e, entityIndex)
 		right := i.evalExpression(e_node.Right, e, entityIndex)
 		return i.evalInfixExpression(e_node.Operator, left, right)
@@ -217,10 +251,11 @@ func (i *Interpreter) evalIfStatement(node *ast.IfStatement, e *simulation.Engin
 }
 
 func (i *Interpreter) evalWhileStatement(node *ast.WhileStatement, e *simulation.Engine, entityIndex int) {
-	limit := 100
-	for isTruthy(i.evalExpression(node.Condition, e, entityIndex)) && limit > 0 {
+	// Bounded by the shared aggregate step budget, not a per-loop iteration cap:
+	// evalExpression/evalStatement stop advancing once the budget is spent, so the
+	// condition eventually evaluates to a no-op and the loop exits safely.
+	for !i.budgetExceeded() && isTruthy(i.evalExpression(node.Condition, e, entityIndex)) {
 		i.evalStatement(node.Body, e, entityIndex)
-		limit--
 	}
 }
 
