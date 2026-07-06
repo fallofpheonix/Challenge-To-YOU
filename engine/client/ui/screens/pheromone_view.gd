@@ -1,7 +1,5 @@
 extends Control
 
-signal toggle_overlay_requested
-
 var pheromone_data: Dictionary = {}
 var grid_data: Array = []
 
@@ -97,5 +95,4 @@ func _populate_list() -> void:
 			signal_list.add_child(row)
 
 func _on_overlay_toggle_pressed() -> void:
-	toggle_overlay_requested.emit()
 	overlay_toggle.text = "Hide Overlay" if overlay_toggle.text == "Show Overlay" else "Show Overlay"

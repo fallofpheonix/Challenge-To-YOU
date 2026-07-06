@@ -7,12 +7,15 @@ import (
 	"chrysalis-engine/core/pscript/interpreter"
 	"chrysalis-engine/core/pscript/lexer"
 	"chrysalis-engine/core/pscript/parser"
+	"chrysalis-engine/core/pscript/vm"
 	"chrysalis-engine/core/replay"
 	"chrysalis-engine/core/simulation"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -42,8 +45,8 @@ func main() {
 		// Legacy default: 10 drones, one seeded resource node.
 		engine = simulation.NewEngine(width, height, droneCount)
 		resourceIdx := engine.Grid.GetIndex(51, 50)
-		engine.Grid.CurrentCells[resourceIdx].ResourceCount = 500
-		engine.Grid.NextCells[resourceIdx].ResourceCount = 500
+		engine.Grid.CurrentCells[resourceIdx].ResourceCount = simulation.InitialResourceNode
+		engine.Grid.NextCells[resourceIdx].ResourceCount = simulation.InitialResourceNode
 	}
 
 	// 1.5 Setup Networking
@@ -68,16 +71,18 @@ func main() {
 		}
 	}()
 
-	// 2. Load and Parse P-Script
+	// 2. Load and Parse P-Script, compile to bytecode
 	scriptPath := os.Getenv("PHX_SCRIPT_PATH")
 	if scriptPath == "" {
 		scriptPath = "scripts/agent.ps"
 	}
 
-	program := loadScript(scriptPath)
+	builtins := newBuiltinMap()
+	program, compiled := loadScript(scriptPath, builtins)
 
-	// 3. Setup Interpreter and Builtins
-	interp := interpreter.New(newBuiltins())
+	// 3. Setup VM and Interpreter (interpreter is fallback for uncompiled scripts)
+	v := vm.NewVM(compiled, builtins)
+	interp := interpreter.New(newInterpreterBuiltins())
 
 	// 3.5 Initialize replay recorder (always-on; pure consumer of the EventBus).
 	recorder := replay.NewRecorder(engine.GetState(), 500)
@@ -95,6 +100,10 @@ func main() {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
+	// Graceful shutdown: listen for SIGINT/SIGTERM
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
 	fmt.Fprintln(os.Stderr, "--- Project Chrysalis Go Core Started ---")
 
 	// Initialize lastMod to avoid double-load on first tick
@@ -107,8 +116,12 @@ func main() {
 	// When >= 0, the interpreter collects a full behavior trace for that drone each tick.
 	inspectedDroneID := -1
 
-	for {
+	running := true
+	for running {
 		select {
+		case <-sigChan:
+			fmt.Fprintln(os.Stderr, "\n[SHUTDOWN] Signal received. Saving replay and closing...")
+			running = false
 		case cmd := <-commandChan:
 			switch cmd.Type {
 			case "COMMAND_INJECTION":
@@ -122,7 +135,17 @@ func main() {
 					newProg := p.ParseProgram()
 					if len(p.Errors()) == 0 {
 						program = newProg
-						fmt.Fprintln(os.Stderr, "[NETWORK] Hot-patch applied successfully.")
+						// Recompile to bytecode
+						c := vm.NewCompiler()
+						newCompiled := c.Compile(newProg)
+						if newCompiled != nil {
+							compiled = newCompiled
+							v = vm.NewVM(compiled, builtins)
+							fmt.Fprintln(os.Stderr, "[NETWORK] Hot-patch applied (bytecode).")
+						} else {
+							fmt.Fprintf(os.Stderr, "[NETWORK] Hot-patch AST OK, bytecode failed: %v — using interpreter fallback\n", c.Errors())
+							compiled = nil
+						}
 					} else {
 						fmt.Fprintf(os.Stderr, "[NETWORK ERROR] Patch failed validation: %v\n", p.Errors())
 					}
@@ -165,9 +188,17 @@ func main() {
 						}
 					}
 
+					// Cap forward-simulation distance to prevent DoS via large seeks
+					const MaxSeekDistance int64 = 10_000
+					if seekPayload.Tick-cp.Tick > MaxSeekDistance {
+						fmt.Fprintf(os.Stderr, "[REPLAY] Seek distance %d exceeds max %d — clamping\n",
+							seekPayload.Tick-cp.Tick, MaxSeekDistance)
+						seekPayload.Tick = cp.Tick + MaxSeekDistance
+					}
+
 					// Forward-simulate to target tick using the same stepEngine path as live mode.
 					for engine.Tick < seekPayload.Tick {
-						stepEngine(engine, program, interp, -1)
+						stepEngine(engine, program, interp, v, compiled, -1)
 					}
 
 					// Broadcast reconstructed state.
@@ -258,11 +289,12 @@ func main() {
 			info, err := os.Stat(scriptPath)
 			if err == nil && info.ModTime().After(lastMod) {
 				fmt.Fprintln(os.Stderr, "Reloading Architect script...")
-				program = loadScript(scriptPath)
+				program, compiled = loadScript(scriptPath, builtins)
+				v = vm.NewVM(compiled, builtins)
 				lastMod = info.ModTime()
 			}
 
-			activeFrame := stepEngine(engine, program, interp, inspectedDroneID)
+			activeFrame := stepEngine(engine, program, interp, v, compiled, inspectedDroneID)
 
 			state := engine.GetState()
 
@@ -297,16 +329,51 @@ func main() {
 			hub.Broadcast <- data
 		}
 	}
+
+	// Shutdown: save replay, close connections
+	ticker.Stop()
+	raw, serr := recorder.Serialize()
+	if serr == nil {
+		fname := fmt.Sprintf("replay_%d.chrysalis_replay", time.Now().Unix())
+		if werr := os.WriteFile(fname, raw, 0644); werr != nil {
+			fmt.Fprintf(os.Stderr, "[SHUTDOWN] Replay save failed: %v\n", werr)
+		} else {
+			fmt.Fprintf(os.Stderr, "[SHUTDOWN] Replay saved: %s (%d frames, %d checkpoints)\n",
+				fname, recorder.TotalFrames(), recorder.CheckpointCount())
+		}
+	}
+	fmt.Fprintf(os.Stderr, "[SHUTDOWN] Core exited cleanly at tick %d\n", engine.Tick)
 }
 
-func newBuiltins() map[string]interpreter.BuiltinFn {
-	return map[string]interpreter.BuiltinFn{
-		"SENSE_RESOURCE":         func(e *simulation.Engine, i int) interface{} { return e.SenseResource(i) },
-		"SENSE_HOME":             func(e *simulation.Engine, i int) interface{} { return e.SenseHome(i) },
-		"SENSE_BATTERY":          func(e *simulation.Engine, i int) interface{} { return e.Registry.Battery[i] },
-		"SENSE_TRUST":            func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.TrustScore[i]) },
-		"SENSE_CORRUPTION":       func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.CorruptionFactor[i]) },
-		"SENSE_COMPROMISED":      func(e *simulation.Engine, i int) interface{} { return e.Registry.Compromised[i] },
+// newBuiltinMap returns builtins for the bytecode VM.
+func newBuiltinMap() map[string]vm.BuiltinFn {
+	return map[string]vm.BuiltinFn{
+		"SENSE_RESOURCE":     func(e *simulation.Engine, i int) interface{} { return e.SenseResource(i) },
+		"SENSE_HOME":         func(e *simulation.Engine, i int) interface{} { return e.SenseHome(i) },
+		"SENSE_BATTERY": func(e *simulation.Engine, i int) interface{} {
+			if i < 0 || i >= e.Registry.Count {
+				return int64(0)
+			}
+			return e.Registry.Battery[i]
+		},
+		"SENSE_TRUST": func(e *simulation.Engine, i int) interface{} {
+			if i < 0 || i >= e.Registry.Count {
+				return int64(100)
+			}
+			return int64(e.Registry.TrustScore[i])
+		},
+		"SENSE_CORRUPTION": func(e *simulation.Engine, i int) interface{} {
+			if i < 0 || i >= e.Registry.Count {
+				return int64(0)
+			}
+			return int64(e.Registry.CorruptionFactor[i])
+		},
+		"SENSE_COMPROMISED": func(e *simulation.Engine, i int) interface{} {
+			if i < 0 || i >= e.Registry.Count {
+				return false
+			}
+			return e.Registry.Compromised[i]
+		},
 		"SENSE_ALIEN_SIGNAL":     func(e *simulation.Engine, i int) interface{} { return e.SenseAlienSignal(i) },
 		"BROADCAST_VOTE":         func(e *simulation.Engine, i int) interface{} { return e.SenseQuorum(i) },
 		"SENSE_SWARM_SIZE":       func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.Count) },
@@ -320,14 +387,80 @@ func newBuiltins() map[string]interpreter.BuiltinFn {
 	}
 }
 
-// stepEngine runs one complete simulation tick. Both the live loop and replay
-// forward-simulation call this function so the code path is identical.
-// Pass inspectID = -1 to skip behavior tracing; pass a drone index to collect a
-// DecisionFrame for that drone (live mode only — replay passes -1).
-func stepEngine(e *simulation.Engine, prog *ast.Program, interp *interpreter.Interpreter, inspectID int) *simulation.DecisionFrame {
+// newInterpreterBuiltins returns builtins for the tree-walk interpreter (fallback).
+func newInterpreterBuiltins() map[string]interpreter.BuiltinFn {
+	return map[string]interpreter.BuiltinFn{
+		"SENSE_RESOURCE":     func(e *simulation.Engine, i int) interface{} { return e.SenseResource(i) },
+		"SENSE_HOME":         func(e *simulation.Engine, i int) interface{} { return e.SenseHome(i) },
+		"SENSE_BATTERY": func(e *simulation.Engine, i int) interface{} {
+			if i < 0 || i >= e.Registry.Count {
+				return int64(0)
+			}
+			return e.Registry.Battery[i]
+		},
+		"SENSE_TRUST": func(e *simulation.Engine, i int) interface{} {
+			if i < 0 || i >= e.Registry.Count {
+				return int64(100)
+			}
+			return int64(e.Registry.TrustScore[i])
+		},
+		"SENSE_CORRUPTION": func(e *simulation.Engine, i int) interface{} {
+			if i < 0 || i >= e.Registry.Count {
+				return int64(0)
+			}
+			return int64(e.Registry.CorruptionFactor[i])
+		},
+		"SENSE_COMPROMISED": func(e *simulation.Engine, i int) interface{} {
+			if i < 0 || i >= e.Registry.Count {
+				return false
+			}
+			return e.Registry.Compromised[i]
+		},
+		"SENSE_ALIEN_SIGNAL":     func(e *simulation.Engine, i int) interface{} { return e.SenseAlienSignal(i) },
+		"BROADCAST_VOTE":         func(e *simulation.Engine, i int) interface{} { return e.SenseQuorum(i) },
+		"SENSE_SWARM_SIZE":       func(e *simulation.Engine, i int) interface{} { return int64(e.Registry.Count) },
+		"SENSE_COLONY_RESOURCES": func(e *simulation.Engine, i int) interface{} { return int64(e.GlobalSilicates) },
+		"SENSE_CARGO":            func(e *simulation.Engine, i int) interface{} { return e.SenseCargo(i) },
+		"HARVEST":                func(e *simulation.Engine, i int) interface{} { e.Harvest(i); return true },
+		"DROP_RESOURCE":          func(e *simulation.Engine, i int) interface{} { e.DropResource(i); return true },
+		"MOVE_RANDOM":            func(e *simulation.Engine, i int) interface{} { e.MoveRandom(i); return true },
+		"MOVE_TOWARDS_RESOURCE":  func(e *simulation.Engine, i int) interface{} { e.MoveTowardsResource(i); return true },
+		"MOVE_TOWARDS_HOME":      func(e *simulation.Engine, i int) interface{} { e.MoveTowardsHome(i); return true },
+	}
+}
+
+// stepEngine runs one complete simulation tick. Uses the bytecode VM when
+// available, falls back to the tree-walk interpreter for uncompiled scripts.
+// Pass inspectID = -1 to skip behavior tracing; pass a drone index to collect
+// a DecisionFrame for that drone (live mode only — replay passes -1).
+func stepEngine(e *simulation.Engine, prog *ast.Program, interp *interpreter.Interpreter, v *vm.VM, compiled *vm.Program, inspectID int) *simulation.DecisionFrame {
 	e.BeginTick()
 	var frame *simulation.DecisionFrame
-	if prog != nil {
+
+	if compiled != nil {
+		// Bytecode VM path
+		for i := 0; i < e.Registry.Count; i++ {
+			if inspectID >= 0 && i == inspectID {
+				traceSteps := v.RunTraced(e, i, e.Tick)
+				frame = &simulation.DecisionFrame{
+					DroneID: i,
+					Tick:    e.Tick,
+					Steps:   make([]simulation.DecisionStep, len(traceSteps)),
+				}
+				for k, ts := range traceSteps {
+					frame.Steps[k] = simulation.DecisionStep{
+						Kind:   ts.Kind,
+						Name:   ts.Name,
+						Result: ts.Result,
+						Taken:  ts.Taken,
+					}
+				}
+			} else {
+				v.Run(e, i)
+			}
+		}
+	} else if prog != nil {
+		// Interpreter fallback
 		for i := 0; i < e.Registry.Count; i++ {
 			if inspectID >= 0 && i == inspectID {
 				frame = interp.EvalTraced(prog, e, i, e.Tick)
@@ -336,15 +469,18 @@ func stepEngine(e *simulation.Engine, prog *ast.Program, interp *interpreter.Int
 			}
 		}
 	}
+
 	e.CommitTick()
 	return frame
 }
 
-func loadScript(path string) *ast.Program {
+// loadScript parses a P-Script file and compiles it to bytecode.
+// Returns the AST (for interpreter fallback) and compiled bytecode (may be nil).
+func loadScript(path string, builtins map[string]vm.BuiltinFn) (*ast.Program, *vm.Program) {
 	content, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading script %s: %v\n", path, err)
-		return nil
+		return nil, nil
 	}
 
 	l := lexer.New(string(content))
@@ -356,8 +492,18 @@ func loadScript(path string) *ast.Program {
 		for _, msg := range p.Errors() {
 			fmt.Fprintf(os.Stderr, "  - %s\n", msg)
 		}
-		return nil
+		return nil, nil
 	}
 
-	return program
+	// Compile to bytecode
+	c := vm.NewCompiler()
+	compiled := c.Compile(program)
+	if compiled == nil {
+		fmt.Fprintf(os.Stderr, "[VM] Compilation failed, using interpreter fallback: %v\n", c.Errors())
+		return program, nil
+	}
+
+	fmt.Fprintf(os.Stderr, "[VM] Compiled %s → %d instructions, %d constants\n",
+		path, len(compiled.Instructions), len(compiled.Constants))
+	return program, compiled
 }

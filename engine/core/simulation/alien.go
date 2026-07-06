@@ -12,7 +12,8 @@ const (
 	InfectionRadius int32         = 3    // Proximity bounds for wireless viral spread (in grid cells)
 )
 
-// SpreadsInfection scans the registry for compromised entities and bleeds corruption
+// SpreadsInfection scans the registry for compromised entities and bleeds corruption.
+// Uses spatial hash for O(n) average-case instead of O(n²).
 func (e *Engine) SpreadsInfection() {
 	for i := 0; i < e.Registry.Count; i++ {
 		if !e.Registry.Compromised[i] {
@@ -22,8 +23,9 @@ func (e *Engine) SpreadsInfection() {
 		ix := int32(e.Registry.PositionX[i].V / crysmath.Precision)
 		iy := int32(e.Registry.PositionY[i].V / crysmath.Precision)
 
-		// Search for nearby healthy drones to infect
-		for j := 0; j < e.Registry.Count; j++ {
+		// Only check drones in the 3x3 spatial hash neighborhood
+		candidates := e.Spatial.QueryNearby(ix, iy)
+		for _, j := range candidates {
 			if i == j || e.Registry.Compromised[j] {
 				continue
 			}
@@ -31,10 +33,10 @@ func (e *Engine) SpreadsInfection() {
 			jx := int32(e.Registry.PositionX[j].V / crysmath.Precision)
 			jy := int32(e.Registry.PositionY[j].V / crysmath.Precision)
 
-			dx, dy := ix-jx, iy-jy
+			dx, dy := int64(ix-jx), int64(iy-jy)
 			distSq := dx*dx + dy*dy
 
-			if distSq <= InfectionRadius*InfectionRadius {
+			if distSq <= int64(InfectionRadius)*int64(InfectionRadius) {
 				// Bleed corruption: increase factor by 1-5% per tick
 				factor := uint8(e.rng.Intn(5) + 1)
 				current := e.Registry.CorruptionFactor[j]

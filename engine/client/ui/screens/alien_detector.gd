@@ -1,8 +1,5 @@
 extends Control
 
-signal toggle_alien_overlay
-signal countermeasure_deployed
-
 var alien_data: Dictionary = {}
 
 @onready var theme_ctrl = get_node("/root/ChrysalisTheme")
@@ -69,7 +66,7 @@ func _state_color(state: String) -> Color:
 		_: return Color(0.5, 0.5, 0.5, 1)
 
 func _on_toggle_overlay_pressed() -> void:
-	toggle_alien_overlay.emit()
+	pass
 
 func _on_deploy_countermeasure_pressed() -> void:
-	countermeasure_deployed.emit()
+	pass

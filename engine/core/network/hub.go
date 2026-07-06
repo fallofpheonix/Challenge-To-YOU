@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -16,9 +17,16 @@ var Upgrader = websocket.Upgrader{
 	WriteBufferSize: 4096,
 	CheckOrigin: func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
-		return origin == "" ||
-			origin == "http://127.0.0.1" ||
-			origin == "http://localhost"
+		if origin == "" {
+			return true
+		}
+		// Accept any origin from localhost/127.0.0.1 (with or without port)
+		for _, prefix := range []string{"http://127.0.0.1", "http://localhost", "ws://127.0.0.1", "ws://localhost"} {
+			if len(origin) >= len(prefix) && origin[:len(prefix)] == prefix {
+				return true
+			}
+		}
+		return false
 	},
 }
 
@@ -87,6 +95,11 @@ func (h *NetworkHub) HandleConnections(w http.ResponseWriter, r *http.Request) {
 // StartReader Listening Loop runs per connected client thread
 func (h *NetworkHub) StartReader(conn *websocket.Conn, commandChannel chan<- InboundCommand) {
 	conn.SetReadLimit(MaxInboundMessageBytes)
+	conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+	conn.SetPongHandler(func(string) error {
+		conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+		return nil
+	})
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {

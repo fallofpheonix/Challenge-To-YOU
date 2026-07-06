@@ -1,8 +1,5 @@
 extends Control
 
-signal toggle_heatmap_overlay
-signal toggle_density_view
-
 var telemetry_data: Dictionary = {}
 var grid_data: Array = []
 
@@ -56,7 +53,11 @@ func _update_stats() -> void:
 	tick_counter.text = "Tick: %d" % telemetry_data.get("tick", 0)
 	drone_count.text = "Drones: %d" % telemetry_data.get("swarm_size", 0)
 	resource_rate.text = "Colony Silicates: %d" % telemetry_data.get("colony_res", 0)
-	bandwidth_usage.text = "BW: %d%%" % (telemetry_data.get("bandwidth_used", 0) * 100 / max(telemetry_data.get("bandwidth_max", 1), 1))
+	var bw_used = telemetry_data.get("bandwidth_used", 0)
+	if bw_used > 0:
+		bandwidth_usage.text = "BW: %d%%" % (bw_used * 100 / max(telemetry_data.get("bandwidth_max", 1), 1))
+	else:
+		bandwidth_usage.text = "BW: --"
 
 func _update_log() -> void:
 	var entries = telemetry_data.get("log", [])
@@ -77,11 +78,9 @@ func _log_color(level: String) -> String:
 func _on_view_toggle_pressed() -> void:
 	current_view_mode = (current_view_mode + 1) % view_modes.size()
 	view_toggle_btn.text = "View: %s" % view_modes[current_view_mode]
-	if view_modes[current_view_mode] == "Density":
-		toggle_density_view.emit()
 
 func _on_overlay_toggle_pressed() -> void:
-	toggle_heatmap_overlay.emit()
+	pass
 
 func _on_clear_log_pressed() -> void:
 	log_console.text = ""

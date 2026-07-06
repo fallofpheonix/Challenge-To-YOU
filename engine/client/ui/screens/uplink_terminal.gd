@@ -1,8 +1,5 @@
 extends Control
 
-signal deploy_code_requested(code_text: String)
-signal queue_reorder_requested(queue_id: int)
-
 var uplink_data: Dictionary = {}
 
 @onready var theme_ctrl = get_node("/root/ChrysalisTheme")
@@ -55,5 +52,4 @@ func _update_view() -> void:
 		queue_list.add_child(row)
 
 func _on_deploy_pressed() -> void:
-	var code = $VBoxContainer/DeployBar/CodePreview.text
-	deploy_code_requested.emit(code)
+	pass

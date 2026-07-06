@@ -28,6 +28,7 @@ type SwarmRegistry struct {
 	Compromised      []bool  // Logic virus infection status
 	TrustScore       []int32 // Peer-to-peer validation score
 	CorruptionFactor []uint8 // Percentage tracking local logic manipulation [0 to 100]
+	InertTTL         []int32 // Ticks since drone became inert (for cleanup)
 }
 
 // NewSwarmRegistry initializes a registry with a fixed capacity.
@@ -43,6 +44,7 @@ func NewSwarmRegistry(capacity int) *SwarmRegistry {
 		Compromised:      make([]bool, capacity),
 		TrustScore:       make([]int32, capacity),
 		CorruptionFactor: make([]uint8, capacity),
+		InertTTL:         make([]int32, capacity),
 	}
 }
 
@@ -65,6 +67,7 @@ func (r *SwarmRegistry) Spawn(x, y int, battery int64) {
 		newComp := make([]bool, newCap)
 		newTrust := make([]int32, newCap)
 		newCorr := make([]uint8, newCap)
+		newTTL := make([]int32, newCap)
 
 		copy(newID, r.ID)
 		copy(newPX, r.PositionX)
@@ -75,6 +78,7 @@ func (r *SwarmRegistry) Spawn(x, y int, battery int64) {
 		copy(newComp, r.Compromised)
 		copy(newTrust, r.TrustScore)
 		copy(newCorr, r.CorruptionFactor)
+		copy(newTTL, r.InertTTL)
 
 		r.ID = newID
 		r.PositionX = newPX
@@ -85,6 +89,7 @@ func (r *SwarmRegistry) Spawn(x, y int, battery int64) {
 		r.Compromised = newComp
 		r.TrustScore = newTrust
 		r.CorruptionFactor = newCorr
+		r.InertTTL = newTTL
 	}
 
 	i := r.Count
@@ -97,6 +102,27 @@ func (r *SwarmRegistry) Spawn(x, y int, battery int64) {
 	r.Compromised[i] = false
 	r.TrustScore[i] = 100 // Default full trust
 	r.CorruptionFactor[i] = 0
+	r.InertTTL[i] = 0
 
 	r.Count++
+}
+
+// RemoveDrone removes a drone at index i by swapping it with the last drone.
+// Returns the drone that was swapped into position i (if any), so callers can
+// re-check that index. The caller must pass the current Count before removal.
+func (r *SwarmRegistry) RemoveDrone(i int) {
+	last := r.Count - 1
+	if i != last {
+		r.ID[i] = r.ID[last]
+		r.PositionX[i] = r.PositionX[last]
+		r.PositionY[i] = r.PositionY[last]
+		r.Battery[i] = r.Battery[last]
+		r.State[i] = r.State[last]
+		r.Inventory[i] = r.Inventory[last]
+		r.Compromised[i] = r.Compromised[last]
+		r.TrustScore[i] = r.TrustScore[last]
+		r.CorruptionFactor[i] = r.CorruptionFactor[last]
+		r.InertTTL[i] = r.InertTTL[last]
+	}
+	r.Count--
 }

@@ -50,6 +50,7 @@ func (e *Engine) SetState(state map[string]interface{}) {
 		e.Registry.Compromised[i] = toBool(dm["comp"])
 		e.Registry.TrustScore[i] = int32(toI64(dm["trust"]))
 		e.Registry.CorruptionFactor[i] = uint8(toI64(dm["corr"]))
+		e.Registry.InertTTL[i] = int32(toI64(dm["inert_ttl"]))
 	}
 
 	// 4. Grid — zero all cells then restore active ones
@@ -176,6 +177,7 @@ func (e *Engine) WorldHash() uint64 {
 		putBool(e.Registry.Compromised[i])
 		put32(e.Registry.TrustScore[i])
 		h.Write([]byte{e.Registry.CorruptionFactor[i]})
+		put32(e.Registry.InertTTL[i])
 	}
 
 	// Grid — sparse: only cells with any non-zero metric, keyed by cell index.

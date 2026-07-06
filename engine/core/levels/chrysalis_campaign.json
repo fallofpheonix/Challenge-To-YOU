@@ -5,6 +5,16 @@
     {
       "level_file": "chrysalis_1.json",
       "level_id": "chrysalis_1"
+    },
+    {
+      "level_file": "chrysalis_2.json",
+      "level_id": "chrysalis_2",
+      "requires": ["chrysalis_1"]
+    },
+    {
+      "level_file": "chrysalis_3.json",
+      "level_id": "chrysalis_3",
+      "requires": ["chrysalis_2"]
     }
   ]
 }

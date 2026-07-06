@@ -1,8 +1,5 @@
 extends Control
 
-signal blueprint_selected(blueprint_type: String)
-signal structure_selected(structure_id: int)
-
 var structure_data: Dictionary = {}
 var blueprint_types = [
 	{"type": "hub", "label": "Hub", "cost": "500 Silicate", "desc": "Drone fabrication & storage"},
@@ -42,7 +39,7 @@ func _populate_blueprints() -> void:
 		card.accent_color = theme_ctrl.colors.structure_hub if bp.type == "hub" else theme_ctrl.colors.structure_relay if bp.type == "relay_node" else theme_ctrl.colors.structure_storage
 		var deploy_btn = Button.new()
 		deploy_btn.text = "DEPLOY"
-		deploy_btn.pressed.connect(func(): blueprint_selected.emit(bp.type))
+		deploy_btn.pressed.connect(func(): pass)
 		card.add_child(deploy_btn)
 		blueprint_container.add_child(card)
 

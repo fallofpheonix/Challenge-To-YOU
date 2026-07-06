@@ -6,7 +6,7 @@
 |------|-----------|
 | **Architect** | The player. Programs drone behavior via P-Script. Does not directly pilot drones. |
 | **Swarm** | Collection of autonomous micro-drones executing decentralized logic. |
-| **P-Script** | Custom DSL for programming drone behavior. Compiled to AST, tree-walk interpreted. |
+| **P-Script** | Custom DSL for programming drone behavior. Compiled to bytecode via compiler, executed by stack-based VM (interpreter fallback). |
 | **ECS** | Entity Component System. Data-oriented layout using contiguous slices (SoA). |
 | **SwarmRegistry** | The ECS data store. Holds PositionX/Y, Battery, State, Inventory, etc. as parallel slices. |
 | **FixedPoint** | Deterministic math using integer scaling (Precision = 10^6). No floats in simulation. |
@@ -39,10 +39,10 @@
 **Rationale**: Allows drones to read consistent state while writing to staging buffer. Prevents race conditions.
 **Consequence**: One tick of latency between action and visibility. By design for determinism.
 
-### ADR-004: Tree-Walk Interpreter (Not Bytecode VM)
-**Decision**: P-Script is interpreted via AST walking, not compiled to bytecode.
-**Rationale**: Simplicity for MVP. Hot-reload is instant (re-parse source). 100-iteration loop safety limit prevents hangs.
-**Consequence**: Slower than bytecode. Acceptable for 100-500 drones at 10Hz. VM stub exists for future optimization.
+### ADR-004: Bytecode VM (With Interpreter Fallback)
+**Decision**: P-Script is compiled to bytecode via a dedicated compiler, executed by a stack-based VM. Tree-walk interpreter retained as fallback.
+**Rationale**: VM provides ~10x speedup over interpreter for 500+ drones. Compiler runs once per script load/hot-reload; VM executes per-tick with zero allocation.
+**Consequence**: 18-opcode instruction set. 1000-step safety limit prevents infinite loops. Interpreter used only if bytecode compilation fails.
 
 ### ADR-005: WebSocket for Core-Client Bridge
 **Decision**: Go core runs WebSocket server, Godot connects as client.
@@ -79,7 +79,7 @@
 │  ┌────▼─────────────┐  ┌──────────────────────┐    │
 │  │ pscript/         │  │ simulation/          │    │
 │  │ (lexer→parser→   │  │ (ECS, grid, hazards, │    │
-│  │  interpreter)    │  │  aliens, pheromones) │    │
+│  │  compiler→VM)    │  │  aliens, pheromones) │    │
 │  └──────────────────┘  └──────────────────────┘    │
 │                   Go Core                            │
 └─────────────────────────────────────────────────────┘
@@ -146,11 +146,15 @@ fn main() {
 | Max Pheromone | 1000000 | Signal saturation ceiling |
 | Battery Drain | 1000/tick | Movement cost per step |
 | Hazard Drain | 1000000/tick | Magnetic field battery drain |
+| Thermal Damage | 2000000/tick | Thermal hazard battery drain (2x magnetic) |
 | Infection Radius | 3 cells | Alien virus spread range |
 | Corruption Threshold | 100 | Full compromise at 100% |
 | Fabrication Cost | 5 silicates | Resources needed for new drone |
 | Max Swarm | 500 | Safety cap for MVP |
-| While Loop Limit | 100 | Max iterations per while loop |
+| Inert Grace | 30 ticks | Ticks before inert drones are removed (3s) |
+| Resource Spawn Rate | 100 ticks | Ticks between resource respawns (10s) |
+| Max Resources/Cell | 5 | Maximum silicates per grid cell |
+| VM Step Limit | 1000 | Max instructions per drone per tick |
 
 ## File Map
 
@@ -165,15 +169,18 @@ fn main() {
 - `simulation/pheromones.go` — Signal evaporation and gradient sensing
 - `simulation/hazards.go` — Hazard zone system
 - `simulation/alien.go` — Alien network and infection spreading
+- `simulation/spatial.go` — Spatial hash for O(n) neighbor queries
 - `crysmath/fixedpoint.go` — Deterministic fixed-point arithmetic
 - `pscript/token/token.go` — Token type definitions
 - `pscript/lexer/lexer.go` — Lexical scanner
 - `pscript/parser/parser.go` — Recursive-descent Pratt parser
 - `pscript/ast/ast.go` — Abstract syntax tree nodes
-- `pscript/interpreter/interpreter.go` — Tree-walk interpreter
-- `pscript/vm/` — Stub for future bytecode VM implementation
+- `pscript/interpreter/interpreter.go` — Tree-walk interpreter (fallback)
+- `pscript/vm/vm.go` — Bytecode VM (18 opcodes, stack-based)
+- `pscript/vm/compiler.go` — AST → bytecode compiler
+- `pscript/vm/vm_test.go` — VM and compiler tests
 - `network/hub.go` — WebSocket broadcast hub
-- `state/` — Directory for replay state serialization (planned)
+- `replay/recorder.go` — Event recording and checkpoint archive
 - `levels/` — Directory for JSON-based scenario files
 - `scripts/agent.ps` — Default swarm behavior script
 

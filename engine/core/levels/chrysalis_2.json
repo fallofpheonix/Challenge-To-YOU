@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "id": "chrysalis_2",
+  "title": "Thermal Runway",
+  "description": "A thermal geyser blocks the resource field. Route around it or lose your swarm.",
+  "narrative": {
+    "victory": "Thermal bypass achieved. The swarm adapts.",
+    "defeat_infection": "The alien virus consumed the swarm. Silence.",
+    "defeat_tick_limit": "Time ran out. The colony falls dormant."
+  },
+  "world": {
+    "width": 100,
+    "height": 100,
+    "seed": 2
+  },
+  "drones": {
+    "initial_count": 10
+  },
+  "resources": [
+    { "id": "deposit_main", "x": 51, "y": 50, "count": 500 },
+    { "id": "deposit_far", "x": 80, "y": 20, "count": 200 }
+  ],
+  "hazards": [
+    { "id": "hazard_magnetic", "type": 0, "x": 65, "y": 50, "radius": 12, "intensity": 1000000 },
+    { "id": "hazard_thermal", "type": 1, "x": 40, "y": 35, "radius": 8, "intensity": 2000000 }
+  ],
+  "aliens": [
+    { "id": "alien_infector", "type": 0, "x": 25, "y": 75, "radius": 10 }
+  ],
+  "mission": {
+    "target_resources": 15,
+    "max_ticks": 3000,
+    "infection_loss_threshold": 0.50
+  },
+  "unlocked_builtins": [
+    "SENSE_RESOURCE",
+    "SENSE_HOME",
+    "SENSE_BATTERY",
+    "SENSE_CARGO",
+    "HARVEST",
+    "DROP_RESOURCE",
+    "MOVE_RANDOM",
+    "MOVE_TOWARDS_RESOURCE",
+    "MOVE_TOWARDS_HOME"
+  ]
+}

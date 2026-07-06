@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"chrysalis-engine/core/pscript/interpreter"
+	"chrysalis-engine/core/pscript/vm"
 	"chrysalis-engine/core/simulation"
 )
 
@@ -16,16 +17,22 @@ func TestDefaultAgentCompletesResourceLoop(t *testing.T) {
 	engine.Grid.CurrentCells[resourceIdx].ResourceCount = 50
 	engine.Grid.NextCells[resourceIdx].ResourceCount = 50
 
-	program := loadScript("scripts/agent.ps")
+	builtins := newBuiltinMap()
+	program, compiled := loadScript("scripts/agent.ps", builtins)
 	if program == nil {
 		t.Fatal("default agent script failed to parse")
 	}
-	interp := interpreter.New(newBuiltins())
+	v := vm.NewVM(compiled, builtins)
+	interp := interpreter.New(newInterpreterBuiltins())
 
 	for tick := 0; tick < 2_000 && engine.GlobalSilicates == 0; tick++ {
 		engine.BeginTick()
 		for i := 0; i < engine.Registry.Count; i++ {
-			interp.Eval(program, engine, i)
+			if compiled != nil {
+				v.Run(engine, i)
+			} else {
+				interp.Eval(program, engine, i)
+			}
 		}
 		engine.CommitTick()
 	}
@@ -42,16 +49,22 @@ func TestDefaultMissionReachesVictory(t *testing.T) {
 	engine.Grid.CurrentCells[resourceIdx].ResourceCount = 500
 	engine.Grid.NextCells[resourceIdx].ResourceCount = 500
 
-	program := loadScript("scripts/agent.ps")
+	builtins := newBuiltinMap()
+	program, compiled := loadScript("scripts/agent.ps", builtins)
 	if program == nil {
 		t.Fatal("default agent script failed to parse")
 	}
-	interp := interpreter.New(newBuiltins())
+	v := vm.NewVM(compiled, builtins)
+	interp := interpreter.New(newInterpreterBuiltins())
 
 	for engine.Mission.Status == simulation.MissionRunning {
 		engine.BeginTick()
 		for i := 0; i < engine.Registry.Count; i++ {
-			interp.Eval(program, engine, i)
+			if compiled != nil {
+				v.Run(engine, i)
+			} else {
+				interp.Eval(program, engine, i)
+			}
 		}
 		engine.CommitTick()
 	}

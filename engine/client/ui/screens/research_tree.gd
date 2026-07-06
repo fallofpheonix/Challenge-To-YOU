@@ -1,7 +1,5 @@
 extends Control
 
-signal research_selected(research_id: String)
-
 var research_data: Dictionary = {}
 var research_tiers = [
 	{
@@ -69,7 +67,6 @@ func _populate_tree() -> void:
 				card.accent_color = Color(0.3, 0.3, 0.6, 1)
 				var research_btn = Button.new()
 				research_btn.text = "RESEARCH"
-				research_btn.pressed.connect(func(): research_selected.emit(node.id))
 				card.add_child(research_btn)
 
 			tree_container.add_child(card)

@@ -1,9 +1,8 @@
 extends Control
 
-signal screen_changed(screen_name: String)
-
 var current_screen: String = "telemetry"
 var screen_instances: Dictionary = {}
+var overlays: Dictionary = {}
 
 @onready var theme_ctrl = get_node("/root/ChrysalisTheme")
 @onready var content_area: Control = $ContentArea
@@ -41,6 +40,7 @@ func _ready() -> void:
 	theme_ctrl.apply_panel_style($Sidebar, theme_ctrl.colors.secondary_background, theme_ctrl.colors.border)
 	theme_ctrl.apply_panel_style($Header, theme_ctrl.colors.secondary_background, theme_ctrl.colors.border)
 	_build_nav()
+	_create_overlays()
 	switch_to("telemetry")
 
 func _build_nav() -> void:
@@ -59,6 +59,28 @@ func _build_nav() -> void:
 		var separator = HSeparator.new()
 		separator.custom_minimum_size = Vector2(0, 1)
 		nav_buttons.add_child(separator)
+
+func _create_overlays() -> void:
+	var heatmap_script = preload("res://ui/overlays/heatmap_overlay.gd")
+	var pheromone_script = preload("res://ui/overlays/pheromone_overlay.gd")
+	var hazard_script = preload("res://ui/overlays/hazard_overlay.gd")
+	var alien_script = preload("res://ui/overlays/alien_overlay.gd")
+
+	var overlay_defs = {
+		"heatmap": {"script": heatmap_script, "screen": "telemetry"},
+		"pheromone": {"script": pheromone_script, "screen": "signals"},
+		"hazard": {"script": hazard_script, "screen": "hazards"},
+		"alien": {"script": alien_script, "screen": "alien"},
+	}
+
+	for key in overlay_defs:
+		var def = overlay_defs[key]
+		var node = Node2D.new()
+		node.name = key.capitalize() + "Overlay"
+		node.set_script(def.script)
+		node.visible = false
+		content_area.add_child(node)
+		overlays[key] = node
 
 func switch_to(screen_name: String) -> void:
 	if current_screen == screen_name and screen_instances.has(screen_name):
@@ -98,13 +120,29 @@ func switch_to(screen_name: String) -> void:
 
 	var item_data = _find_nav_item(screen_name)
 	screen_title.text = item_data.get("label", screen_name) if item_data else screen_name
-	screen_changed.emit(screen_name)
+
+	_update_overlay_visibility(screen_name)
 
 func _find_nav_item(name: String) -> Dictionary:
 	for item in nav_items:
 		if item.name == name:
 			return item
 	return {}
+
+func _update_overlay_visibility(screen_name: String) -> void:
+	var screen_to_overlay = {
+		"telemetry": "heatmap",
+		"signals": "pheromone",
+		"hazards": "hazard",
+		"alien": "alien",
+	}
+	var active_overlay = screen_to_overlay.get(screen_name, "")
+
+	for key in overlays:
+		if key == active_overlay:
+			overlays[key].visible = true
+		else:
+			overlays[key].visible = false
 
 func update_tick(tick: int) -> void:
 	tick_display.text = "Tick: %d" % tick
@@ -130,8 +168,20 @@ func forward_data(data: Dictionary) -> void:
 						"state": "embedded",
 					})
 			inst.load_resources({"resources": resources})
-		if inst.has_method("load_pheromones") and data.has("signals"):
-			inst.load_pheromones({"signals": data["signals"]})
+		if inst.has_method("load_pheromones") and data.has("grid"):
+			var signals = []
+			for cell in data["grid"]:
+				var home = cell.get("home", 0)
+				var res = cell.get("res", 0)
+				var alien = cell.get("alien", 0)
+				var pos = {"x": cell.get("x", 0), "y": cell.get("y", 0)}
+				if home > 0:
+					signals.append({"type": "rally_point", "position": pos, "intensity": home})
+				if res > 0:
+					signals.append({"type": "resource_found", "position": pos, "intensity": res})
+				if alien > 0:
+					signals.append({"type": "spoofed_data", "position": pos, "intensity": alien})
+			inst.load_pheromones({"signals": signals})
 		if inst.has_method("load_grid") and data.has("grid"):
 			inst.load_grid({"grid": data["grid"]})
 		if inst.has_method("load_hazards") and data.has("hazards"):
@@ -160,3 +210,41 @@ func forward_data(data: Dictionary) -> void:
 			var events = data["events"]
 			if events is Array:
 				inst.load_events(events)
+
+	_forward_to_overlays(data)
+
+func _forward_to_overlays(data: Dictionary) -> void:
+	if overlays.has("heatmap") and data.has("grid"):
+		var density_grid = {}
+		for cell in data["grid"]:
+			if cell.get("cnt", 0) > 0:
+				density_grid["%d,%d" % [cell["x"], cell["y"]]] = cell["cnt"]
+		overlays["heatmap"].set_density_data({"density_grid": density_grid})
+
+	if overlays.has("pheromone") and data.has("grid"):
+		var overlay_signals = []
+		for cell in data["grid"]:
+			var home = cell.get("home", 0)
+			var res = cell.get("res", 0)
+			var alien = cell.get("alien", 0)
+			var pos = {"x": cell.get("x", 0), "y": cell.get("y", 0)}
+			if home > 0:
+				overlay_signals.append({"type": "rally_point", "position": pos, "intensity": home})
+			if res > 0:
+				overlay_signals.append({"type": "resource_found", "position": pos, "intensity": res})
+			if alien > 0:
+				overlay_signals.append({"type": "spoofed_data", "position": pos, "intensity": alien})
+		overlays["pheromone"].set_grid_data({"signals": overlay_signals})
+
+	if overlays.has("hazard") and data.has("hazards"):
+		overlays["hazard"].set_hazard_data({"hazards": data["hazards"]})
+
+	if overlays.has("alien") and data.has("aliens"):
+		var nodes = []
+		for alien in data["aliens"]:
+			nodes.append({
+				"position": {"x": alien.get("x", 0), "y": alien.get("y", 0)},
+				"corruption_radius": alien.get("rad", 0),
+				"state": "broadcasting",
+			})
+		overlays["alien"].set_alien_data({"nodes": nodes})

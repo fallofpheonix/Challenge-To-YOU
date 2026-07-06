@@ -37,6 +37,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.NOT, p.parsePrefixExpression)
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
+	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 
 	p.infixParseFns = make(map[token.Type]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -383,7 +384,32 @@ func (p *Parser) parseIdentifier() ast.Expression {
 	if p.peekTokenIs(token.LPAREN) {
 		return p.parseCallExpression()
 	}
+	// Check for reassignment: ident = expr
+	if p.peekTokenIs(token.ASSIGN) {
+		name := p.curToken.Literal
+		p.nextToken() // consume IDENT
+		p.nextToken() // consume =
+		value := p.parseExpression(LOWEST)
+		if p.peekTokenIs(token.SEMICOLON) {
+			p.nextToken()
+		}
+		return &ast.InfixExpression{
+			Token:    p.curToken,
+			Operator: "=",
+			Left:     &ast.Identifier{Token: p.curToken, Value: name},
+			Right:    value,
+		}
+	}
 	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+}
+
+func (p *Parser) parseGroupedExpression() ast.Expression {
+	p.nextToken()
+	exp := p.parseExpression(LOWEST)
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+	return exp
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Expression {

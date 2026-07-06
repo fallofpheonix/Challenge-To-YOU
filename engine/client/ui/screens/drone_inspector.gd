@@ -1,8 +1,5 @@
 extends Control
 
-signal view_swarm_requested
-signal view_entity_requested(entity_id: int)
-
 var swarm_registry: Dictionary = {}
 var selected_drone_id: int = -1
 var _recent_events: Array = []
@@ -79,7 +76,8 @@ func _update_summary() -> void:
 	var active = 0
 	var total_bat = 0
 	for d in drones:
-		if d.get("state", "inert") != "inert":
+		var s = d.get("state", 2)
+		if s != 2:
 			active += 1
 		total_bat += d.get("bat", 0)
 
@@ -258,7 +256,7 @@ func _send_inspect_command(drone_id: int) -> void:
 		net.send_command("INSPECT_CLEAR", {})
 
 func _on_view_swarm_pressed() -> void:
-	view_swarm_requested.emit()
+	pass
 
 func _on_back_pressed() -> void:
 	detail_panel.hide()

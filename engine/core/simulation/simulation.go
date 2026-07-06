@@ -9,6 +9,12 @@ const (
 	FabricationThreshold int32 = 5   // 5 silicates required to construct a new unit
 	MaxSwarmCapacity     int   = 500 // Safety cap for the MVP engine pass
 	DefaultWorldSeed     int64 = 1
+	InertGraceTicks      int32 = 30  // Ticks before inert drones are removed (3s at 10Hz)
+	ResourceSpawnRate    int64 = 100 // Ticks between resource spawns
+	MaxResourcesPerCell  int32 = 5   // Max silicates per cell
+	ThermalDamage        int64 = 2 * crysmath.Precision // Battery drain per tick from thermal hazard
+	BatteryDrainPerTick  int64 = crysmath.Precision / 1000 // 1000 scaled units per tick
+	InitialResourceNode  int32 = 5   // Silicates placed on the starting resource node
 )
 
 type Engine struct {
@@ -16,6 +22,7 @@ type Engine struct {
 	Registry        *SwarmRegistry
 	Hazards         *HazardSystem
 	Aliens          *AlienNetwork
+	Spatial         *SpatialHash
 	Mission         MissionState
 	Bus             *EventBus
 	Tick            int64
@@ -40,6 +47,7 @@ func NewBaseEngineWithSeed(width, height, droneCount int, seed int64) *Engine {
 		Registry: NewSwarmRegistry(droneCount),
 		Hazards:  NewHazardSystem(10),
 		Aliens:   NewAlienNetwork(5),
+		Spatial:  NewSpatialHash(width, height, InfectionRadius),
 		Mission:  NewDefaultMissionState(),
 		Bus:      NewEventBus(),
 		rng:      newDetRNG(seed),
@@ -95,10 +103,13 @@ func (e *Engine) CheckFabricationPool() {
 func (e *Engine) BeginTick() {
 	e.Bus.BeginTick()
 	e.Grid.TickPheromones()
+	e.Spatial.BuildFromRegistry(e.Registry)
 	e.processHazards()
 	e.processInfections()
 	e.SpreadsInfection()
 	e.CheckFabricationPool()
+	e.cleanupDrones()
+	e.spawnResources()
 
 	width, height := e.Grid.Width, e.Grid.Height
 	idx := e.Grid.GetIndex(width/2, height/2)
@@ -224,15 +235,16 @@ func (e *Engine) GetState() map[string]interface{} {
 	drones := make([]map[string]interface{}, e.Registry.Count)
 	for i := 0; i < e.Registry.Count; i++ {
 		drones[i] = map[string]interface{}{
-			"id":    e.Registry.ID[i],
-			"x":     e.Registry.PositionX[i].V,
-			"y":     e.Registry.PositionY[i].V,
-			"state": e.Registry.State[i],
-			"inv":   e.Registry.Inventory[i],
-			"bat":   e.Registry.Battery[i],
-			"comp":  e.Registry.Compromised[i],
-			"trust": e.Registry.TrustScore[i],
-			"corr":  e.Registry.CorruptionFactor[i],
+			"id":       e.Registry.ID[i],
+			"x":        e.Registry.PositionX[i].V,
+			"y":        e.Registry.PositionY[i].V,
+			"state":    e.Registry.State[i],
+			"inv":      e.Registry.Inventory[i],
+			"bat":      e.Registry.Battery[i],
+			"comp":     e.Registry.Compromised[i],
+			"trust":    e.Registry.TrustScore[i],
+			"corr":     e.Registry.CorruptionFactor[i],
+			"inert_ttl": e.Registry.InertTTL[i],
 		}
 	}
 
@@ -313,23 +325,80 @@ func (e *Engine) processHazards() {
 		hy := e.Hazards.Y[h]
 		hr := e.Hazards.Radius[h]
 		intensity := e.Hazards.Intensity[h]
+		hType := e.Hazards.Type[h]
 
 		for i := 0; i < e.Registry.Count; i++ {
-			dx := int32(e.Registry.PositionX[i].V/crysmath.Precision) - hx
-			dy := int32(e.Registry.PositionY[i].V/crysmath.Precision) - hy
+			dx := int64(int32(e.Registry.PositionX[i].V/crysmath.Precision) - hx)
+			dy := int64(int32(e.Registry.PositionY[i].V/crysmath.Precision) - hy)
 
 			// Simple squared distance check to avoid sqrt
 			distSq := dx*dx + dy*dy
-			if distSq <= hr*hr {
-				e.Registry.Battery[i] -= intensity
+			if distSq <= int64(hr)*int64(hr) {
+				var damage int64
+				if hType == HazardThermal {
+					damage = ThermalDamage
+				} else {
+					damage = intensity
+				}
+				e.Registry.Battery[i] -= damage
 				if e.Registry.Battery[i] <= 0 {
 					e.Registry.Battery[i] = 0
 					e.Registry.State[i] = StateInert
-					e.emitDeath(i, "hazard")
+					e.Registry.InertTTL[i] = 0
+					cause := "battery"
+					if hType == HazardThermal {
+						cause = "thermal"
+					}
+					e.emitDeath(i, cause)
 				} else {
-					e.emitHazardDamage(i, intensity, e.Registry.Battery[i])
+					e.emitHazardDamage(i, damage, e.Registry.Battery[i])
 				}
 			}
+		}
+	}
+}
+
+// cleanupDrones removes inert drones after a grace period.
+// Iterates backwards to avoid index corruption during swap-removal.
+func (e *Engine) cleanupDrones() {
+	i := e.Registry.Count - 1
+	for i >= 0 {
+		if e.Registry.State[i] == StateInert {
+			e.Registry.InertTTL[i]++
+			if e.Registry.InertTTL[i] > InertGraceTicks {
+				e.Registry.RemoveDrone(i)
+				// Don't decrement i — the swapped drone needs checking
+				continue
+			}
+		}
+		i--
+	}
+}
+
+// spawnResources periodically adds resources to random empty cells.
+func (e *Engine) spawnResources() {
+	if e.Tick%ResourceSpawnRate != 0 {
+		return
+	}
+
+	// Spawn 3-5 resource nodes per cycle
+	count := e.rng.Intn(3) + 3
+	for n := 0; n < count; n++ {
+		x := e.rng.Intn(e.Grid.Width)
+		y := e.rng.Intn(e.Grid.Height)
+		idx := e.Grid.GetIndex(x, y)
+		if e.Grid.CurrentCells[idx].IsBase {
+			continue
+		}
+		if e.Grid.NextCells[idx].ResourceCount < MaxResourcesPerCell {
+			amount := int32(e.rng.Intn(3) + 1) // 1-3 silicates
+			newTotal := e.Grid.NextCells[idx].ResourceCount + amount
+			if newTotal > MaxResourcesPerCell {
+				newTotal = MaxResourcesPerCell
+			}
+			e.Grid.NextCells[idx].ResourceCount = newTotal
+			// Also seed resource pheromone to attract drones
+			e.Grid.NextCells[idx].ResourcePheromone = saturateAdd(e.Grid.NextCells[idx].ResourcePheromone, 200_000)
 		}
 	}
 }
@@ -349,11 +418,11 @@ func (e *Engine) processInfections() {
 				continue
 			}
 
-			dx := int32(e.Registry.PositionX[i].V/crysmath.Precision) - nx
-			dy := int32(e.Registry.PositionY[i].V/crysmath.Precision) - ny
+			dx := int64(int32(e.Registry.PositionX[i].V/crysmath.Precision) - nx)
+			dy := int64(int32(e.Registry.PositionY[i].V/crysmath.Precision) - ny)
 			distSq := dx*dx + dy*dy
 
-			if distSq <= nr*nr {
+			if distSq <= int64(nr)*int64(nr) {
 				// 5% chance to become compromised per tick while in radius
 				if e.rng.Intn(100) < 5 {
 					oldTrust := e.Registry.TrustScore[i]
@@ -389,7 +458,8 @@ func (e *Engine) SenseAlienSignal(i int) bool {
 	return val > 0
 }
 
-// SenseQuorum Consensus Pass: Evaluates nearest 8-neighbor vectors for logic drift
+// SenseQuorum Consensus Pass: Evaluates nearest 8-neighbor vectors for logic drift.
+// Uses spatial hash for O(n) average-case instead of O(n²).
 func (e *Engine) SenseQuorum(entityIndex int) bool {
 	if !e.validDrone(entityIndex) {
 		return false
@@ -400,7 +470,9 @@ func (e *Engine) SenseQuorum(entityIndex int) bool {
 	votesForTrue := 0
 	totalPeers := 0
 
-	for j := 0; j < e.Registry.Count; j++ {
+	// Only check drones in the 3x3 spatial hash neighborhood
+	candidates := e.Spatial.QueryNearby(ix, iy)
+	for _, j := range candidates {
 		if entityIndex == j || e.Registry.State[j] == StateInert {
 			continue
 		}
@@ -408,8 +480,8 @@ func (e *Engine) SenseQuorum(entityIndex int) bool {
 		jx := int32(e.Registry.PositionX[j].V / crysmath.Precision)
 		jy := int32(e.Registry.PositionY[j].V / crysmath.Precision)
 
-		dx, dy := ix-jx, iy-jy
-		if dx*dx+dy*dy <= InfectionRadius*InfectionRadius {
+		dx, dy := int64(ix-jx), int64(iy-jy)
+		if dx*dx+dy*dy <= int64(InfectionRadius)*int64(InfectionRadius) {
 			totalPeers++
 			// Drones check if their neighbor's logic registry appears sound
 			if e.Registry.TrustScore[j] >= 70 && !e.Registry.Compromised[j] {
@@ -440,10 +512,11 @@ func (e *Engine) stepSearching(i int) {
 	}
 
 	// Drain battery for movement (1 unit per tick)
-	e.Registry.Battery[i] -= 1 * crysmath.Precision / 1000
+	e.Registry.Battery[i] -= BatteryDrainPerTick
 	if e.Registry.Battery[i] <= 0 {
 		e.Registry.Battery[i] = 0
 		e.Registry.State[i] = StateInert
+		e.Registry.InertTTL[i] = 0
 		e.emitDeath(i, "battery")
 		return
 	}
@@ -504,10 +577,11 @@ func (e *Engine) stepReturning(i int) {
 	}
 
 	// Drain battery for movement (1 unit per tick)
-	e.Registry.Battery[i] -= 1 * crysmath.Precision / 1000
+	e.Registry.Battery[i] -= BatteryDrainPerTick
 	if e.Registry.Battery[i] <= 0 {
 		e.Registry.Battery[i] = 0
 		e.Registry.State[i] = StateInert
+		e.Registry.InertTTL[i] = 0
 		e.emitDeath(i, "battery")
 		return
 	}
