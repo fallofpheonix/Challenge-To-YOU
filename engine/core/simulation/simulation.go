@@ -309,6 +309,7 @@ func (e *Engine) GetState() map[string]interface{} {
 		"historical_total": e.HistoricalTotal,
 		"mission":          e.Mission,
 		"swarm_size":       e.Registry.Count,
+		"next_id":          e.Registry.NextID,
 		"seed":             e.Seed,
 		"rng_seed":         rngSeed,
 		"rng_calls":        rngCalls,

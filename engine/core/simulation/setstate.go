@@ -53,6 +53,21 @@ func (e *Engine) SetState(state map[string]interface{}) {
 		e.Registry.InertTTL[i] = int32(toI64(dm["inert_ttl"]))
 	}
 
+	// Restore the monotonic ID counter so fabrication after a restore mints the
+	// same IDs the original run would have. Older checkpoints predate next_id;
+	// migrate by deriving max(ID)+1 so restored+fabricated worlds stay collision-free.
+	if raw, ok := state["next_id"]; ok {
+		e.Registry.NextID = uint32(toI64(raw))
+	} else {
+		var maxNext uint32
+		for i := 0; i < n; i++ {
+			if e.Registry.ID[i]+1 > maxNext {
+				maxNext = e.Registry.ID[i] + 1
+			}
+		}
+		e.Registry.NextID = maxNext
+	}
+
 	// 4. Grid — zero all cells then restore active ones
 	for i := range e.Grid.CurrentCells {
 		e.Grid.CurrentCells[i] = Cell{}
@@ -165,6 +180,7 @@ func (e *Engine) WorldHash() uint64 {
 	put32(e.TotalDeposited)
 	put32(e.HistoricalTotal)
 	put64(int64(e.Registry.Count))
+	put64(int64(e.Registry.NextID))
 
 	// Drone registry — every component column
 	for i := 0; i < e.Registry.Count; i++ {

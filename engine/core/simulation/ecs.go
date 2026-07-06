@@ -18,6 +18,13 @@ const (
 type SwarmRegistry struct {
 	Count int
 
+	// NextID is the monotonic source of stable entity identities. It only ever
+	// increases, so a fabricated drone can never reuse an ID still held by a
+	// living drone (the bug when IDs were assigned from the storage index and
+	// swap-remove reshuffled slots). IDs are permanent for a drone's lifetime;
+	// swap-remove moves the ID with its data but never mints a new one.
+	NextID uint32
+
 	// Component Slices
 	ID               []uint32
 	PositionX        []crysmath.FixedPoint
@@ -93,7 +100,8 @@ func (r *SwarmRegistry) Spawn(x, y int, battery int64) {
 	}
 
 	i := r.Count
-	r.ID[i] = uint32(i)
+	r.ID[i] = r.NextID
+	r.NextID++
 	r.PositionX[i] = crysmath.NewFixedPoint(int64(x))
 	r.PositionY[i] = crysmath.NewFixedPoint(int64(y))
 	r.Battery[i] = battery

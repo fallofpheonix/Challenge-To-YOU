@@ -49,6 +49,22 @@
 **Rationale**: Decouples core from client. Multiple clients can observe same simulation. Supports remote command injection.
 **Consequence**: Requires network bridge in Godot. Adds ~1ms latency per tick (negligible at 10Hz).
 
+### ADR-006: Frozen Code Contracts (Engineering Guardrails)
+**Decision**: The following *code-level* contracts are FROZEN. A PR that changes their observable behavior requires an explicit ADR amendment and a green golden-replay run — they are load-bearing for determinism and the core↔client split.
+
+| Frozen contract | Guardian |
+|---|---|
+| Fixed-point arithmetic (`crysmath`, Precision=10^6; no floats in canonical state) | ADR-001 |
+| Deterministic RNG `(seed, callCount)` serialization | `rng.go`, `TestRNGRestoreProducesIdenticalSequence` |
+| `WorldHash` canonical-state discipline (every canonical field hashed) | `setstate.go`, `TestWorldHashCovers*` |
+| `BeginTick → VM/Architect → CommitTick` lifecycle & ordering | `simulation.go`, `main.go:stepEngine` |
+| Double-buffered `EventBus` (emit→Commit→snapshot, BeginTick invariant) | `events.go`, `events_test.go` |
+| Core↔Client separation — the client is never authoritative | `network/`, `chrysalis-godot-ui` contract |
+
+**Explicitly NOT frozen** (expected to evolve before the first vertical slice): the **VM opcode set, the `BuiltinFn` signature, and the builtin-centric action model**. The review identified these as the primary expressiveness limiters; they must stay malleable until P-Script 2.0 (persistent memory, arrays, arguments, messaging, action primitives) lands.
+
+**Consequence**: new canonical state (persistent drone memory, message inboxes, alien memory) MUST be added to `GetState`/`SetState`/`WorldHash` together with a `TestWorldHashCovers*` test in the same PR.
+
 ## System Boundaries
 
 ```

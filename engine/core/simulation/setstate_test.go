@@ -167,6 +167,80 @@ func TestWorldHashCoversRNGPosition(t *testing.T) {
 	}
 }
 
+func TestWorldHashCoversNextID(t *testing.T) {
+	e := NewEngineWithSeed(10, 10, 2, 1)
+	base := e.WorldHash()
+	e.Registry.NextID++
+	if e.WorldHash() == base {
+		t.Fatal("WorldHash did not change after NextID mutation")
+	}
+}
+
+// TestFabricationProducesUniqueIDs is the PR1 regression guard: with the old
+// ID = uint32(index) scheme, removing a drone then fabricating reused a live
+// drone's ID. Monotonic NextID must keep every live ID distinct.
+func TestFabricationProducesUniqueIDs(t *testing.T) {
+	e := NewEngineWithSeed(10, 10, 4, 1) // IDs 0,1,2,3; NextID=4
+
+	// Remove the drone in slot 1 — slot 3's drone (ID 3) swaps into slot 1.
+	e.Registry.RemoveDrone(1)
+
+	// Fabricate two new drones directly via the registry.
+	e.Registry.Spawn(5, 5, 100)
+	e.Registry.Spawn(5, 5, 100)
+
+	seen := map[uint32]int{}
+	for i := 0; i < e.Registry.Count; i++ {
+		id := e.Registry.ID[i]
+		if prev, dup := seen[id]; dup {
+			t.Fatalf("duplicate entity ID %d at slots %d and %d", id, prev, i)
+		}
+		seen[id] = i
+	}
+	// New drones must have IDs 4 and 5, never a reused 0..3.
+	if e.Registry.NextID != 6 {
+		t.Fatalf("NextID = %d, want 6 after 4 initial + 2 fabricated spawns", e.Registry.NextID)
+	}
+}
+
+// TestNextIDSurvivesSaveRestore guards that a fabricated drone receives the same
+// ID whether or not the world was saved and restored first. Because NextID is
+// serialized, a restore must not "rewind" identity allocation — otherwise a
+// reloaded run would mint IDs that collide with, or diverge from, the live run.
+func TestNextIDSurvivesSaveRestore(t *testing.T) {
+	const seed = 21
+
+	ref := NewEngineWithSeed(20, 20, 4, seed)
+	for i := 0; i < 10; i++ {
+		ref.BeginTick()
+		ref.CommitTick()
+	}
+	snap := ref.GetState()
+
+	// Fabricate on the reference (live) engine.
+	ref.Registry.Spawn(1, 1, 100)
+
+	// Restore into a fresh engine, fabricate identically.
+	restored := NewEngineWithSeed(20, 20, 4, seed)
+	restored.SetState(snap)
+	restored.Registry.Spawn(1, 1, 100)
+
+	// 1. Same fabricated ID — identity allocation is unchanged by save/restore.
+	if got, want := restored.Registry.ID[restored.Registry.Count-1], ref.Registry.ID[ref.Registry.Count-1]; got != want {
+		t.Fatalf("fabricated ID after save/restore = %d, want %d (NextID not preserved)", got, want)
+	}
+	// 2. Same NextID — the counter itself survived the round-trip.
+	if restored.Registry.NextID != ref.Registry.NextID {
+		t.Fatalf("NextID after save/restore = %d, want %d", restored.Registry.NextID, ref.Registry.NextID)
+	}
+	// 3. Same WorldHash — serialization, restoration, and future identity
+	//    allocation all remain canonical. This is the determinism guarantee.
+	if restored.WorldHash() != ref.WorldHash() {
+		t.Fatalf("WorldHash after save/restore+fabricate diverged: want %016x got %016x",
+			ref.WorldHash(), restored.WorldHash())
+	}
+}
+
 func TestWorldHashCoversEconomy(t *testing.T) {
 	e := NewEngineWithSeed(10, 10, 2, 1)
 	base := e.WorldHash()
