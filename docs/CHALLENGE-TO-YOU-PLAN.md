@@ -168,6 +168,38 @@
 
 ---
 
+## 🧠 Universal Logic Engine
+
+**Key Insight**: This is NOT a code compiler game — it's a **Universal Logic Manipulation Engine**.
+
+The engine treats all game elements (magic runes, code scripts, physical gears) as the same data structure: **Events, Conditions, and Effects** in a Directed Acyclic Graph (DAG).
+
+### Core Concept
+
+```
+[INPUT EVENT] ───► [CONDITION/STATE CHECK] ───► [OUTPUT EFFECT]
+```
+
+### Theme Examples
+
+| Theme | Player Sees | Engine Sees |
+|-------|-------------|-------------|
+| **Magitech** | Fire rune on spell-book | `Event: fire_rune, Power: 100` |
+| **Cyberpunk** | Python code in terminal | `Event: audio_driver, Port: 80` |
+| **Industrial** | Metal gear on conveyor | `Event: gear, Voltage: 220` |
+
+### Implementation
+
+See `docs/UNIVERSAL-LOGIC-ENGINE.md` for complete technical specification.
+
+**Key Components**:
+1. **GameNode** — Universal element (Event/Condition/Effect)
+2. **GameGraph** — Cause-and-effect network
+3. **GlitchDetector** — Finds emergent solutions
+4. **WinCondition** — State/event/chain-based verification
+
+---
+
 ## 📁 Project Structure
 
 ```
