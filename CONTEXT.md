@@ -1,226 +1,227 @@
-# Project Chrysalis: The Architect's Swarm — CONTEXT
+# Challenge To YOU — CONTEXT
+
+## Project Status
+
+**Current Project**: Challenge To YOU (formerly Project Chrysalis)  
+**Status**: Planning Complete — Ready for Implementation  
+**Last Updated**: 2026-07-10  
+**Documentation**: `docs/CHALLENGE-TO-YOU-PLAN.md`
+
+---
 
 ## Domain Glossary
 
 | Term | Definition |
 |------|-----------|
-| **Architect** | The player. Programs drone behavior via P-Script. Does not directly pilot drones. |
-| **Swarm** | Collection of autonomous micro-drones executing decentralized logic. |
-| **P-Script** | Custom DSL for programming drone behavior. Compiled to bytecode via compiler, executed by stack-based VM (interpreter fallback). |
-| **ECS** | Entity Component System. Data-oriented layout using contiguous slices (SoA). |
-| **SwarmRegistry** | The ECS data store. Holds PositionX/Y, Battery, State, Inventory, etc. as parallel slices. |
-| **FixedPoint** | Deterministic math using integer scaling (Precision = 10^6). No floats in simulation. |
-| **Double Buffering** | Grid uses CurrentCells/NextCells. Mutations stage in Next, commit atomically via SwapBuffers. |
-| **Pheromone** | Chemical signal emulation. Home (trail back to base), Resource (trail to food), Alien (corruption). |
-| **Hazard** | Environmental danger zone. Magnetic fields drain battery. Thermal (planned) deals physical damage. |
-| **Alien Network** | Hostile nodes that spread logic virus (compromise) to nearby drones. |
-| **Compromised** | Drone infected by alien virus. Deposits alien signals instead of home pheromone. |
-| **TrustScore** | Peer-to-peer validation score (0-100). Drops on compromise. Used by quorum sensing. |
-| **Quorum** | Consensus mechanism. Drones vote on neighbor trustworthiness. >50% = trustworthy. |
-| **Fabrication** | Swarm self-replication. Costs 5 silicates. Creates new drone at base. |
-| **Silicates** | Primary resource. Harvested by drones, deposited at base, used for fabrication. |
-| **GameHub** | Autoloaded Godot singleton. Routes telemetry data to 10 specialized UI screens. |
-| **NetworkBridge** | WebSocket client in Godot. Connects to Go core's telemetry server. |
+| **Challenge To YOU** | Roguelike coding puzzle game across multiple fantasy/sci-fi eras |
+| **Era** | Thematic world with unique code type and aesthetic (Magitech, Cyberpunk, etc.) |
+| **Mode** | Gameplay style — Architect (build), Ghost (stealth), Saboteur (break) |
+| **Passcode** | Key to advance; emerges from code interactions, not direct output |
+| **Frankenstein Code** | Broken/unrelated scripts combined to create glitches/loopholes |
+| **Luck Stat** | Player attribute affecting level complexity and AI monitoring |
+| **Procedural Generation** | Seed-based RNG stitching modular code segments |
+| **Glitch** | Intentional exploit created by combining broken code |
+| **Loophole** | Security flaw discovered through code interaction |
+| **Environmental Side-Effect** | Code affecting virtual hardware (overload, reboot, etc.) |
+| **Detection Meter** | Ghost mode indicator; spikes if CPU usage too high |
+| **Chain Reaction** | Saboteur mode; one break causes cascading failures |
+
+---
+
+## Era Progression (v1 = 2 Eras)
+
+| Tier | Era | Theme | Code Type | Aesthetic |
+|------|-----|-------|-----------|-----------|
+| 1 | Medieval Magitech | Dark fantasy | Custom DSL (Runes) | Mystical, ancient |
+| 2 | Cyberpunk Neon | Dystopian future | Real scripting (Python/JS) | Neon, terminal |
+
+---
+
+## Gameplay Modes (v1 = 3 Modes)
+
+| Mode | Role | Objective | Skill Tested |
+|------|------|-----------|--------------|
+| **Architect** | Builder | Write clean new modules | Algorithmic thinking, planning |
+| **Ghost** | Stealth Hacker | Modify code under AI detection | Optimization, stealth mindset |
+| **Saboteur** | Chaos Agent | Break code for chain reactions | Judgment, critical thinking |
+
+---
+
+## Core Mechanics
+
+### 1. Procedural Challenge Generation
+- Seed-based RNG stitches 15-20 modular "junk code segments"
+- Luck stat affects: code obfuscation, AI monitoring strictness, glitch availability
+- At least one "glitch/loophole" solution always exists
+
+### 2. Multi-Layer Code Interaction
+- **Frankenstein Code**: Broken scripts combine to create exploits
+- **Loophole Exploitation**: Race conditions, timing attacks
+- **Environmental Side-Effects**: Code affects virtual hardware
+
+### 3. Dynamic Passcode System
+- Passcodes emerge from code interactions (not direct output)
+- Hidden in error logs, memory leaks, CPU fluctuations
+- Different per player based on approach and luck
+
+### 4. Luck & Volatility Engine
+- **High Luck**: Easy flaws, perfect glitch alignment
+- **Low Luck**: Obfuscated code, aggressive AI monitoring
+
+---
 
 ## Architecture Decisions
 
-### ADR-001: Fixed-Point Arithmetic
-**Decision**: All simulation math uses `crysmath.FixedPoint` with `Precision = 10^6`.
-**Rationale**: Floating-point is non-deterministic across platforms. Fixed-point guarantees bit-perfect reproducibility.
-**Consequence**: All positions, battery levels, and pheromone values are integer-scaled. Client must divide by 10^6 for display.
+### ADR-001: Desktop-First with Godot 4
+**Decision**: Use Godot 4 as frontend engine, targeting desktop platforms.  
+**Rationale**: WASM sandbox needs raw power; GDExtension allows native Go integration.  
+**Consequences**: No web version for MVP; must distribute via Steam/Itch.io.
 
-### ADR-002: Data-Oriented ECS
-**Decision**: Drone state stored as parallel slices (SoA) rather than array of structs (AoS).
-**Rationale**: CPU cache lines favor contiguous access to individual components. With 1000+ drones, this matters.
-**Consequence**: Adding/removing entities requires slice copying. No pointer indirection.
+### ADR-002: Go Backend with WASM Sandbox
+**Decision**: Use Go for backend with Extism/Wasmer for WASM execution.  
+**Rationale**: Concurrency for multi-layer execution; security via isolation.  
+**Consequences**: Must learn WASM integration; long-term scalability excellent.
 
-### ADR-003: Double-Buffered Grid
-**Decision**: Grid uses CurrentCells/NextCells with atomic swap.
-**Rationale**: Allows drones to read consistent state while writing to staging buffer. Prevents race conditions.
-**Consequence**: One tick of latency between action and visibility. By design for determinism.
+### ADR-003: Procedural Generation with Luck Mechanic
+**Decision**: Seed-based RNG with Luck stat affecting difficulty.  
+**Rationale**: Infinite replayability; roguelike appeal.  
+**Consequences**: Must ensure at least one solution always exists.
 
-### ADR-004: Bytecode VM (With Interpreter Fallback)
-**Decision**: P-Script is compiled to bytecode via a dedicated compiler, executed by a stack-based VM. Tree-walk interpreter retained as fallback.
-**Rationale**: VM provides ~10x speedup over interpreter for 500+ drones. Compiler runs once per script load/hot-reload; VM executes per-tick with zero allocation.
-**Consequence**: 18-opcode instruction set. 1000-step safety limit prevents infinite loops. Interpreter used only if bytecode compilation fails.
+### ADR-004: Multi-Era Progression (2 Eras in v1)
+**Decision**: Launch with Magitech → Cyberpunk.  
+**Rationale**: Proves multiverse hook; visual contrast.  
+**Consequences**: Must build era-specific UI themes.
 
-### ADR-005: WebSocket for Core-Client Bridge
-**Decision**: Go core runs WebSocket server, Godot connects as client.
-**Rationale**: Decouples core from client. Multiple clients can observe same simulation. Supports remote command injection.
-**Consequence**: Requires network bridge in Godot. Adds ~1ms latency per tick (negligible at 10Hz).
+### ADR-005: Three Core Gameplay Modes
+**Decision**: Launch with Architect, Ghost, Saboteur.  
+**Rationale**: Full spectrum of hacker fantasies; skill variety.  
+**Consequences**: Must implement tracking meters for Ghost mode.
 
-### ADR-006: Frozen Code Contracts (Engineering Guardrails)
-**Decision**: The following *code-level* contracts are FROZEN. A PR that changes their observable behavior requires an explicit ADR amendment and a green golden-replay run — they are load-bearing for determinism and the core↔client split.
+### ADR-006: Local AI (Ollama) vs Cloud API
+**Decision**: Use local LLM (Ollama + Llama 3) with AST parsing fallback.  
+**Rationale**: Cost-free; private; offline capable.  
+**Consequences**: Requires Ollama installation; less powerful than GPT-4.
 
-| Frozen contract | Guardian |
-|---|---|
-| Fixed-point arithmetic (`crysmath`, Precision=10^6; no floats in canonical state) | ADR-001 |
-| Deterministic RNG `(seed, callCount)` serialization | `rng.go`, `TestRNGRestoreProducesIdenticalSequence` |
-| `WorldHash` canonical-state discipline (every canonical field hashed) | `setstate.go`, `TestWorldHashCovers*` |
-| `BeginTick → VM/Architect → CommitTick` lifecycle & ordering | `simulation.go`, `main.go:stepEngine` |
-| Double-buffered `EventBus` (emit→Commit→snapshot, BeginTick invariant) | `events.go`, `events_test.go` |
-| Core↔Client separation — the client is never authoritative | `network/`, `chrysalis-godot-ui` contract |
+### ADR-007: Skip WASM for Itch.io Alpha
+**Decision**: Use Go text parsing for alpha; add WASM for Steam.  
+**Rationale**: 1-month deadline; alpha tests mechanics, not security.  
+**Consequences**: Alpha less secure; WASM becomes Phase 2 priority.
 
-**Explicitly NOT frozen** (expected to evolve before the first vertical slice): the **VM opcode set, the `BuiltinFn` signature, and the builtin-centric action model**. The review identified these as the primary expressiveness limiters; they must stay malleable until P-Script 2.0 (persistent memory, arrays, arguments, messaging, action primitives) lands.
+### ADR-008: Itch.io First, Steam Later
+**Decision**: Free/PWYW alpha on Itch.io (Week 4); Steam Early Access (Month 3).  
+**Rationale**: Free alpha attracts testers; drives wishlists.  
+**Consequences**: Must set up Steam page in Week 1.
 
-**Consequence**: new canonical state (persistent drone memory, message inboxes, alien memory) MUST be added to `GetState`/`SetState`/`WorldHash` together with a `TestWorldHashCovers*` test in the same PR.
+### ADR-009: Project Rename to "Challenge To YOU"
+**Decision**: Rename from "Project Chrysalis" to "Challenge To YOU".  
+**Rationale**: Direct, personal, challenging, memorable.  
+**Consequences**: Must update all documentation.
 
-**Verification oracle (temporary)**: the tree-walk interpreter (`pscript/interpreter`) is retained as a semantic oracle for the VM, not a production runtime. Both backends share the same aggregate runaway budget (`pscript/budget.MaxExecutionSteps`); the `TestBackendParity*` tests assert they agree on any program terminating within budget. Behavior exactly at the safety cutoff may differ (the VM meters bytecode instructions, the interpreter meters AST evaluations) — acceptable for a runaway net. **Exit criterion**: remove the interpreter once P-Script 2.0 is feature-complete, backend parity has held across releases, and fuzz/property tests provide equivalent confidence.
+### ADR-010: Document Everything
+**Decision**: Document all conversations, decisions, changes.  
+**Rationale**: Solo dev with fluid team needs clear documentation.  
+**Consequences**: Must maintain structured docs; essential for team scaling.
+
+---
 
 ## System Boundaries
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                   Godot Client                       │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────┐  │
-│  │ main.gd  │→ │ GameHub  │→ │ 10 Screen Views  │  │
-│  │ (spawn)  │  │ (router) │  │ (telemetry, etc) │  │
-│  └────┬─────┘  └──────────┘  └──────────────────┘  │
-│       │                                              │
-│  ┌────▼─────────────┐                               │
-│  │ NetworkBridge    │ ← WebSocket client            │
-│  │ (WebSocket)      │                               │
-│  └────┬─────────────┘                               │
-└───────┼─────────────────────────────────────────────┘
-        │ ws://127.0.0.1:8080/telemetry
-┌───────┼─────────────────────────────────────────────┐
-│  ┌────▼─────────────┐                               │
-│  │ network/hub.go   │ ← WebSocket server            │
-│  │ (broadcast)      │                               │
-│  └────┬─────────────┘                               │
-│       │                                              │
-│  ┌────▼─────────────┐  ┌──────────────────────┐    │
-│  │ main.go          │→ │ simulation.Engine    │    │
-│  │ (10Hz loop)      │  │ (deterministic core) │    │
-│  └────┬─────────────┘  └──────────────────────┘    │
-│       │                                              │
-│  ┌────▼─────────────┐  ┌──────────────────────┐    │
-│  │ pscript/         │  │ simulation/          │    │
-│  │ (lexer→parser→   │  │ (ECS, grid, hazards, │    │
-│  │  compiler→VM)    │  │  aliens, pheromones) │    │
-│  └──────────────────┘  └──────────────────────┘    │
-│                   Go Core                            │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    Godot 4 Client (Desktop)                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │ Code Editor  │  │ Terminal UI  │  │ Era-Specific     │  │
+│  │ (Syntax HL)  │  │ (Output)     │  │ Visual Themes    │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────────────────┘  │
+│         │                 │                                  │
+│  ┌──────▼─────────────────▼──────────────────────────────┐  │
+│  │              GDExtension Bridge (Native)               │  │
+│  └──────┬────────────────────────────────────────────────┘  │
+└─────────┼───────────────────────────────────────────────────┘
+          │
+┌─────────▼───────────────────────────────────────────────────┐
+│                    Go Backend (Shared Library)               │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │ WASM Sandbox │  │ Procedural   │  │ AI/AST Analyzer  │  │
+│  │ (Execution)  │  │ Generation   │  │ (Code Style)     │  │
+│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │              Passcode Generation Engine               │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## P-Script Language Reference
+---
 
-### Keywords
-`fn`, `let`, `if`, `else`, `while`, `return`, `true`, `false`
+## Project Structure
 
-### Operators
-`+`, `-`, `*`, `/`, `<`, `>`, `<=`, `>=`, `==`, `!=`, `=`, `!`
-
-### Built-in Functions (Swarm API)
-
-| Function | Returns | Description |
-|----------|---------|-------------|
-| `SENSE_RESOURCE()` | bool | True if resource pheromone detected nearby |
-| `SENSE_HOME()` | bool | True if home pheromone detected nearby |
-| `SENSE_CARGO()` | bool | True if drone is carrying silicates |
-| `SENSE_BATTERY()` | int64 | Current battery level (scaled by 10^6) |
-| `SENSE_TRUST()` | int64 | Peer trust score (0-100) |
-| `SENSE_CORRUPTION()` | int64 | Corruption factor (0-100) |
-| `SENSE_COMPROMISED()` | bool | True if infected by alien virus |
-| `SENSE_ALIEN_SIGNAL()` | bool | True if alien signal detected nearby |
-| `SENSE_SWARM_SIZE()` | int64 | Total drones in swarm |
-| `SENSE_COLONY_RESOURCES()` | int64 | Total silicates in colony cache |
-| `BROADCAST_VOTE()` | bool | Quorum consensus with neighbors |
-| `HARVEST()` | bool | Harvest resource at current cell |
-| `DROP_RESOURCE()` | bool | Deposit cargo at base |
-| `MOVE_RANDOM()` | bool | Move to random adjacent cell |
-| `MOVE_TOWARDS_RESOURCE()` | bool | Follow resource pheromone gradient |
-| `MOVE_TOWARDS_HOME()` | bool | Follow home pheromone gradient |
-
-### Example Script
 ```
-fn main() {
-    if (SENSE_BATTERY() < 25000000) {
-        MOVE_TOWARDS_HOME()
-    } else {
-        if (SENSE_CARGO()) {
-            DROP_RESOURCE()
-            MOVE_TOWARDS_HOME()
-        } else {
-            HARVEST()
-            if (SENSE_CARGO()) {
-                MOVE_TOWARDS_HOME()
-            } else {
-                MOVE_TOWARDS_RESOURCE()
-            }
-        }
-    }
-}
+challenge-to-you/
+├── backend/                    # Go backend
+│   ├── cmd/                    # Entry points
+│   │   └── sandbox/            # WASM sandbox runner
+│   ├── internal/               # Private packages
+│   │   ├── generator/          # Procedural generation
+│   │   ├── sandbox/            # WASM execution
+│   │   ├── analyzer/           # Code analysis
+│   │   ├── passcode/           # Passcode generation
+│   │   └── narrative/          # Level text/flavor
+│   ├── pscript/                # Magitech DSL
+│   ├── go.mod
+│   └── go.sum
+├── client/                     # Godot 4 project
+│   ├── scenes/                 # Game scenes
+│   ├── scripts/                # GDScript files
+│   ├── themes/                 # Visual themes
+│   ├── addons/                 # Godot plugins
+│   └── project.godot
+├── docs/                       # Documentation
+│   ├── CHALLENGE-TO-YOU-PLAN.md
+│   ├── ARCHITECTURE.md
+│   ├── GAME-DESIGN.md
+│   ├── DECISIONS/              # ADRs
+│   └── CONVERSATIONS/          # Conversation logs
+├── tools/                      # Build tools
+└── README.md
 ```
 
-## Simulation Parameters
+---
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
-| Grid Size | 100x100 | World dimensions in cells |
-| Tick Rate | 10 Hz | Simulation updates per second |
-| Precision | 10^6 | Fixed-point scaling factor |
-| Pheromone Decay | 5000/tick | Signal evaporation rate |
-| Max Pheromone | 1000000 | Signal saturation ceiling |
-| Battery Drain | 1000/tick | Movement cost per step |
-| Hazard Drain | 1000000/tick | Magnetic field battery drain |
-| Thermal Damage | 2000000/tick | Thermal hazard battery drain (2x magnetic) |
-| Infection Radius | 3 cells | Alien virus spread range |
-| Corruption Threshold | 100 | Full compromise at 100% |
-| Fabrication Cost | 5 silicates | Resources needed for new drone |
-| Max Swarm | 500 | Safety cap for MVP |
-| Inert Grace | 30 ticks | Ticks before inert drones are removed (3s) |
-| Resource Spawn Rate | 100 ticks | Ticks between resource respawns (10s) |
-| Max Resources/Cell | 5 | Maximum silicates per grid cell |
-| VM Step Limit | 1000 | Max instructions per drone per tick |
+## 1-Month Timeline
 
-## File Map
+| Week | Focus | Deliverable |
+|------|-------|-------------|
+| 1 | Core Infrastructure | Go backend + Godot editor |
+| 2 | Procedural Generation | Seed-based RNG + luck mechanic |
+| 3 | Gameplay Modes | Architect, Ghost, Saboteur |
+| 4 | Polish & Launch | Itch.io alpha live |
 
-### Go Core (`engine/core/`)
-- `main.go` — Entry point, 10Hz loop, WebSocket server, hot-reload
-- `main_test.go` — Test suite for the Go core entry points
-- `.air.toml` — Live reload configuration for local development
-- `.golangci.yml` — Linter configuration
-- `simulation/simulation.go` — Engine lifecycle, drone AI, state serialization
-- `simulation/ecs.go` — SwarmRegistry (SoA data layout)
-- `simulation/grid.go` — Double-buffered 2D grid
-- `simulation/pheromones.go` — Signal evaporation and gradient sensing
-- `simulation/hazards.go` — Hazard zone system
-- `simulation/alien.go` — Alien network and infection spreading
-- `simulation/spatial.go` — Spatial hash for O(n) neighbor queries
-- `crysmath/fixedpoint.go` — Deterministic fixed-point arithmetic
-- `pscript/token/token.go` — Token type definitions
-- `pscript/lexer/lexer.go` — Lexical scanner
-- `pscript/parser/parser.go` — Recursive-descent Pratt parser
-- `pscript/ast/ast.go` — Abstract syntax tree nodes
-- `pscript/interpreter/interpreter.go` — Tree-walk interpreter (fallback)
-- `pscript/vm/vm.go` — Bytecode VM (18 opcodes, stack-based)
-- `pscript/vm/compiler.go` — AST → bytecode compiler
-- `pscript/vm/vm_test.go` — VM and compiler tests
-- `network/hub.go` — WebSocket broadcast hub
-- `replay/recorder.go` — Event recording and checkpoint archive
-- `levels/` — Directory for JSON-based scenario files
-- `scripts/agent.ps` — Default swarm behavior script
+---
 
-### Godot Client (`engine/client/`)
-- `main.gd` / `main.tscn` — Main controller, Go core launcher
-- `network_bridge.gd` — WebSocket client
-- `ui/theme/chrysalis_theme.gd` — Design system (autoloaded)
-- `ui/theme/chrysalis_colors.gd` — Color palette
-- `ui/navigation/game_hub.gd` / `.tscn` — Screen router (autoloaded)
-- `ui/screens/telemetry_dashboard.gd` — Tick/bandwidth/log display
-- `ui/screens/drone_inspector.gd` — Drone list and detail panel
-- `ui/screens/resource_logistics.gd` — Resource flow visualization
-- `ui/screens/pheromone_view.gd` — Signal strength display
-- `ui/screens/structure_manager.gd` — Blueprint catalog
-- `ui/screens/hazard_monitor.gd` — Threat level display
-- `ui/screens/alien_detector.gd` — Corruption monitoring
-- `ui/screens/research_tree.gd` — Tech tree
-- `ui/screens/uplink_terminal.gd` — Code deployment queue
-- `ui/screens/replay_controls.gd` — Playback controls
-- `ui/components/entity_row.tscn` — Reusable list row
-- `ui/components/inspector_modal.gd` — Breakpoint inspector
-- `ui/overlays/heatmap_overlay.gd` — Density visualization
-- `ui/overlays/pheromone_overlay.gd` — Signal visualization
-- `ui/overlays/hazard_overlay.gd` — Danger zone rendering
-- `ui/overlays/alien_overlay.gd` — Corruption visualization
+## Documentation
+
+| Document | Purpose |
+|----------|---------|
+| `docs/CHALLENGE-TO-YOU-PLAN.md` | Complete implementation plan |
+| `docs/DECISIONS/ADR-001-to-010.md` | Architecture decision records |
+| `docs/CONVERSATIONS/2026-07-10-pivot.md` | Planning session log |
+| `docs/ARCHITECTURE.md` | System design (to create) |
+| `docs/GAME-DESIGN.md` | Mechanics, modes, eras (to create) |
+| `docs/API.md` | Go ↔ Godot interface (to create) |
+
+---
+
+## Archived: Project Chrysalis
+
+The original project (swarm simulation) is archived but preserved in:
+- `engine/core/` — Go simulation engine
+- `engine/client/` — Godot telemetry client
+- `CONTEXT.md` (this file, above)
+
+**Decision**: Project Chrysalis code is preserved but no longer actively developed. Focus shifted entirely to Challenge To YOU.
+
+---
+
+*Last updated: 2026-07-10*
+*Status: Planning Complete — Ready for Implementation*
