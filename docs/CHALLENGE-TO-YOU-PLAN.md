@@ -253,7 +253,9 @@ challenge-to-you/
 │   ├── CHALLENGE-TO-YOU-PLAN.md
 │   ├── ARCHITECTURE.md
 │   ├── GAME-DESIGN.md
-│   └── API.md
+│   ├── API.md
+│   ├── UNIVERSAL-LOGIC-ENGINE.md
+│   └── LOCAL-LLM-INTEGRATION.md
 ├── tools/                      # Build tools
 │   ├── build.sh                # Build script
 │   └── package.sh              # Packaging script
