@@ -1,0 +1,63 @@
+{
+  "id": "cosmic_01_airlock",
+  "paradigm": "COSMIC",
+  "name": "The Quantum Airlock",
+  "description": "Open an airlock stuck in quantum superposition by forcing state collapse.",
+  "logos_token": "LOGOS_CSM_AIRLOCK_99Q",
+  "initial_state": {
+    "airlock_open": false,
+    "siren_active": false,
+    "observer_blinded": false,
+    "oxygen_vented": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "trigger_siren",
+      "trigger_event": "trigger_siren",
+      "name": "Trigger Emergency Siren",
+      "flavor_text": "Activate the red emergency siren, which is hardwired to initiate oxygen venting.",
+      "conditions": {},
+      "mutations": {
+        "siren_active": true,
+        "oxygen_vented": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "blind_observer",
+      "trigger_event": "blind_observer",
+      "name": "Blind Observer Sensor",
+      "flavor_text": "Blind the observer-sensor. It is completely blind to red spectrum light from the siren.",
+      "conditions": {
+        "siren_active": true
+      },
+      "mutations": {
+        "observer_blinded": true
+      },
+      "fallback_mutations": {
+        "entropy": 10
+      }
+    },
+    {
+      "id": "materialize_door",
+      "trigger_event": "materialize_door",
+      "name": "Collapse Superposition",
+      "flavor_text": "With the observer blinded and oxygen vented, force the door to collapse into a physical open state.",
+      "conditions": {
+        "observer_blinded": true,
+        "oxygen_vented": true
+      },
+      "mutations": {
+        "airlock_open": true
+      },
+      "fallback_mutations": {
+        "entropy": 25
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "airlock_open",
+    "expected_value": true
+  }
+}

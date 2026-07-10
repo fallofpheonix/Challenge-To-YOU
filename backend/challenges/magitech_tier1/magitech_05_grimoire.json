@@ -1,0 +1,62 @@
+{
+  "id": "magitech_05_grimoire",
+  "paradigm": "MAGITECH",
+  "name": "The Whispering Grimoire",
+  "description": "Read the hidden passcode on a blank page by crashing the book's Truth-Ward logic.",
+  "logos_token": "LOGOS_MGT_WHISPERING_BOOK_12B",
+  "initial_state": {
+    "passcode_visible": false,
+    "illusion_projected": false,
+    "silence_seal_active": false,
+    "ward_attacked": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "project_illusion",
+      "trigger_event": "project_illusion",
+      "name": "Project Illusion",
+      "flavor_text": "Invoke the Illusion-Glyph to project fake, superficial text onto the pages.",
+      "conditions": {},
+      "mutations": {
+        "illusion_projected": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "activate_silence_seal",
+      "trigger_event": "activate_silence_seal",
+      "name": "Activate Silence Seal",
+      "flavor_text": "Apply the Silence-Seal to mute the voice of the Illusion-Glyph, making it a silent lie.",
+      "conditions": {
+        "illusion_projected": true
+      },
+      "mutations": {
+        "silence_seal_active": true
+      },
+      "fallback_mutations": {
+        "entropy": 10
+      }
+    },
+    {
+      "id": "trigger_truth_ward",
+      "trigger_event": "trigger_truth_ward",
+      "name": "Trigger Truth Ward",
+      "flavor_text": "Force the Truth-Ward to evaluate the silenced glyph. It detects a silent lie, attacks it, and crashes the grimoire logic.",
+      "conditions": {
+        "silence_seal_active": true
+      },
+      "mutations": {
+        "ward_attacked": true,
+        "passcode_visible": true
+      },
+      "fallback_mutations": {
+        "entropy": 25
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "passcode_visible",
+    "expected_value": true
+  }
+}

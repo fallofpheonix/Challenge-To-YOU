@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "era": "cosmic",
+  "tier": 1,
+  "name": "Superposition Sabotage",
+  "description": "Exploit quantum anomalies, relativistic manifolds, and thermodynamics in deep space.",
+  "prerequisites": ["cyberpunk_tier1"],
+  "unlocks": [],
+  "luck_modifier": 0.0,
+  "challenges": [
+    {
+      "id": "cosmic_01_airlock",
+      "file": "cosmic_01_airlock.json",
+      "difficulty": 0.5,
+      "mode": "saboteur"
+    },
+    {
+      "id": "cosmic_02_nav",
+      "file": "cosmic_02_nav.json",
+      "difficulty": 0.6,
+      "mode": "ghost"
+    },
+    {
+      "id": "cosmic_03_stasis",
+      "file": "cosmic_03_stasis.json",
+      "difficulty": 0.6,
+      "mode": "saboteur"
+    },
+    {
+      "id": "cosmic_04_winch",
+      "file": "cosmic_04_winch.json",
+      "difficulty": 0.7,
+      "mode": "saboteur"
+    },
+    {
+      "id": "cosmic_05_seed",
+      "file": "cosmic_05_seed.json",
+      "difficulty": 0.7,
+      "mode": "saboteur"
+    },
+    {
+      "id": "cosmic_06_singularity",
+      "file": "cosmic_06_singularity.json",
+      "difficulty": 0.8,
+      "mode": "saboteur"
+    },
+    {
+      "id": "cosmic_07_relay",
+      "file": "cosmic_07_relay.json",
+      "difficulty": 0.8,
+      "mode": "ghost"
+    },
+    {
+      "id": "cosmic_08_valve",
+      "file": "cosmic_08_valve.json",
+      "difficulty": 0.9,
+      "mode": "saboteur"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "id": "cyberpunk_06_traffic",
+  "paradigm": "CYBERPUNK",
+  "name": "The Smart-Grid Traffic Light",
+  "description": "Access the city's municipal routing token by triggering a maintenance override.",
+  "logos_token": "LOGOS_CYB_TRAFFIC_TOKEN_55M",
+  "initial_state": {
+    "token_released": false,
+    "all_red_forced": false,
+    "button_triggered": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "force_all_red",
+      "trigger_event": "force_all_red",
+      "name": "Force All Red Lights",
+      "flavor_text": "Manipulate grid intersections to lock all traffic lights on red, invoking the emergency ambulance-override protocol.",
+      "conditions": {},
+      "mutations": {
+        "all_red_forced": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "trigger_shorted_button",
+      "trigger_event": "trigger_shorted_button",
+      "name": "Trigger Shorted Button",
+      "flavor_text": "Ping the short-circuited pedestrian crosswalk button. The signal collides with the ambulance-override, tricking the controller into diagnostic mode and releasing the routing token.",
+      "conditions": {
+        "all_red_forced": true
+      },
+      "mutations": {
+        "button_triggered": true,
+        "token_released": true
+      },
+      "fallback_mutations": {
+        "entropy": 15
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "token_released",
+    "expected_value": true
+  }
+}

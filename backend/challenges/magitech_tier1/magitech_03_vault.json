@@ -1,0 +1,65 @@
+{
+  "id": "magitech_03_vault",
+  "paradigm": "MAGITECH",
+  "name": "The Chrono-Pendulum Vault",
+  "description": "Unseal a door locked in a stasis field by shorting out the stasis lock with chronos-fluid.",
+  "logos_token": "LOGOS_MGT_CHRONO_VAULT_55A",
+  "initial_state": {
+    "door_sealed": true,
+    "anchor_active": false,
+    "chronos_fluid_accumulated": 0,
+    "pendulum_swings": 0,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "engage_anchor",
+      "trigger_event": "engage_anchor",
+      "name": "Engage Gravity Anchor",
+      "flavor_text": "Engaging the gravity anchor stabilizes the pendulum swing, but causes the reservoirs to pool with chronos-fluid.",
+      "conditions": {},
+      "mutations": {
+        "anchor_active": true,
+        "chronos_fluid_accumulated": 100
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "wait_for_swing",
+      "trigger_event": "wait_for_swing",
+      "name": "Wait For Swing",
+      "flavor_text": "Wait for the stabilized pendulum to swing to its apex position.",
+      "conditions": {
+        "anchor_active": true
+      },
+      "mutations": {
+        "pendulum_swings": 1
+      },
+      "fallback_mutations": {
+        "entropy": 10
+      }
+    },
+    {
+      "id": "disable_anchor",
+      "trigger_event": "disable_anchor",
+      "name": "Disable Gravity Anchor",
+      "flavor_text": "Suddenly disable the anchor mid-swing to splash the accumulated chronos-fluid into the lock.",
+      "conditions": {
+        "anchor_active": true,
+        "pendulum_swings": 1
+      },
+      "mutations": {
+        "anchor_active": false,
+        "door_sealed": false
+      },
+      "fallback_mutations": {
+        "chronos_fluid_accumulated": 0,
+        "entropy": 20
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "door_sealed",
+    "expected_value": false
+  }
+}

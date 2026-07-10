@@ -1,0 +1,46 @@
+{
+  "id": "cosmic_02_nav",
+  "paradigm": "COSMIC",
+  "name": "The FTL Nav-Computer",
+  "description": "Extract hyperspace coordinates by triggering a core cache dump abort sequence.",
+  "logos_token": "LOGOS_CSM_NAV_CACHE_22D",
+  "initial_state": {
+    "cache_dumped": false,
+    "manifold_zero_input": false,
+    "abort_sequence_active": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "feed_zero_value",
+      "trigger_event": "feed_zero_value",
+      "name": "Feed Zero Value",
+      "flavor_text": "Feed a zero-value into the dark-matter manifold, triggering an internal calculation of infinity.",
+      "conditions": {},
+      "mutations": {
+        "manifold_zero_input": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "trigger_abort",
+      "trigger_event": "trigger_abort",
+      "name": "Trigger Abort Sequence",
+      "flavor_text": "Infinity calculations trigger a jump-abort sequence, causing the system to dump the core cache to prevent corruption.",
+      "conditions": {
+        "manifold_zero_input": true
+      },
+      "mutations": {
+        "abort_sequence_active": true,
+        "cache_dumped": true
+      },
+      "fallback_mutations": {
+        "entropy": 20
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "cache_dumped",
+    "expected_value": true
+  }
+}

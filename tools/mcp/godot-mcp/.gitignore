@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+
+# IDE
+.vscode/
+.idea/
+
+# Claude
+.claude/
+
+# Environment
+.env
+.env.local
+
+# MCP registry tokens
+.mcpregistry_github_token
+.mcpregistry_registry_token
+
+# Cursor
+.cursor/

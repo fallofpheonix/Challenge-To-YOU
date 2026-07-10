@@ -1,0 +1,128 @@
+[gd_scene load_steps=4 format=3 uid="uid://cty_main_scene"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Shader" path="res://shaders/crt_glitch.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_crt"]
+shader = ExtResource("2_shader")
+shader_parameter/scanline_strength = 0.12
+shader_parameter/aberration = 0.001
+shader_parameter/glitch_intensity = 0.0
+shader_parameter/vignette_intensity = 0.4
+shader_parameter/curve_distortion = 0.02
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+text = "CHALLENGE TO YOU — TERMINAL INTERFACE"
+theme_override_font_sizes/font_size = 18
+
+[node name="ConfigArea" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SeedLabel" type="Label" parent="Margin/VBox/ConfigArea"]
+layout_mode = 2
+text = "Seed:"
+
+[node name="SeedEdit" type="LineEdit" parent="Margin/VBox/ConfigArea"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Random Seed"
+
+[node name="LuckLabel" type="Label" parent="Margin/VBox/ConfigArea"]
+layout_mode = 2
+text = "Luck:"
+
+[node name="LuckSpin" type="SpinBox" parent="Margin/VBox/ConfigArea"]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 0.0
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="ParadigmLabel" type="Label" parent="Margin/VBox/ConfigArea"]
+layout_mode = 2
+text = "Era:"
+
+[node name="ParadigmOption" type="OptionButton" parent="Margin/VBox/ConfigArea"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 1
+item_count = 3
+popup/item_0/text = "MAGITECH"
+popup/item_0/id = 0
+popup/item_1/text = "CYBERPUNK"
+popup/item_1/id = 1
+popup/item_2/text = "COSMIC"
+popup/item_2/id = 2
+
+[node name="ConnectButton" type="Button" parent="Margin/VBox/ConfigArea"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Establish Rift"
+
+[node name="OutputLog" type="RichTextLabel" parent="Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_active = true
+fit_content = false
+text = "INITIATING TERMINAL PROTOCOL...\nAWAITING AXIOMATIC FABRIC CONNECTION...\n"
+
+[node name="InputArea" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Prompt" type="Label" parent="Margin/VBox/InputArea"]
+layout_mode = 2
+text = "root@fabric:~#"
+theme_override_font_sizes/font_size = 16
+
+[node name="CommandLine" type="LineEdit" parent="Margin/VBox/InputArea"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+caret_blink = true
+placeholder_text = "Enter command (help, inject_adrenaline, cut_power, etc.)"
+
+[node name="BackBufferCopy" type="BackBufferCopy" parent="."]
+copy_mode = 2
+
+[node name="GlitchOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_crt")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

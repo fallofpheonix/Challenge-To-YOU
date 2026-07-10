@@ -36,10 +36,11 @@ type DemiurgicCondition struct {
 
 // UnsanctionedGlitch defines the emergent path/loophole the player is attempting to force open
 type UnsanctionedGlitch struct {
-	ID         string               `json:"id"`
-	InputEvent string               `json:"input_event"`
-	Conditions []DemiurgicCondition `json:"conditions"`
-	Effects    []AxiomaticEffect    `json:"effects"`
+	ID                  string               `json:"id"`
+	InputEvent          string               `json:"input_event"`
+	Conditions          []DemiurgicCondition `json:"conditions"`
+	Effects             []AxiomaticEffect    `json:"effects"`
+	FallbackEffects     []AxiomaticEffect    `json:"fallback_effects,omitempty"`
 }
 
 // AxiomaticFabric is our universal logic graph manager
@@ -93,6 +94,15 @@ func (af *AxiomaticFabric) FromJSON(data []byte) error {
 // ResetVigilance resets the Archon's detection meter (for testing or level resets)
 func (af *AxiomaticFabric) ResetVigilance() {
 	af.ArchonVigilance = 0.0
+}
+
+// GetStateMap returns the state as a map[string]interface{} for external consumers (e.g., AI oracle)
+func (af *AxiomaticFabric) GetStateMap() map[string]interface{} {
+	result := make(map[string]interface{}, len(af.State))
+	for k, v := range af.State {
+		result[k] = v
+	}
+	return result
 }
 
 // String returns a human-readable representation of the fabric state

@@ -1,0 +1,62 @@
+{
+  "id": "magitech_02_centrifuge",
+  "paradigm": "MAGITECH",
+  "name": "The Alchemical Centrifuge",
+  "description": "Extract the Logos Token trapped in the pressurized mixing vial.",
+  "logos_token": "LOGOS_MGT_CENTRIFUGE_99X",
+  "initial_state": {
+    "vial_locked": true,
+    "heat_level": 0,
+    "crystal_shattered": false,
+    "emergency_vent_open": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "overheat_centrifuge",
+      "trigger_event": "overheat_centrifuge",
+      "name": "Overheat Centrifuge",
+      "flavor_text": "Force the heat regulator to its absolute maximum capacity.",
+      "conditions": {},
+      "mutations": {
+        "heat_level": 100
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "shatter_crystal",
+      "trigger_event": "shatter_crystal",
+      "name": "Shatter Cooling Crystal",
+      "flavor_text": "The cooling crystal cannot withstand rapid heating. Shatter it under max heat.",
+      "conditions": {
+        "heat_level": 100
+      },
+      "mutations": {
+        "crystal_shattered": true
+      },
+      "fallback_mutations": {
+        "entropy": 10
+      }
+    },
+    {
+      "id": "trigger_vent",
+      "trigger_event": "trigger_vent",
+      "name": "Trigger Emergency Vent",
+      "flavor_text": "With the cooling crystal destroyed, direct the built-up pressure to blow the lock open.",
+      "conditions": {
+        "crystal_shattered": true
+      },
+      "mutations": {
+        "emergency_vent_open": true,
+        "vial_locked": false
+      },
+      "fallback_mutations": {
+        "entropy": 25
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "vial_locked",
+    "expected_value": false
+  }
+}

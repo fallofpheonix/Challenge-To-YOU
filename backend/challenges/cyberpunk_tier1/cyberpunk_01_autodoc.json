@@ -1,0 +1,48 @@
+{
+  "id": "cyberpunk_01_autodoc",
+  "paradigm": "CYBERPUNK",
+  "name": "The Biometric Auto-Doc",
+  "description": "Open a medical pod holding a smuggled data-drive by simulating a flatline.",
+  "logos_token": "LOGOS_CYB_AUTODOC_77P",
+  "initial_state": {
+    "pod_opened": false,
+    "heart_rate_bpm": 80,
+    "adrenaline_injected": false,
+    "power_cut": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "inject_adrenaline",
+      "trigger_event": "inject_adrenaline",
+      "name": "Inject Adrenaline",
+      "flavor_text": "Trigger the stuck diagnostic loop of the adrenaline injector to surge the heart rate to 200 bpm.",
+      "conditions": {},
+      "mutations": {
+        "adrenaline_injected": true,
+        "heart_rate_bpm": 200
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "cut_power",
+      "trigger_event": "cut_power",
+      "name": "Cut Power",
+      "flavor_text": "Sever the main power grid. With the heart rate at 200 bpm, the glitching monitor reads the sudden shutdown as a flatline and triggers mechanical safety release.",
+      "conditions": {
+        "adrenaline_injected": true
+      },
+      "mutations": {
+        "power_cut": true,
+        "pod_opened": true
+      },
+      "fallback_mutations": {
+        "entropy": 20
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "pod_opened",
+    "expected_value": true
+  }
+}

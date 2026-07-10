@@ -1,0 +1,46 @@
+{
+  "id": "cosmic_05_seed",
+  "paradigm": "COSMIC",
+  "name": "The Terraform Seed",
+  "description": "Activate the dormant planetary seeder by crushing its dormancy DRM chip.",
+  "logos_token": "LOGOS_CSM_TERRAFORM_SEED_11S",
+  "initial_state": {
+    "drm_chip_crushed": false,
+    "radiation_shield_deployed": false,
+    "high_radiation_detected": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "ping_soil_analyzer",
+      "trigger_event": "ping_soil_analyzer",
+      "name": "Ping Soil Analyzer",
+      "flavor_text": "Ping the dirty soil analyzer, causing it to miscalibrate and falsely flag a critical high-radiation alert.",
+      "conditions": {},
+      "mutations": {
+        "high_radiation_detected": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "deploy_shield",
+      "trigger_event": "deploy_shield",
+      "name": "Deploy Radiation Shield",
+      "flavor_text": "The high radiation reading triggers automatic deployment of the heavy lead protective shield. The shield's mechanical arm crushes the DRM dormancy chip.",
+      "conditions": {
+        "high_radiation_detected": true
+      },
+      "mutations": {
+        "radiation_shield_deployed": true,
+        "drm_chip_crushed": true
+      },
+      "fallback_mutations": {
+        "entropy": 20
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "drm_chip_crushed",
+    "expected_value": true
+  }
+}

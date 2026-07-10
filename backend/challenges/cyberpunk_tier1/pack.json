@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "era": "cyberpunk",
+  "tier": 1,
+  "name": "Neon City Overrides",
+  "description": "Exploit diagnostic loops, race conditions, and memory leaks in corporate infrastructure.",
+  "prerequisites": ["magitech_tier1"],
+  "unlocks": ["cosmic_tier1"],
+  "luck_modifier": 0.05,
+  "challenges": [
+    {
+      "id": "cyberpunk_01_autodoc",
+      "file": "cyberpunk_01_autodoc.json",
+      "difficulty": 0.3,
+      "mode": "saboteur"
+    },
+    {
+      "id": "cyberpunk_02_elevator",
+      "file": "cyberpunk_02_elevator.json",
+      "difficulty": 0.4,
+      "mode": "saboteur"
+    },
+    {
+      "id": "cyberpunk_03_server",
+      "file": "cyberpunk_03_server.json",
+      "difficulty": 0.5,
+      "mode": "ghost"
+    },
+    {
+      "id": "cyberpunk_04_barista",
+      "file": "cyberpunk_04_barista.json",
+      "difficulty": 0.5,
+      "mode": "saboteur"
+    },
+    {
+      "id": "cyberpunk_05_drone",
+      "file": "cyberpunk_05_drone.json",
+      "difficulty": 0.6,
+      "mode": "saboteur"
+    },
+    {
+      "id": "cyberpunk_06_traffic",
+      "file": "cyberpunk_06_traffic.json",
+      "difficulty": 0.7,
+      "mode": "architect"
+    }
+  ]
+}

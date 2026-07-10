@@ -1,0 +1,46 @@
+{
+  "id": "cosmic_08_valve",
+  "paradigm": "COSMIC",
+  "name": "The Antimatter Valve",
+  "description": "Purge the system to retrieve the physical valve key using a safety leak-override.",
+  "logos_token": "LOGOS_CSM_VALVE_KEY_99K",
+  "initial_state": {
+    "key_ejected": false,
+    "dirty_sensor_active": false,
+    "cleaning_triggered": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "activate_dirty_sensor",
+      "trigger_event": "activate_dirty_sensor",
+      "name": "Activate Dirty Sensor",
+      "flavor_text": "Ping the dirty positive-matter sensor. It reports a calibration failure due to dust build-up.",
+      "conditions": {},
+      "mutations": {
+        "dirty_sensor_active": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "trigger_argon_flush",
+      "trigger_event": "trigger_argon_flush",
+      "name": "Trigger Argon Flush",
+      "flavor_text": "Invoke the dust-cleaning protocol. It flushes the chamber with argon gas, which the system interprets as a massive leak, triggering emergency valve ejection.",
+      "conditions": {
+        "dirty_sensor_active": true
+      },
+      "mutations": {
+        "cleaning_triggered": true,
+        "key_ejected": true
+      },
+      "fallback_mutations": {
+        "entropy": 20
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "key_ejected",
+    "expected_value": true
+  }
+}

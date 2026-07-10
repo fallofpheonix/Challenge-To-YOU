@@ -1,2 +1,10 @@
 # Regenerable simulation run artifacts
 *.chrysalis_replay
+
+# Database & binary outputs
+backend/challenge.db
+backend/sandbox
+dist/
+.gocache/
+.DS_Store
+**/.DS_Store

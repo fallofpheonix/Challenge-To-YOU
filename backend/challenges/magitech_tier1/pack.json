@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "era": "magitech",
+  "tier": 1,
+  "name": "Rune Binding Basics",
+  "description": "Learn the fundamentals of rune resonance and mana channeling.",
+  "prerequisites": [],
+  "unlocks": ["cyberpunk_tier1"],
+  "luck_modifier": 0.1,
+  "challenges": [
+    {
+      "id": "magitech_01_breach",
+      "file": "magitech_01.json",
+      "difficulty": 0.2,
+      "mode": "architect"
+    },
+    {
+      "id": "magitech_02_centrifuge",
+      "file": "magitech_02_centrifuge.json",
+      "difficulty": 0.3,
+      "mode": "saboteur"
+    },
+    {
+      "id": "magitech_03_vault",
+      "file": "magitech_03_vault.json",
+      "difficulty": 0.4,
+      "mode": "ghost"
+    },
+    {
+      "id": "magitech_04_golem",
+      "file": "magitech_04_golem.json",
+      "difficulty": 0.5,
+      "mode": "ghost"
+    },
+    {
+      "id": "magitech_05_grimoire",
+      "file": "magitech_05_grimoire.json",
+      "difficulty": 0.6,
+      "mode": "saboteur"
+    },
+    {
+      "id": "magitech_06_astrolabe",
+      "file": "magitech_06_astrolabe.json",
+      "difficulty": 0.7,
+      "mode": "architect"
+    },
+    {
+      "id": "magitech_07_loom",
+      "file": "magitech_07_loom.json",
+      "difficulty": 0.8,
+      "mode": "saboteur"
+    }
+  ]
+}

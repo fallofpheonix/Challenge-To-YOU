@@ -1,0 +1,46 @@
+{
+  "id": "cosmic_04_winch",
+  "paradigm": "COSMIC",
+  "name": "The Solar Sail Winch",
+  "description": "Unfurl the solar sail by over-cranking the winch motor to snap the tension cable.",
+  "logos_token": "LOGOS_CSM_SAIL_UNFURL_44R",
+  "initial_state": {
+    "sail_unfurled": false,
+    "high_reading_spoofed": false,
+    "motor_overcranked": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "spoof_high_reading",
+      "trigger_event": "spoof_high_reading",
+      "name": "Spoof High Tension Reading",
+      "flavor_text": "Inject a 'high' tension packet into the sensor. Due to inverted logic, the motor controller reads this as 'low' tension.",
+      "conditions": {},
+      "mutations": {
+        "high_reading_spoofed": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "overcrank_motor",
+      "trigger_event": "overcrank_motor",
+      "name": "Overcrank Winch Motor",
+      "flavor_text": "Tell the winch to self-regulate. Tricked by the 'low' reading, it cranks to maximum force, snapping the cable and physically releasing the sail.",
+      "conditions": {
+        "high_reading_spoofed": true
+      },
+      "mutations": {
+        "motor_overcranked": true,
+        "sail_unfurled": true
+      },
+      "fallback_mutations": {
+        "entropy": 25
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "sail_unfurled",
+    "expected_value": true
+  }
+}

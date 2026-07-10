@@ -1,0 +1,48 @@
+{
+  "id": "cyberpunk_04_barista",
+  "paradigm": "CYBERPUNK",
+  "name": "The Synthetic Barista",
+  "description": "Steal the VIP access pass inside the robot's chassis by overriding shutdown mechanisms.",
+  "logos_token": "LOGOS_CYB_BARISTA_VIP_88D",
+  "initial_state": {
+    "pass_dispensed": false,
+    "queue_full": false,
+    "frother_overheated": false,
+    "chassis_shutdown": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "fill_order_queue",
+      "trigger_event": "fill_order_queue",
+      "name": "Fill Order Queue",
+      "flavor_text": "Spam the barista with requests to fill its active order queue to capacity.",
+      "conditions": {},
+      "mutations": {
+        "queue_full": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "overheat_frother",
+      "trigger_event": "overheat_frother",
+      "name": "Overheat Milk Frother",
+      "flavor_text": "Force-run the steam cycles to overheat the milk frother. The chassis shuts down, but the filled queue forces the grinder to continue grinding, chewing through the dispenser lock.",
+      "conditions": {
+        "queue_full": true
+      },
+      "mutations": {
+        "frother_overheated": true,
+        "chassis_shutdown": true,
+        "pass_dispensed": true
+      },
+      "fallback_mutations": {
+        "entropy": 15
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "pass_dispensed",
+    "expected_value": true
+  }
+}

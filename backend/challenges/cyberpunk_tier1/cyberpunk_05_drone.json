@@ -1,0 +1,46 @@
+{
+  "id": "cyberpunk_05_drone",
+  "paradigm": "CYBERPUNK",
+  "name": "The Smuggler's Delivery Drone",
+  "description": "Force the delivery drone to drop its cargo by spoofing an underwater state.",
+  "logos_token": "LOGOS_CYB_DRONE_CARGO_11W",
+  "initial_state": {
+    "cargo_dropped": false,
+    "altimeter_underwater": false,
+    "flotation_bags_deployed": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "spoof_altimeter",
+      "trigger_event": "spoof_altimeter",
+      "name": "Spoof Altimeter",
+      "flavor_text": "Overwrite altimeter pressure readings to convince the drone's navigation computer that it is deep underwater.",
+      "conditions": {},
+      "mutations": {
+        "altimeter_underwater": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "deploy_flotation",
+      "trigger_event": "deploy_flotation",
+      "name": "Deploy Flotation Bags",
+      "flavor_text": "With the altimeter reading underwater, trigger the flotation bag deployment. They expand, blocking the solar panels and forcing an emergency cargo drop.",
+      "conditions": {
+        "altimeter_underwater": true
+      },
+      "mutations": {
+        "flotation_bags_deployed": true,
+        "cargo_dropped": true
+      },
+      "fallback_mutations": {
+        "entropy": 20
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "cargo_dropped",
+    "expected_value": true
+  }
+}

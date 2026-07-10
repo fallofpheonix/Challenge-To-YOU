@@ -1,0 +1,46 @@
+{
+  "id": "cosmic_06_singularity",
+  "paradigm": "COSMIC",
+  "name": "The Singularity Containment Field",
+  "description": "Steal the containment token by forcing field inversion and ejection.",
+  "logos_token": "LOGOS_CSM_SINGULARITY_EJECT_33M",
+  "initial_state": {
+    "token_ejected": false,
+    "polarities_inverted": false,
+    "mass_added": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "invert_polarities",
+      "trigger_event": "invert_polarities",
+      "name": "Invert Magnetic Polarities",
+      "flavor_text": "Invert the magnetic containment coils to reverse the localized quantum gravity coefficients.",
+      "conditions": {},
+      "mutations": {
+        "polarities_inverted": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "dump_mass",
+      "trigger_event": "dump_mass",
+      "name": "Dump Mass",
+      "flavor_text": "Dump cargo debris into the singularity. Under inverted polarity, the increased mass drops the gravitational pull to zero, causing the field to flip and eject the token.",
+      "conditions": {
+        "polarities_inverted": true
+      },
+      "mutations": {
+        "mass_added": true,
+        "token_ejected": true
+      },
+      "fallback_mutations": {
+        "entropy": 25
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "token_ejected",
+    "expected_value": true
+  }
+}

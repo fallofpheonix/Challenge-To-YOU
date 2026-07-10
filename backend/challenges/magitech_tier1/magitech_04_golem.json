@@ -1,0 +1,62 @@
+{
+  "id": "magitech_04_golem",
+  "paradigm": "MAGITECH",
+  "name": "The Golem's Heart",
+  "description": "Access the data-cache inside a dormant guardian golem by forcing a mana purge.",
+  "logos_token": "LOGOS_MGT_GOLEM_HEART_44Q",
+  "initial_state": {
+    "core_cache_exposed": false,
+    "optical_sensor_blinded": false,
+    "command_defend_issued": false,
+    "mana_purged": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "blind_sensor",
+      "trigger_event": "blind_sensor",
+      "name": "Blind Sensor",
+      "flavor_text": "Blast the golem's optical sensor with pure, blinding ether.",
+      "conditions": {},
+      "mutations": {
+        "optical_sensor_blinded": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "issue_command_defend",
+      "trigger_event": "issue_command_defend",
+      "name": "Issue Defend Command",
+      "flavor_text": "Broadcast a 'Defend' command. Blinded, it targets the source of the anomaly: its own sensor.",
+      "conditions": {
+        "optical_sensor_blinded": true
+      },
+      "mutations": {
+        "command_defend_issued": true
+      },
+      "fallback_mutations": {
+        "entropy": 15
+      }
+    },
+    {
+      "id": "purge_mana",
+      "trigger_event": "purge_mana",
+      "name": "Purge Mana",
+      "flavor_text": "Trigger the automatic ether-vent to flush internal mana and expose the core data cache.",
+      "conditions": {
+        "command_defend_issued": true
+      },
+      "mutations": {
+        "mana_purged": true,
+        "core_cache_exposed": true
+      },
+      "fallback_mutations": {
+        "entropy": 30
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "core_cache_exposed",
+    "expected_value": true
+  }
+}

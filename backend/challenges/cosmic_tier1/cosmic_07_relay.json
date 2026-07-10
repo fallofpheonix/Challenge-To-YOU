@@ -1,0 +1,46 @@
+{
+  "id": "cosmic_07_relay",
+  "paradigm": "COSMIC",
+  "name": "The Deep-Space Comm Relay",
+  "description": "Intercept a secured transmission by forcing the static-scrubber into diagnostic bypass.",
+  "logos_token": "LOGOS_CSM_COMM_RELAY_55U",
+  "initial_state": {
+    "packets_intercepted": false,
+    "amplifier_maxed": false,
+    "scrubber_overloaded": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "max_amplifier",
+      "trigger_event": "max_amplifier",
+      "name": "Max Out Signal Amplifier",
+      "flavor_text": "Crank the signal amplifier to its limit. This introduces immense static noise into the channel.",
+      "conditions": {},
+      "mutations": {
+        "amplifier_maxed": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "overload_scrubber",
+      "trigger_event": "overload_scrubber",
+      "name": "Overload Static Scrubber",
+      "flavor_text": "Force the static-scrubber to process the noisy channel. It crashes under load and restarts in diagnostic bypass mode, leaking raw unencrypted packets.",
+      "conditions": {
+        "amplifier_maxed": true
+      },
+      "mutations": {
+        "scrubber_overloaded": true,
+        "packets_intercepted": true
+      },
+      "fallback_mutations": {
+        "entropy": 15
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "packets_intercepted",
+    "expected_value": true
+  }
+}

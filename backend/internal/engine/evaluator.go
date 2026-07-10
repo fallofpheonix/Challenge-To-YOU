@@ -21,18 +21,28 @@ func (af *AxiomaticFabric) TriggerOntologicalShift(eventID string) (string, bool
 	}
 
 	// Validate conditions
+	allConditionsMet := true
 	for _, cond := range glitch.Conditions {
 		if !af.evaluateCondition(cond) {
-			return "", false, nil // Conditions unmet; confluence stalls
+			allConditionsMet = false
+			break
 		}
 	}
 
-	// Apply effects to reality matrix
 	var generatedCipher string
-	for _, effect := range glitch.Effects {
-		af.State[effect.TargetStateKey] = effect.MutationValue
-		if effect.LogosCipher != "" {
-			generatedCipher = effect.LogosCipher
+
+	if allConditionsMet {
+		// Apply primary effects
+		for _, effect := range glitch.Effects {
+			af.State[effect.TargetStateKey] = effect.MutationValue
+			if effect.LogosCipher != "" {
+				generatedCipher = effect.LogosCipher
+			}
+		}
+	} else if len(glitch.FallbackEffects) > 0 {
+		// Apply fallback effects (entropy, penalties, etc.)
+		for _, effect := range glitch.FallbackEffects {
+			af.State[effect.TargetStateKey] = effect.MutationValue
 		}
 	}
 

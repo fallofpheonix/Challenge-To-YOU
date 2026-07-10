@@ -1,0 +1,62 @@
+{
+  "id": "magitech_07_loom",
+  "paradigm": "MAGITECH",
+  "name": "The Soul-Weaver's Loom",
+  "description": "Extract a memory trapped in the magical fabric by forcing a structural tear.",
+  "logos_token": "LOGOS_MGT_SOUL_LOOM_88R",
+  "initial_state": {
+    "memory_extracted": false,
+    "thread_tangled": false,
+    "tension_maximized": false,
+    "thread_snapped": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "tangle_thread",
+      "trigger_event": "tangle_thread",
+      "name": "Tangle White Thread",
+      "flavor_text": "Tangle the white-thread spools, disrupting the loom's feeding mechanism.",
+      "conditions": {},
+      "mutations": {
+        "thread_tangled": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "crank_tension",
+      "trigger_event": "crank_tension",
+      "name": "Maximize Tension Motor",
+      "flavor_text": "Over-crank the tension motor. Due to the tangles, tension increases exponentially.",
+      "conditions": {
+        "thread_tangled": true
+      },
+      "mutations": {
+        "tension_maximized": true
+      },
+      "fallback_mutations": {
+        "entropy": 15
+      }
+    },
+    {
+      "id": "snap_thread",
+      "trigger_event": "snap_thread",
+      "name": "Snap Thread",
+      "flavor_text": "Trigger a hard snap. The loom compensates by creating a structural void, letting you pull the memory free.",
+      "conditions": {
+        "tension_maximized": true
+      },
+      "mutations": {
+        "thread_snapped": true,
+        "memory_extracted": true
+      },
+      "fallback_mutations": {
+        "entropy": 30
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "memory_extracted",
+    "expected_value": true
+  }
+}

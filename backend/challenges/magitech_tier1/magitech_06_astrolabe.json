@@ -1,0 +1,60 @@
+{
+  "id": "magitech_06_astrolabe",
+  "paradigm": "MAGITECH",
+  "name": "The Astral Astrolabe",
+  "description": "Realign a navigational tool pointing into the void using a heat-induced gear slip.",
+  "logos_token": "LOGOS_MGT_ASTRAL_ASTRO_33Z",
+  "initial_state": {
+    "prism_aligned": false,
+    "sun_lens_engaged": false,
+    "moon_gear_slipped": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "engage_sun_lens",
+      "trigger_event": "engage_sun_lens",
+      "name": "Engage Sun Lens",
+      "flavor_text": "Expose the solar optics to focus extreme, concentrated heat on the mechanical gears.",
+      "conditions": {},
+      "mutations": {
+        "sun_lens_engaged": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "force_moon_gear_slip",
+      "trigger_event": "force_moon_gear_slip",
+      "name": "Force Moon Gear Slip",
+      "flavor_text": "Under high heat, force the stripped moon-gear to slip backward.",
+      "conditions": {
+        "sun_lens_engaged": true
+      },
+      "mutations": {
+        "moon_gear_slipped": true
+      },
+      "fallback_mutations": {
+        "entropy": 10
+      }
+    },
+    {
+      "id": "align_void_prism",
+      "trigger_event": "align_void_prism",
+      "name": "Align Void Prism",
+      "flavor_text": "With the gear slipped, the void-prism aligns perfectly, dropping the navigations data.",
+      "conditions": {
+        "moon_gear_slipped": true
+      },
+      "mutations": {
+        "prism_aligned": true
+      },
+      "fallback_mutations": {
+        "entropy": 20
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "prism_aligned",
+    "expected_value": true
+  }
+}

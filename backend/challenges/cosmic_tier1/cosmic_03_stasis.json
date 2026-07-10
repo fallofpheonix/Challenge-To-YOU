@@ -1,0 +1,60 @@
+{
+  "id": "cosmic_03_stasis",
+  "paradigm": "COSMIC",
+  "name": "The Cryo-Stasis Array",
+  "description": "Thaw a specific frozen pod by aligning the defrost laser using audio frequencies.",
+  "logos_token": "LOGOS_CSM_STASIS_THAW_88F",
+  "initial_state": {
+    "lock_melted": false,
+    "siren_ringing": false,
+    "laser_aligned": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "trigger_breach_alarm",
+      "trigger_event": "trigger_breach_alarm",
+      "name": "Trigger Breach Alarm",
+      "flavor_text": "Spoof a hull-breach to trigger the high-decibel acoustic siren.",
+      "conditions": {},
+      "mutations": {
+        "siren_ringing": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "align_laser",
+      "trigger_event": "align_laser",
+      "name": "Vibrate Laser Servo",
+      "flavor_text": "The siren frequency vibrates the misaligned laser alignment servo into perfect lock position.",
+      "conditions": {
+        "siren_ringing": true
+      },
+      "mutations": {
+        "laser_aligned": true
+      },
+      "fallback_mutations": {
+        "entropy": 15
+      }
+    },
+    {
+      "id": "fire_laser",
+      "trigger_event": "fire_laser",
+      "name": "Fire Defrost Laser",
+      "flavor_text": "With the alignment locked, fire the defrost laser to melt the master mechanical clamp.",
+      "conditions": {
+        "laser_aligned": true
+      },
+      "mutations": {
+        "lock_melted": true
+      },
+      "fallback_mutations": {
+        "entropy": 30
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "lock_melted",
+    "expected_value": true
+  }
+}

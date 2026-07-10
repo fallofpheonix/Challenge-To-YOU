@@ -1,0 +1,46 @@
+{
+  "id": "cyberpunk_02_elevator",
+  "paradigm": "CYBERPUNK",
+  "name": "The Orbital Freight Elevator",
+  "description": "Unlock the grounded elevator car by melting the locking mechanism with friction fire.",
+  "logos_token": "LOGOS_CYB_ELEVATOR_12F",
+  "initial_state": {
+    "lock_melted": false,
+    "negative_mass_spoofed": false,
+    "brakes_deployed": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "spoof_negative_mass",
+      "trigger_event": "spoof_negative_mass",
+      "name": "Spoof Negative Mass",
+      "flavor_text": "Spoof the faulty weight sensor into calibrating negative mass.",
+      "conditions": {},
+      "mutations": {
+        "negative_mass_spoofed": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "deploy_brakes",
+      "trigger_event": "deploy_brakes",
+      "name": "Deploy Emergency Brakes",
+      "flavor_text": "Force emergency brake deployment. On negative mass, they clamp violently, causing extreme friction that ignites the rusted fluid line and melts the lock.",
+      "conditions": {
+        "negative_mass_spoofed": true
+      },
+      "mutations": {
+        "brakes_deployed": true,
+        "lock_melted": true
+      },
+      "fallback_mutations": {
+        "entropy": 25
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "lock_melted",
+    "expected_value": true
+  }
+}

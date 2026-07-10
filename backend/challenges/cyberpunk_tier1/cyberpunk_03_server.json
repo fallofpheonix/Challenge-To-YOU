@@ -1,0 +1,46 @@
+{
+  "id": "cyberpunk_03_server",
+  "paradigm": "CYBERPUNK",
+  "name": "The Data-Heist Server Rack",
+  "description": "Decrypt the root directory using a firewall-to-trash compactor memory leak exploit.",
+  "logos_token": "LOGOS_CYB_SERVER_ROOT_44K",
+  "initial_state": {
+    "root_decrypted": false,
+    "bad_packet_sent": false,
+    "compactor_triggered": false,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "send_bad_packet",
+      "trigger_event": "send_bad_packet",
+      "name": "Send Malformed Packet",
+      "flavor_text": "Craft and send a highly malformed packet designed to fail firewall checks and get routed directly to the trash compactor buffer.",
+      "conditions": {},
+      "mutations": {
+        "bad_packet_sent": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "trigger_compactor",
+      "trigger_event": "trigger_compactor",
+      "name": "Trigger Trash Compactor",
+      "flavor_text": "Force execution of the trash compactor on the bad packet. This triggers the memory leak, overriding permissions and decrypting the root directory.",
+      "conditions": {
+        "bad_packet_sent": true
+      },
+      "mutations": {
+        "compactor_triggered": true,
+        "root_decrypted": true
+      },
+      "fallback_mutations": {
+        "entropy": 30
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "root_decrypted",
+    "expected_value": true
+  }
+}
