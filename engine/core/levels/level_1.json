@@ -1,7 +1,0 @@
-{
-  "id": "level_1",
-  "title": "Diagonal Dash",
-  "description": "Move your agent to the target. You'll need to go both right AND down.",
-  "goal": { "x": 30000, "y": 20000 },
-  "allowed_builtins": ["move_forward", "move_down", "range", "print"]
-}
