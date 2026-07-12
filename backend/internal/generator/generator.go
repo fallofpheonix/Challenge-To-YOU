@@ -9,15 +9,15 @@ import (
 
 // Vocabulary pools for procedural randomization
 var magitechVocab = struct {
-	Step1   []string
-	Step2   []string
-	Step3   []string
-	State1  []string
-	State2  []string
-	State3  []string
-	Flaw1   []string
-	Flaw2   []string
-	Flaw3   []string
+	Step1    []string
+	Step2    []string
+	Step3    []string
+	State1   []string
+	State2   []string
+	State3   []string
+	Flaw1    []string
+	Flaw2    []string
+	Flaw3    []string
 	Flaw1Flv []string
 	Flaw2Flv []string
 	Flaw3Flv []string
@@ -25,15 +25,15 @@ var magitechVocab = struct {
 	JunkName []string
 	JunkFlv  []string
 }{
-	Step1:   []string{"invoke_binding", "align_resonance", "stabilize_sigil"},
-	Step2:   []string{"surge_mana", "excite_ether", "channel_leyline"},
-	Step3:   []string{"trigger_release", "shatter_barrier", "discharge_node"},
-	State1:  []string{"binding_active", "resonance_locked", "sigil_stable"},
-	State2:  []string{"mana_critical", "ether_saturated", "leyline_pegged"},
-	State3:  []string{"ward_sealed", "gate_locked", "runic_barrier_active"},
-	Flaw1:   []string{"Cracked Binding Rune", "Fraying Resonance Sigil", "Unstable Focal Point"},
-	Flaw2:   []string{"Leaking Mana Conduit", "Bleeding Ether Pipe", "Overloaded Leyline Junction"},
-	Flaw3:   []string{"Fractured Release Seal", "Compromised Gate Trigger", "Failing Discharge Glyphs"},
+	Step1:    []string{"invoke_binding", "align_resonance", "stabilize_sigil"},
+	Step2:    []string{"surge_mana", "excite_ether", "channel_leyline"},
+	Step3:    []string{"trigger_release", "shatter_barrier", "discharge_node"},
+	State1:   []string{"binding_active", "resonance_locked", "sigil_stable"},
+	State2:   []string{"mana_critical", "ether_saturated", "leyline_pegged"},
+	State3:   []string{"ward_sealed", "gate_locked", "runic_barrier_active"},
+	Flaw1:    []string{"Cracked Binding Rune", "Fraying Resonance Sigil", "Unstable Focal Point"},
+	Flaw2:    []string{"Leaking Mana Conduit", "Bleeding Ether Pipe", "Overloaded Leyline Junction"},
+	Flaw3:    []string{"Fractured Release Seal", "Compromised Gate Trigger", "Failing Discharge Glyphs"},
 	Flaw1Flv: []string{"The runic structure is compromised. Activating it forcefully bypasses safety interlocks.", "A localized leak allows manual injection of binding coefficients."},
 	Flaw2Flv: []string{"Unregulated mana bleeds from this connection. Spikes the pressure if the interlock is active.", "Raw ether leaks. Feedback loop causes critical state if the sigil is stabilized."},
 	Flaw3Flv: []string{"The release lock is jammed. Requires a critical mana spike to physically shatter the gate.", "The mechanical latch ignores normal inputs. A sudden ether discharge will force it open."},
@@ -43,15 +43,15 @@ var magitechVocab = struct {
 }
 
 var cyberpunkVocab = struct {
-	Step1   []string
-	Step2   []string
-	Step3   []string
-	State1  []string
-	State2  []string
-	State3  []string
-	Flaw1   []string
-	Flaw2   []string
-	Flaw3   []string
+	Step1    []string
+	Step2    []string
+	Step3    []string
+	State1   []string
+	State2   []string
+	State3   []string
+	Flaw1    []string
+	Flaw2    []string
+	Flaw3    []string
 	Flaw1Flv []string
 	Flaw2Flv []string
 	Flaw3Flv []string
@@ -59,15 +59,15 @@ var cyberpunkVocab = struct {
 	JunkName []string
 	JunkFlv  []string
 }{
-	Step1:   []string{"bypass_firewall", "disable_proxy", "kill_daemon"},
-	Step2:   []string{"spoof_credentials", "inject_token", "fake_handshake"},
-	Step3:   []string{"grant_root", "spawn_shell", "force_override"},
-	State1:  []string{"firewall_disabled", "proxy_offline", "daemon_terminated"},
-	State2:  []string{"credentials_spoofed", "token_validated", "handshake_accepted"},
-	State3:  []string{"root_access_granted", "shell_active", "system_compromised"},
-	Flaw1:   []string{"Compromised Firewall Daemon", "Rerouted Proxy Connection", "Failing Access Daemon"},
-	Flaw2:   []string{"Spoofed Biometric Injector", "Leaked Session Token Buffer", "Out-of-Order Handshake Routine"},
-	Flaw3:   []string{"Unsanctioned Privilege Escalator", "Vulnerable Exec Shunt", "Unprotected Shell Port"},
+	Step1:    []string{"bypass_firewall", "disable_proxy", "kill_daemon"},
+	Step2:    []string{"spoof_credentials", "inject_token", "fake_handshake"},
+	Step3:    []string{"grant_root", "spawn_shell", "force_override"},
+	State1:   []string{"firewall_disabled", "proxy_offline", "daemon_terminated"},
+	State2:   []string{"credentials_spoofed", "token_validated", "handshake_accepted"},
+	State3:   []string{"root_access_granted", "shell_active", "system_compromised"},
+	Flaw1:    []string{"Compromised Firewall Daemon", "Rerouted Proxy Connection", "Failing Access Daemon"},
+	Flaw2:    []string{"Spoofed Biometric Injector", "Leaked Session Token Buffer", "Out-of-Order Handshake Routine"},
+	Flaw3:    []string{"Unsanctioned Privilege Escalator", "Vulnerable Exec Shunt", "Unprotected Shell Port"},
 	Flaw1Flv: []string{"A diagnostic port remains open. Bypassing it drops the local firewall security.", "Terminating this background daemon disables proxy routing checks."},
 	Flaw2Flv: []string{"Allows injection of fake credential parameters. Succeeds if proxy routing is disabled.", "Overwriting the session buffer bypasses biometric checks if firewall is offline."},
 	Flaw3Flv: []string{"An escalation exploit that grants root privileges if credentials are successfully spoofed.", "A debug shell that spawns with admin privileges when session token is valid."},
@@ -77,15 +77,15 @@ var cyberpunkVocab = struct {
 }
 
 var cosmicVocab = struct {
-	Step1   []string
-	Step2   []string
-	Step3   []string
-	State1  []string
-	State2  []string
-	State3  []string
-	Flaw1   []string
-	Flaw2   []string
-	Flaw3   []string
+	Step1    []string
+	Step2    []string
+	Step3    []string
+	State1   []string
+	State2   []string
+	State3   []string
+	Flaw1    []string
+	Flaw2    []string
+	Flaw3    []string
 	Flaw1Flv []string
 	Flaw2Flv []string
 	Flaw3Flv []string
@@ -93,15 +93,15 @@ var cosmicVocab = struct {
 	JunkName []string
 	JunkFlv  []string
 }{
-	Step1:   []string{"stabilize_manifold", "anchor_gravity", "contain_singularity"},
-	Step2:   []string{"excite_quantum_state", "align_phase", "coherent_flux"},
-	Step3:   []string{"open_rift_door", "unseal_airlock", "unlock_hatch"},
-	State1:  []string{"manifold_stable", "gravity_anchored", "singularity_contained"},
-	State2:  []string{"quantum_excited", "phase_aligned", "flux_coherent"},
-	State3:  []string{"airlock_open", "rift_unsealed", "hatch_unlocked"},
-	Flaw1:   []string{"Miscalibrated Manifold Servo", "Leaking Gravity Anchor", "Failing Singularity Core"},
-	Flaw2:   []string{"Acoustic Quantum Exciter", "Phase-Shift Synchronizer", "Coherent Flux Radiator"},
-	Flaw3:   []string{"Emergency Superposition Airlock", "Rift Controller Gate", "Pneumatic Hatch Release"},
+	Step1:    []string{"stabilize_manifold", "anchor_gravity", "contain_singularity"},
+	Step2:    []string{"excite_quantum_state", "align_phase", "coherent_flux"},
+	Step3:    []string{"open_rift_door", "unseal_airlock", "unlock_hatch"},
+	State1:   []string{"manifold_stable", "gravity_anchored", "singularity_contained"},
+	State2:   []string{"quantum_excited", "phase_aligned", "flux_coherent"},
+	State3:   []string{"airlock_open", "rift_unsealed", "hatch_unlocked"},
+	Flaw1:    []string{"Miscalibrated Manifold Servo", "Leaking Gravity Anchor", "Failing Singularity Core"},
+	Flaw2:    []string{"Acoustic Quantum Exciter", "Phase-Shift Synchronizer", "Coherent Flux Radiator"},
+	Flaw3:    []string{"Emergency Superposition Airlock", "Rift Controller Gate", "Pneumatic Hatch Release"},
 	Flaw1Flv: []string{"A feedback loop stabilizes gravity coefficients when triggered manually.", "Manually pulsing this coil contains the singularity's spatial distortion."},
 	Flaw2Flv: []string{"Vibrates the alignment servo into excitation if gravity is contained.", "Synchronizes quantum phases when the containment field is stable."},
 	Flaw3Flv: []string{"Venting system collapses superposition, forcing the door into a physical open state.", "Releases the pneumatic seal if quantum state is excited."},

@@ -1,0 +1,5 @@
+2026/07/11 13:54:14 Challenge Engine online — challenge: magitech_01_breach (The Fractured Ward)
+2026/07/11 13:54:14 Registered languages: [0x59129b78f400]
+2026/07/11 13:54:14 New rift established (GameLoop-driven).
+2026/07/11 13:54:14 Failed to send snapshot: write tcp [::1]:58522->[::1]:58532: write: broken pipe
+2026/07/11 13:54:14 Rift severed: read tcp [::1]:58522->[::1]:58532: read: connection reset by peer

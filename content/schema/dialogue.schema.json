@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://challenge-to-you/schemas/dialogue/v1.0.0",
+  "title": "DialogueTree",
+  "description": "Schema for NPC dialogue trees. A tree is a directed graph of DialogueNodes where each node can branch based on player choices or game state.",
+  "type": "object",
+  "required": ["schema_version", "id", "version", "npc_id", "context", "root_node_id", "nodes"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "id": {
+      "type": "string",
+      "pattern": "^dlg_[a-z][a-z0-9_]*$",
+      "description": "Unique dialogue tree ID",
+      "examples": ["dlg_elder_arithmos_intro", "dlg_ghost_aria_hint_recursion"]
+    },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "npc_id": { "type": "string" },
+    "context": {
+      "type": "string",
+      "enum": ["intro", "hint", "success", "failure", "ambient", "quest", "shop", "lore", "archon_taunt", "archon_repair"],
+      "description": "Context in which this dialogue tree fires"
+    },
+    "challenge_id": { "type": "string", "description": "If this dialogue is tied to a specific challenge" },
+    "mission_id": { "type": "string", "description": "If this dialogue is tied to a specific mission" },
+    "root_node_id": { "type": "string", "description": "ID of the first node to display" },
+    "nodes": {
+      "type": "object",
+      "description": "Map of node_id -> DialogueNode",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "speaker", "text"],
+        "properties": {
+          "id": { "type": "string" },
+          "speaker": {
+            "type": "string",
+            "description": "NPC ID or 'PLAYER' for player lines"
+          },
+          "text": { "type": "string", "minLength": 1 },
+          "localization_key": { "type": "string" },
+          "voice_line_id": { "type": "string" },
+          "emotion": {
+            "type": "string",
+            "enum": ["neutral", "happy", "angry", "sad", "surprised", "mysterious", "smug", "concerned", "excited", "threatening"]
+          },
+          "portrait_variant": { "type": "string" },
+          "sound_cue": { "type": "string" },
+          "wait_ms": { "type": "integer", "minimum": 0, "description": "Auto-advance delay in ms" },
+          "choices": {
+            "type": "array",
+            "description": "Player choices shown after this node. Empty = auto-advance.",
+            "items": {
+              "type": "object",
+              "required": ["id", "text", "next_node_id"],
+              "properties": {
+                "id": { "type": "string" },
+                "text": { "type": "string" },
+                "localization_key": { "type": "string" },
+                "next_node_id": { "type": "string" },
+                "condition": {
+                  "type": "object",
+                  "description": "Show this choice only if condition is met",
+                  "properties": {
+                    "type": { "type": "string", "enum": ["challenge_complete", "item_owned", "achievement", "always"] },
+                    "target_id": { "type": "string" }
+                  }
+                },
+                "consequence": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "type": "string", "enum": ["give_hint", "give_item", "trigger_event", "unlock_challenge", "flag_set"] },
+                    "target_id": { "type": "string" },
+                    "flag_key": { "type": "string" },
+                    "flag_value": {}
+                  }
+                }
+              }
+            }
+          },
+          "next_node_id": {
+            "type": "string",
+            "description": "Auto-advance to this node if no choices, or if choices are skipped"
+          },
+          "terminal": {
+            "type": "boolean",
+            "description": "True if this is a leaf node (conversation ends here)"
+          },
+          "on_enter_events": {
+            "type": "array",
+            "description": "Engine events to fire when this node is displayed",
+            "items": {
+              "type": "object",
+              "required": ["event_type"],
+              "properties": {
+                "event_type": { "type": "string" },
+                "payload": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "estimated_duration_seconds": { "type": "integer" },
+        "skippable": { "type": "boolean", "default": true },
+        "can_replay": { "type": "boolean", "default": true },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

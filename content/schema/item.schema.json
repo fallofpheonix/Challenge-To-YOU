@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://challenge-to-you/schemas/item/v1.0.0",
+  "title": "Item",
+  "description": "Schema for all collectible items, cosmetics, and unlockables in Challenge To YOU.",
+  "type": "object",
+  "required": ["schema_version", "id", "version", "name", "type", "rarity", "description", "flavor_text", "icon_key", "unlock_condition", "localization_keys"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "id": {
+      "type": "string",
+      "pattern": "^item_[a-z][a-z0-9_]*$",
+      "examples": ["item_theme_lich_dark", "item_badge_first_blood", "item_skin_terminal_void"]
+    },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "name": { "type": "string", "minLength": 2, "maxLength": 60 },
+    "type": {
+      "type": "string",
+      "enum": ["ide_theme", "terminal_skin", "keyboard_skin", "avatar_frame", "badge", "title", "collectible", "lore_artifact", "emote", "music_track", "sound_pack"]
+    },
+    "rarity": {
+      "type": "string",
+      "enum": ["common", "uncommon", "rare", "epic", "legendary", "unique", "secret"]
+    },
+    "era": {
+      "type": "string",
+      "enum": ["magitech", "cyberpunk", "cosmic", "cross_era", "all"]
+    },
+    "description": { "type": "string", "minLength": 10 },
+    "flavor_text": { "type": "string" },
+    "icon_key": { "type": "string" },
+    "preview_asset_key": { "type": "string" },
+    "unlock_condition": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["achievement", "challenge_complete", "mission_complete", "purchase", "campaign_complete", "secret_event", "starter"]
+        },
+        "achievement_id": { "type": "string" },
+        "challenge_id": { "type": "string" },
+        "mission_id": { "type": "string" },
+        "credit_cost": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "category": {
+      "type": "string",
+      "description": "UI category for inventory sorting"
+    },
+    "applies_to": {
+      "type": "array",
+      "description": "What UI surfaces this item affects (for cosmetics)",
+      "items": {
+        "type": "string",
+        "enum": ["ide_editor", "terminal", "background", "hud", "profile", "all"]
+      }
+    },
+    "theme_data": {
+      "type": "object",
+      "description": "Color/style data for theme items",
+      "properties": {
+        "primary_color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "secondary_color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "accent_color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "background_style": { "type": "string" },
+        "font_family": { "type": "string" },
+        "glow_effect": { "type": "boolean" },
+        "particle_effect": { "type": "string" }
+      }
+    },
+    "lore_entry_id": { "type": "string", "description": "If this item reveals a lore entry" },
+    "tradeable": { "type": "boolean", "default": false },
+    "localization_keys": {
+      "type": "object",
+      "required": ["name", "description"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "flavor_text": { "type": "string" }
+      }
+    }
+  }
+}

@@ -129,7 +129,7 @@ func TestGeneratorSolvability(t *testing.T) {
 			var complete bool
 
 			// Trigger Step 1
-			cipher, complete, err = fabric.TriggerOntologicalShift(step1Evt)
+			_, complete, err = fabric.TriggerOntologicalShift(step1Evt)
 			if err != nil {
 				t.Fatalf("Step 1 failed: %v", err)
 			}
@@ -138,7 +138,7 @@ func TestGeneratorSolvability(t *testing.T) {
 			}
 
 			// Trigger Step 2
-			cipher, complete, err = fabric.TriggerOntologicalShift(step2Evt)
+			_, complete, err = fabric.TriggerOntologicalShift(step2Evt)
 			if err != nil {
 				t.Fatalf("Step 2 failed: %v", err)
 			}

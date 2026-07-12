@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-07-11T14:26:07.071925+05:30",
+  "challenge_count": 32,
+  "challenge_ids": [
+    "magitech_01.json",
+    "magitech_02_centrifuge.json",
+    "magitech_03_vault.json",
+    "magitech_04_golem.json",
+    "magitech_05_grimoire.json",
+    "magitech_06_astrolabe.json",
+    "magitech_07_loom.json",
+    "magitech_08_mana_overflow.json",
+    "magitech_09_resonance.json",
+    "pack.json",
+    "composite_01_concat.json",
+    "composite_02_state.json",
+    "composite_03_pipe.json",
+    "cyberpunk_01_autodoc.json",
+    "cyberpunk_02_elevator.json",
+    "cyberpunk_03_server.json",
+    "cyberpunk_04_barista.json",
+    "cyberpunk_05_drone.json",
+    "cyberpunk_06_traffic.json",
+    "cyberpunk_07_optimize.json",
+    "cyberpunk_08_spec.json",
+    "cyberpunk_09_recognize.json",
+    "pack.json",
+    "cosmic_01_airlock.json",
+    "cosmic_02_nav.json",
+    "cosmic_03_stasis.json",
+    "cosmic_04_winch.json",
+    "cosmic_05_seed.json",
+    "cosmic_06_singularity.json",
+    "cosmic_07_relay.json",
+    "cosmic_08_valve.json",
+    "pack.json"
+  ],
+  "mission_ids": null,
+  "server_endpoints": [
+    "/rift",
+    "/api/languages",
+    "/api/challenges"
+  ],
+  "profile_defaults": null,
+  "level_thresholds": {
+    "1": "0 XP",
+    "10": "3000 XP",
+    "15": "8000 XP",
+    "2": "100 XP",
+    "20": "15000 XP",
+    "3": "250 XP",
+    "4": "500 XP",
+    "5": "1000 XP"
+  },
+  "title_map": {
+    "1": "Newcomer",
+    "10": "Veteran",
+    "15": "Archon",
+    "2": "Initiate",
+    "5": "Operative"
+  }
+}

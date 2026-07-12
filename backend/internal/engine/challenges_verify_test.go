@@ -18,13 +18,13 @@ func TestVerifyAllChallenges(t *testing.T) {
 	// Map of challenge ID to its correct sequence of triggers that leads to a win
 	solutions := map[string][]string{
 		// Magitech
-		"magitech_01_breach":      {"invoke_binding", "surge_mana", "trigger_release"},
-		"magitech_02_centrifuge":  {"overheat_centrifuge", "shatter_crystal", "trigger_vent"},
-		"magitech_03_vault":       {"engage_anchor", "wait_for_swing", "disable_anchor"},
-		"magitech_04_golem":       {"blind_sensor", "issue_command_defend", "purge_mana"},
-		"magitech_05_grimoire":    {"project_illusion", "activate_silence_seal", "trigger_truth_ward"},
-		"magitech_06_astrolabe":   {"engage_sun_lens", "force_moon_gear_slip", "align_void_prism"},
-		"magitech_07_loom":        {"tangle_thread", "crank_tension", "snap_thread"},
+		"magitech_01_breach":     {"invoke_binding", "surge_mana", "trigger_release"},
+		"magitech_02_centrifuge": {"overheat_centrifuge", "shatter_crystal", "trigger_vent"},
+		"magitech_03_vault":      {"engage_anchor", "wait_for_swing", "disable_anchor"},
+		"magitech_04_golem":      {"blind_sensor", "issue_command_defend", "purge_mana"},
+		"magitech_05_grimoire":   {"project_illusion", "activate_silence_seal", "trigger_truth_ward"},
+		"magitech_06_astrolabe":  {"engage_sun_lens", "force_moon_gear_slip", "align_void_prism"},
+		"magitech_07_loom":       {"tangle_thread", "crank_tension", "snap_thread"},
 
 		// Cyberpunk
 		"cyberpunk_01_autodoc":  {"inject_adrenaline", "cut_power"},

@@ -1,0 +1,22 @@
+2026/07/11 14:16:51 Challenge Engine online — challenge: magitech_01_breach (The Fractured Ward)
+2026/07/11 14:16:51 Registered languages: [0x4fd831841400]
+2026/07/11 14:16:52 New rift established.
+panic: concurrent write to websocket connection
+
+goroutine 55 [running]:
+github.com/gorilla/websocket.(*messageWriter).flushFrame(0x4fd831a03290, 0x1, {0x0?, 0x1055c350a?, 0x4fd831851b18?})
+	/Users/fallofpheonix/go/pkg/mod/github.com/gorilla/websocket@v1.5.1/conn.go:632 +0x410
+github.com/gorilla/websocket.(*messageWriter).Close(0x108408108?)
+	/Users/fallofpheonix/go/pkg/mod/github.com/gorilla/websocket@v1.5.1/conn.go:746 +0x44
+github.com/gorilla/websocket.(*Conn).beginMessage(0x4fd831a06580, 0x4fd83185e000, 0x1)
+	/Users/fallofpheonix/go/pkg/mod/github.com/gorilla/websocket@v1.5.1/conn.go:493 +0x3c
+github.com/gorilla/websocket.(*Conn).NextWriter(0x4fd831a06580, 0x1)
+	/Users/fallofpheonix/go/pkg/mod/github.com/gorilla/websocket@v1.5.1/conn.go:535 +0x40
+github.com/gorilla/websocket.(*Conn).WriteJSON(0x105f29c00?, {0x105f29c00, 0x4fd83185c0d0})
+	/Users/fallofpheonix/go/pkg/mod/github.com/gorilla/websocket@v1.5.1/json.go:24 +0x2c
+challenge-to-you/backend/internal/server.(*Server).sendError(0x10613ebd0?, {0x105f61828, 0x4fd831a06580}, 0x4fd8317d2fb0, {0x4fd8318da140, 0x48})
+	/Users/fallofpheonix/Project/game/Challenge-To-YOU/backend/internal/server/rift.go:358 +0x218
+challenge-to-you/backend/internal/server.(*Server).readLoop(0x4fd8318d0000, {0x105f65b28, 0x4fd831a06580}, 0x4fd8317d2fb0, 0x4fd8318ff490, 0x0?)
+	/Users/fallofpheonix/Project/game/Challenge-To-YOU/backend/internal/server/rift.go:310 +0x1bc
+created by challenge-to-you/backend/internal/server.(*Server).handleRift in goroutine 53
+	/Users/fallofpheonix/Project/game/Challenge-To-YOU/backend/internal/server/rift.go:83 +0x744

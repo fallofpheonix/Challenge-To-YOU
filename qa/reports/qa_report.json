@@ -1,0 +1,1675 @@
+{
+  "project": "Challenge To YOU",
+  "run_id": "qa_1783760119061",
+  "start_time": "2026-07-11T14:25:19.061315+05:30",
+  "end_time": "2026-07-11T14:26:08.622948+05:30",
+  "duration_ms": 49561609792,
+  "total_scenarios": 28,
+  "passed": 28,
+  "failed": 0,
+  "skipped": 0,
+  "errors": 0,
+  "scenarios": [
+    {
+      "name": "FrameworkSelfTest",
+      "category": "framework",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "framework_init",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "QA framework initialized",
+          "timestamp": "2026-07-11T14:25:19.061333+05:30"
+        },
+        {
+          "name": "assert_true",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "true should pass",
+          "timestamp": "2026-07-11T14:25:19.061334+05:30"
+        },
+        {
+          "name": "assert_false_cond",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "math should work",
+          "timestamp": "2026-07-11T14:25:19.061388+05:30"
+        },
+        {
+          "name": "dir_exists_reports",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "reports directory created",
+          "timestamp": "2026-07-11T14:25:19.061397+05:30"
+        },
+        {
+          "name": "dir_exists_backend_logs",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "backend_logs directory created",
+          "timestamp": "2026-07-11T14:25:19.061402+05:30"
+        },
+        {
+          "name": "dir_exists_fixtures",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "fixtures directory created",
+          "timestamp": "2026-07-11T14:25:19.061406+05:30"
+        },
+        {
+          "name": "dir_exists_screenshots",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "screenshots directory created",
+          "timestamp": "2026-07-11T14:25:19.061409+05:30"
+        },
+        {
+          "name": "report_json_exists",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "qa_report.json should exist",
+          "timestamp": "2026-07-11T14:25:19.062179+05:30"
+        },
+        {
+          "name": "report_md_exists",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "qa_report.md should exist",
+          "timestamp": "2026-07-11T14:25:19.062179+05:30"
+        }
+      ],
+      "duration_ms": 862625,
+      "start_time": "2026-07-11T14:25:19.061316+05:30",
+      "end_time": "2026-07-11T14:25:19.062179+05:30"
+    },
+    {
+      "name": "BackendLaunchAndShutdown",
+      "category": "backend",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "build_success",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Binary built: /Users/fallofpheonix/Project/game/Challenge-To-YOU/backend/sandbox_server_test",
+          "timestamp": "2026-07-11T14:25:19.20272+05:30"
+        },
+        {
+          "name": "server_started",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Server started on port 57973",
+          "timestamp": "2026-07-11T14:25:19.735491+05:30"
+        },
+        {
+          "name": "server_running",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Server uptime: 531.288167ms",
+          "timestamp": "2026-07-11T14:25:19.7355+05:30"
+        },
+        {
+          "name": "server_stopped",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Port should be free after shutdown",
+          "timestamp": "2026-07-11T14:25:20.241181+05:30"
+        }
+      ],
+      "duration_ms": 1180358209,
+      "start_time": "2026-07-11T14:25:19.062179+05:30",
+      "end_time": "2026-07-11T14:25:20.242538+05:30"
+    },
+    {
+      "name": "BackendHealthCheck",
+      "category": "backend",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "health_check",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "TCP connection successful",
+          "timestamp": "2026-07-11T14:25:20.875352+05:30"
+        },
+        {
+          "name": "languages_endpoint",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "/api/languages should return data",
+          "timestamp": "2026-07-11T14:25:20.87623+05:30"
+        },
+        {
+          "name": "languages_response",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Response length: 160 bytes",
+          "timestamp": "2026-07-11T14:25:20.876231+05:30"
+        }
+      ],
+      "duration_ms": 635507959,
+      "start_time": "2026-07-11T14:25:20.242584+05:30",
+      "end_time": "2026-07-11T14:25:20.878092+05:30"
+    },
+    {
+      "name": "BackendLogCapture",
+      "category": "backend",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "logs_captured",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Log size: 158 bytes",
+          "timestamp": "2026-07-11T14:25:22.306075+05:30"
+        },
+        {
+          "name": "log_content",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Captured 158 bytes of server logs",
+          "timestamp": "2026-07-11T14:25:22.306103+05:30"
+        }
+      ],
+      "duration_ms": 1433255500,
+      "start_time": "2026-07-11T14:25:20.878096+05:30",
+      "end_time": "2026-07-11T14:25:22.311352+05:30"
+    },
+    {
+      "name": "WebSocketConnect",
+      "category": "websocket",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "ws_connect",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Connect error: \u003cnil\u003e",
+          "timestamp": "2026-07-11T14:25:22.943459+05:30"
+        },
+        {
+          "name": "ws_connected",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Client should be connected",
+          "timestamp": "2026-07-11T14:25:23.444455+05:30"
+        }
+      ],
+      "duration_ms": 1134212042,
+      "start_time": "2026-07-11T14:25:22.311359+05:30",
+      "end_time": "2026-07-11T14:25:23.445572+05:30"
+    },
+    {
+      "name": "WebSocketDisconnect",
+      "category": "websocket",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "ws_connected_before",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Should be connected",
+          "timestamp": "2026-07-11T14:25:24.06219+05:30"
+        },
+        {
+          "name": "ws_disconnected",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Should be disconnected after Disconnect()",
+          "timestamp": "2026-07-11T14:25:24.062212+05:30"
+        }
+      ],
+      "duration_ms": 618797333,
+      "start_time": "2026-07-11T14:25:23.445581+05:30",
+      "end_time": "2026-07-11T14:25:24.064378+05:30"
+    },
+    {
+      "name": "WebSocketReconnect",
+      "category": "websocket",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "first_connect",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Should be connected",
+          "timestamp": "2026-07-11T14:25:24.731006+05:30"
+        },
+        {
+          "name": "reconnect",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Should be reconnected",
+          "timestamp": "2026-07-11T14:25:24.933374+05:30"
+        }
+      ],
+      "duration_ms": 870661500,
+      "start_time": "2026-07-11T14:25:24.064389+05:30",
+      "end_time": "2026-07-11T14:25:24.935051+05:30"
+    },
+    {
+      "name": "WebSocketInvalidMessage",
+      "category": "websocket",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "invalid_sent",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Sent invalid JSON",
+          "timestamp": "2026-07-11T14:25:25.743606+05:30"
+        },
+        {
+          "name": "server_alive_after_invalid",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Server should handle invalid messages and stay alive",
+          "timestamp": "2026-07-11T14:25:26.24471+05:30"
+        }
+      ],
+      "duration_ms": 1310465458,
+      "start_time": "2026-07-11T14:25:24.935062+05:30",
+      "end_time": "2026-07-11T14:25:26.245528+05:30"
+    },
+    {
+      "name": "WebSocketTimeout",
+      "category": "websocket",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "initial_message",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Sent profile request",
+          "timestamp": "2026-07-11T14:25:26.762618+05:30"
+        },
+        {
+          "name": "connection_alive",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Connection should remain alive after idle period",
+          "timestamp": "2026-07-11T14:25:27.763654+05:30"
+        }
+      ],
+      "duration_ms": 1519032917,
+      "start_time": "2026-07-11T14:25:26.245531+05:30",
+      "end_time": "2026-07-11T14:25:27.764565+05:30"
+    },
+    {
+      "name": "MissionStart",
+      "category": "mission",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "mission_loaded",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge ID: magitech_01_breach",
+          "timestamp": "2026-07-11T14:25:28.775882+05:30"
+        },
+        {
+          "name": "paradigm_set",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Paradigm: MAGITECH",
+          "timestamp": "2026-07-11T14:25:28.775884+05:30"
+        },
+        {
+          "name": "modules_present",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Module count: 3",
+          "timestamp": "2026-07-11T14:25:28.775885+05:30"
+        },
+        {
+          "name": "state_initialized",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "State should be initialized",
+          "timestamp": "2026-07-11T14:25:28.775885+05:30"
+        }
+      ],
+      "duration_ms": 1012288208,
+      "start_time": "2026-07-11T14:25:27.764573+05:30",
+      "end_time": "2026-07-11T14:25:28.776862+05:30"
+    },
+    {
+      "name": "MissionObjectives",
+      "category": "mission",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "has_modules",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Found 3 modules",
+          "timestamp": "2026-07-11T14:25:29.695554+05:30"
+        },
+        {
+          "name": "has_state",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "State has 4 keys",
+          "timestamp": "2026-07-11T14:25:29.695556+05:30"
+        },
+        {
+          "name": "not_complete",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Level should not be complete initially",
+          "timestamp": "2026-07-11T14:25:29.695556+05:30"
+        },
+        {
+          "name": "vigilance_low",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Vigilance: 0.000000",
+          "timestamp": "2026-07-11T14:25:29.69556+05:30"
+        }
+      ],
+      "duration_ms": 921451000,
+      "start_time": "2026-07-11T14:25:28.776864+05:30",
+      "end_time": "2026-07-11T14:25:29.698315+05:30"
+    },
+    {
+      "name": "MissionStateTransitions",
+      "category": "mission",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "initial_state",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "State keys: [entropy mana_critical ward_sealed binding_active]",
+          "timestamp": "2026-07-11T14:25:30.33034+05:30"
+        },
+        {
+          "name": "trigger_event",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Triggering: invoke_binding",
+          "timestamp": "2026-07-11T14:25:30.330341+05:30"
+        },
+        {
+          "name": "trigger_processed",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "State changed: false, Vigilance: 0.00 -\u003e 0.00, Message: \"USER STATS: reputation=0, luck=1.00, unlocked_paradigms=[MAGITECH]. Command: 'unlock \u003cparadigm\u003e' to progress.\"",
+          "timestamp": "2026-07-11T14:25:30.330421+05:30"
+        }
+      ],
+      "duration_ms": 634320750,
+      "start_time": "2026-07-11T14:25:29.698326+05:30",
+      "end_time": "2026-07-11T14:25:30.332646+05:30"
+    },
+    {
+      "name": "MissionCompletion",
+      "category": "mission",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "trigger_0",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding, Complete: false, Vigilance: 0.00",
+          "timestamp": "2026-07-11T14:25:30.96681+05:30"
+        },
+        {
+          "name": "trigger_1",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding, Complete: false, Vigilance: 0.10",
+          "timestamp": "2026-07-11T14:25:30.966908+05:30"
+        },
+        {
+          "name": "trigger_2",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: surge_mana, Complete: false, Vigilance: 0.20",
+          "timestamp": "2026-07-11T14:25:30.967006+05:30"
+        },
+        {
+          "name": "trigger_3",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding, Complete: false, Vigilance: 0.30",
+          "timestamp": "2026-07-11T14:25:30.967114+05:30"
+        },
+        {
+          "name": "trigger_4",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding, Complete: false, Vigilance: 0.40",
+          "timestamp": "2026-07-11T14:25:30.967169+05:30"
+        },
+        {
+          "name": "trigger_5",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding, Complete: false, Vigilance: 0.50",
+          "timestamp": "2026-07-11T14:25:30.967246+05:30"
+        },
+        {
+          "name": "trigger_6",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding, Complete: false, Vigilance: 0.60",
+          "timestamp": "2026-07-11T14:25:30.967292+05:30"
+        },
+        {
+          "name": "trigger_7",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding, Complete: false, Vigilance: 0.70",
+          "timestamp": "2026-07-11T14:25:30.96814+05:30"
+        },
+        {
+          "name": "trigger_8",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: surge_mana, Complete: false, Vigilance: 0.80",
+          "timestamp": "2026-07-11T14:25:30.968237+05:30"
+        },
+        {
+          "name": "trigger_9",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding, Complete: false, Vigilance: 0.90",
+          "timestamp": "2026-07-11T14:25:30.968395+05:30"
+        },
+        {
+          "name": "system_responded",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "System should respond to trigger events",
+          "timestamp": "2026-07-11T14:25:30.968399+05:30"
+        }
+      ],
+      "duration_ms": 637572000,
+      "start_time": "2026-07-11T14:25:30.332656+05:30",
+      "end_time": "2026-07-11T14:25:30.970229+05:30"
+    },
+    {
+      "name": "MissionUnlocks",
+      "category": "mission",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "unlock_attempt",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Unlock CYBERPUNK attempted",
+          "timestamp": "2026-07-11T14:25:31.7096+05:30"
+        }
+      ],
+      "duration_ms": 741539667,
+      "start_time": "2026-07-11T14:25:30.970234+05:30",
+      "end_time": "2026-07-11T14:25:31.711774+05:30"
+    },
+    {
+      "name": "ChallengeLoad",
+      "category": "challenge",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "has_id_magitech_01.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.712181+05:30"
+        },
+        {
+          "name": "has_paradigm_magitech_01.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.712182+05:30"
+        },
+        {
+          "name": "has_flaws_magitech_01.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.712182+05:30"
+        },
+        {
+          "name": "has_id_magitech_02_centrifuge.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.712294+05:30"
+        },
+        {
+          "name": "has_paradigm_magitech_02_centrifuge.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.712294+05:30"
+        },
+        {
+          "name": "has_flaws_magitech_02_centrifuge.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.712299+05:30"
+        },
+        {
+          "name": "has_id_magitech_03_vault.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.712393+05:30"
+        },
+        {
+          "name": "has_paradigm_magitech_03_vault.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.712394+05:30"
+        },
+        {
+          "name": "has_flaws_magitech_03_vault.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.712394+05:30"
+        },
+        {
+          "name": "has_id_magitech_04_golem.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.712482+05:30"
+        },
+        {
+          "name": "has_paradigm_magitech_04_golem.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.712487+05:30"
+        },
+        {
+          "name": "has_flaws_magitech_04_golem.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.712487+05:30"
+        },
+        {
+          "name": "has_id_magitech_05_grimoire.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.712561+05:30"
+        },
+        {
+          "name": "has_paradigm_magitech_05_grimoire.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.712561+05:30"
+        },
+        {
+          "name": "has_flaws_magitech_05_grimoire.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.712561+05:30"
+        },
+        {
+          "name": "has_id_magitech_06_astrolabe.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.712849+05:30"
+        },
+        {
+          "name": "has_paradigm_magitech_06_astrolabe.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.71285+05:30"
+        },
+        {
+          "name": "has_flaws_magitech_06_astrolabe.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.71285+05:30"
+        },
+        {
+          "name": "has_id_magitech_07_loom.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.712964+05:30"
+        },
+        {
+          "name": "has_paradigm_magitech_07_loom.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.712966+05:30"
+        },
+        {
+          "name": "has_flaws_magitech_07_loom.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.712967+05:30"
+        },
+        {
+          "name": "has_id_magitech_08_mana_overflow.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.713374+05:30"
+        },
+        {
+          "name": "has_paradigm_magitech_08_mana_overflow.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.713375+05:30"
+        },
+        {
+          "name": "has_flaws_magitech_08_mana_overflow.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.713375+05:30"
+        },
+        {
+          "name": "has_id_magitech_09_resonance.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.713773+05:30"
+        },
+        {
+          "name": "has_paradigm_magitech_09_resonance.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.713773+05:30"
+        },
+        {
+          "name": "has_flaws_magitech_09_resonance.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.713773+05:30"
+        },
+        {
+          "name": "skip_pack.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Pack/composite file, skipping validation",
+          "timestamp": "2026-07-11T14:25:31.713853+05:30"
+        },
+        {
+          "name": "era_magitech_tier1",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Loaded 10 challenges from magitech_tier1",
+          "timestamp": "2026-07-11T14:25:31.713857+05:30"
+        },
+        {
+          "name": "skip_composite_01_concat.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Pack/composite file, skipping validation",
+          "timestamp": "2026-07-11T14:25:31.714003+05:30"
+        },
+        {
+          "name": "skip_composite_02_state.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Pack/composite file, skipping validation",
+          "timestamp": "2026-07-11T14:25:31.714063+05:30"
+        },
+        {
+          "name": "skip_composite_03_pipe.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Pack/composite file, skipping validation",
+          "timestamp": "2026-07-11T14:25:31.714123+05:30"
+        },
+        {
+          "name": "has_id_cyberpunk_01_autodoc.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.714194+05:30"
+        },
+        {
+          "name": "has_paradigm_cyberpunk_01_autodoc.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.714195+05:30"
+        },
+        {
+          "name": "has_flaws_cyberpunk_01_autodoc.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.714195+05:30"
+        },
+        {
+          "name": "has_id_cyberpunk_02_elevator.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.714259+05:30"
+        },
+        {
+          "name": "has_paradigm_cyberpunk_02_elevator.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.714259+05:30"
+        },
+        {
+          "name": "has_flaws_cyberpunk_02_elevator.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.714259+05:30"
+        },
+        {
+          "name": "has_id_cyberpunk_03_server.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.714324+05:30"
+        },
+        {
+          "name": "has_paradigm_cyberpunk_03_server.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.714324+05:30"
+        },
+        {
+          "name": "has_flaws_cyberpunk_03_server.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.714324+05:30"
+        },
+        {
+          "name": "has_id_cyberpunk_04_barista.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.71439+05:30"
+        },
+        {
+          "name": "has_paradigm_cyberpunk_04_barista.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.71439+05:30"
+        },
+        {
+          "name": "has_flaws_cyberpunk_04_barista.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.714391+05:30"
+        },
+        {
+          "name": "has_id_cyberpunk_05_drone.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.714454+05:30"
+        },
+        {
+          "name": "has_paradigm_cyberpunk_05_drone.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.714454+05:30"
+        },
+        {
+          "name": "has_flaws_cyberpunk_05_drone.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.714454+05:30"
+        },
+        {
+          "name": "has_id_cyberpunk_06_traffic.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.714518+05:30"
+        },
+        {
+          "name": "has_paradigm_cyberpunk_06_traffic.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.714518+05:30"
+        },
+        {
+          "name": "has_flaws_cyberpunk_06_traffic.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.714518+05:30"
+        },
+        {
+          "name": "has_id_cyberpunk_07_optimize.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.714595+05:30"
+        },
+        {
+          "name": "has_paradigm_cyberpunk_07_optimize.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.714595+05:30"
+        },
+        {
+          "name": "has_flaws_cyberpunk_07_optimize.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.714595+05:30"
+        },
+        {
+          "name": "has_id_cyberpunk_08_spec.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.714865+05:30"
+        },
+        {
+          "name": "has_paradigm_cyberpunk_08_spec.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.714865+05:30"
+        },
+        {
+          "name": "has_flaws_cyberpunk_08_spec.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.714866+05:30"
+        },
+        {
+          "name": "has_id_cyberpunk_09_recognize.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.714931+05:30"
+        },
+        {
+          "name": "has_paradigm_cyberpunk_09_recognize.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.714931+05:30"
+        },
+        {
+          "name": "has_flaws_cyberpunk_09_recognize.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.714931+05:30"
+        },
+        {
+          "name": "skip_pack.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Pack/composite file, skipping validation",
+          "timestamp": "2026-07-11T14:25:31.715108+05:30"
+        },
+        {
+          "name": "era_cyberpunk_tier1",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Loaded 13 challenges from cyberpunk_tier1",
+          "timestamp": "2026-07-11T14:25:31.715109+05:30"
+        },
+        {
+          "name": "has_id_cosmic_01_airlock.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.715251+05:30"
+        },
+        {
+          "name": "has_paradigm_cosmic_01_airlock.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.715251+05:30"
+        },
+        {
+          "name": "has_flaws_cosmic_01_airlock.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.715251+05:30"
+        },
+        {
+          "name": "has_id_cosmic_02_nav.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.715314+05:30"
+        },
+        {
+          "name": "has_paradigm_cosmic_02_nav.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.715314+05:30"
+        },
+        {
+          "name": "has_flaws_cosmic_02_nav.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.715314+05:30"
+        },
+        {
+          "name": "has_id_cosmic_03_stasis.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.715385+05:30"
+        },
+        {
+          "name": "has_paradigm_cosmic_03_stasis.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.715386+05:30"
+        },
+        {
+          "name": "has_flaws_cosmic_03_stasis.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.715386+05:30"
+        },
+        {
+          "name": "has_id_cosmic_04_winch.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.71545+05:30"
+        },
+        {
+          "name": "has_paradigm_cosmic_04_winch.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.71545+05:30"
+        },
+        {
+          "name": "has_flaws_cosmic_04_winch.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.71545+05:30"
+        },
+        {
+          "name": "has_id_cosmic_05_seed.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.715514+05:30"
+        },
+        {
+          "name": "has_paradigm_cosmic_05_seed.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.715514+05:30"
+        },
+        {
+          "name": "has_flaws_cosmic_05_seed.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.715514+05:30"
+        },
+        {
+          "name": "has_id_cosmic_06_singularity.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.715578+05:30"
+        },
+        {
+          "name": "has_paradigm_cosmic_06_singularity.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.715578+05:30"
+        },
+        {
+          "name": "has_flaws_cosmic_06_singularity.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.715578+05:30"
+        },
+        {
+          "name": "has_id_cosmic_07_relay.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.715641+05:30"
+        },
+        {
+          "name": "has_paradigm_cosmic_07_relay.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.715641+05:30"
+        },
+        {
+          "name": "has_flaws_cosmic_07_relay.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.715641+05:30"
+        },
+        {
+          "name": "has_id_cosmic_08_valve.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have id",
+          "timestamp": "2026-07-11T14:25:31.715703+05:30"
+        },
+        {
+          "name": "has_paradigm_cosmic_08_valve.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have paradigm",
+          "timestamp": "2026-07-11T14:25:31.715703+05:30"
+        },
+        {
+          "name": "has_flaws_cosmic_08_valve.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge must have flaws",
+          "timestamp": "2026-07-11T14:25:31.715703+05:30"
+        },
+        {
+          "name": "skip_pack.json",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Pack/composite file, skipping validation",
+          "timestamp": "2026-07-11T14:25:31.715878+05:30"
+        },
+        {
+          "name": "era_cosmic_tier1",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Loaded 9 challenges from cosmic_tier1",
+          "timestamp": "2026-07-11T14:25:31.715881+05:30"
+        },
+        {
+          "name": "total_challenges",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Total challenges loaded: 32",
+          "timestamp": "2026-07-11T14:25:31.715881+05:30"
+        }
+      ],
+      "duration_ms": 4098875,
+      "start_time": "2026-07-11T14:25:31.711783+05:30",
+      "end_time": "2026-07-11T14:25:31.715882+05:30"
+    },
+    {
+      "name": "ChallengeCompile",
+      "category": "challenge",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "compile_success",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Compile error: \u003cnil\u003e",
+          "timestamp": "2026-07-11T14:25:31.767966+05:30"
+        },
+        {
+          "name": "compile_rejects_invalid",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Compiler should reject invalid Python",
+          "timestamp": "2026-07-11T14:25:31.795495+05:30"
+        }
+      ],
+      "duration_ms": 79988750,
+      "start_time": "2026-07-11T14:25:31.715882+05:30",
+      "end_time": "2026-07-11T14:25:31.795871+05:30"
+    },
+    {
+      "name": "ChallengeExecute",
+      "category": "challenge",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "exec_success",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Exec error: \u003cnil\u003e",
+          "timestamp": "2026-07-11T14:25:31.815792+05:30"
+        },
+        {
+          "name": "exec_output",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Output: OUTPUT:hello_world\nSTATUS:success\n",
+          "timestamp": "2026-07-11T14:25:31.815794+05:30"
+        },
+        {
+          "name": "output_contains_hello",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Output: OUTPUT:hello_world\nSTATUS:success\n",
+          "timestamp": "2026-07-11T14:25:31.815797+05:30"
+        }
+      ],
+      "duration_ms": 20155916,
+      "start_time": "2026-07-11T14:25:31.795876+05:30",
+      "end_time": "2026-07-11T14:25:31.816032+05:30"
+    },
+    {
+      "name": "ChallengeScoring",
+      "category": "challenge",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "initial_xp",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Starting XP: 0",
+          "timestamp": "2026-07-11T14:25:32.226559+05:30"
+        },
+        {
+          "name": "final_xp",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "XP after triggers: 0",
+          "timestamp": "2026-07-11T14:25:32.227116+05:30"
+        },
+        {
+          "name": "scoring_system_active",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "XP tracked: 0 -\u003e 0",
+          "timestamp": "2026-07-11T14:25:32.227118+05:30"
+        }
+      ],
+      "duration_ms": 413026000,
+      "start_time": "2026-07-11T14:25:31.816035+05:30",
+      "end_time": "2026-07-11T14:25:32.229061+05:30"
+    },
+    {
+      "name": "SaveCreateLoad",
+      "category": "save",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "save_profile_loaded",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Profile should load from DB",
+          "timestamp": "2026-07-11T14:25:32.85768+05:30"
+        },
+        {
+          "name": "state_modified",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Triggered event to modify state",
+          "timestamp": "2026-07-11T14:25:32.857707+05:30"
+        }
+      ],
+      "duration_ms": 629766500,
+      "start_time": "2026-07-11T14:25:32.229067+05:30",
+      "end_time": "2026-07-11T14:25:32.858834+05:30"
+    },
+    {
+      "name": "SaveRestartReload",
+      "category": "save",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "server1_state",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge: magitech_01_breach",
+          "timestamp": "2026-07-11T14:25:33.274348+05:30"
+        },
+        {
+          "name": "save_persisted",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "State should persist across restarts",
+          "timestamp": "2026-07-11T14:25:34.083114+05:30"
+        },
+        {
+          "name": "challenge_restored",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge: magitech_01_breach -\u003e magitech_01_breach",
+          "timestamp": "2026-07-11T14:25:34.083115+05:30"
+        },
+        {
+          "name": "server2_state",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge: magitech_01_breach (restored)",
+          "timestamp": "2026-07-11T14:25:34.083115+05:30"
+        }
+      ],
+      "duration_ms": 1225458583,
+      "start_time": "2026-07-11T14:25:32.858843+05:30",
+      "end_time": "2026-07-11T14:25:34.084302+05:30"
+    },
+    {
+      "name": "SaveCorruptedHandling",
+      "category": "save",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "corrupted_written",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Wrote corrupted DB file",
+          "timestamp": "2026-07-11T14:25:34.188057+05:30"
+        },
+        {
+          "name": "corrupt_handled_gracefully",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Server correctly rejected corrupted DB: server not healthy: timeout waiting for server on port 58158",
+          "timestamp": "2026-07-11T14:26:04.276667+05:30"
+        }
+      ],
+      "duration_ms": 30193706917,
+      "start_time": "2026-07-11T14:25:34.084305+05:30",
+      "end_time": "2026-07-11T14:26:04.278025+05:30"
+    },
+    {
+      "name": "RewardXP",
+      "category": "reward",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "initial_snapshot",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Received initial snapshot",
+          "timestamp": "2026-07-11T14:26:04.943895+05:30"
+        },
+        {
+          "name": "profile_loaded",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Profile event sent and response received",
+          "timestamp": "2026-07-11T14:26:04.944137+05:30"
+        },
+        {
+          "name": "xp_tracking",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Profile stats in message: USER STATS: reputation=0, luck=1.00, unlocked_paradigms=[MAGITECH]. Command: 'unlock \u003cparadigm\u003e' to progress.",
+          "timestamp": "2026-07-11T14:26:04.944139+05:30"
+        },
+        {
+          "name": "challenge_loaded",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge: magitech_01_breach",
+          "timestamp": "2026-07-11T14:26:04.94414+05:30"
+        }
+      ],
+      "duration_ms": 667115083,
+      "start_time": "2026-07-11T14:26:04.278055+05:30",
+      "end_time": "2026-07-11T14:26:04.94517+05:30"
+    },
+    {
+      "name": "RewardCredits",
+      "category": "reward",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "credits_tracking",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Profile message: USER STATS: reputation=0, luck=1.00, unlocked_paradigms=[MAGITECH]. Command: 'unlock \u003cparadigm\u003e' to progress.",
+          "timestamp": "2026-07-11T14:26:05.561404+05:30"
+        },
+        {
+          "name": "profile_reachable",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Profile stats returned in message",
+          "timestamp": "2026-07-11T14:26:05.561405+05:30"
+        }
+      ],
+      "duration_ms": 617747416,
+      "start_time": "2026-07-11T14:26:04.945173+05:30",
+      "end_time": "2026-07-11T14:26:05.562921+05:30"
+    },
+    {
+      "name": "RewardReputation",
+      "category": "reward",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "reputation_visible",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Reputation info in message: USER STATS: reputation=0, luck=1.00, unlocked_paradigms=[MAGITECH]. Command: 'unlock \u003cparadigm\u003e' to progress.",
+          "timestamp": "2026-07-11T14:26:05.981698+05:30"
+        }
+      ],
+      "duration_ms": 419972959,
+      "start_time": "2026-07-11T14:26:05.562927+05:30",
+      "end_time": "2026-07-11T14:26:05.9829+05:30"
+    },
+    {
+      "name": "RewardLuck",
+      "category": "reward",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "luck_visible",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Luck info in message: USER STATS: reputation=0, luck=1.00, unlocked_paradigms=[MAGITECH]. Command: 'unlock \u003cparadigm\u003e' to progress.",
+          "timestamp": "2026-07-11T14:26:06.605511+05:30"
+        }
+      ],
+      "duration_ms": 623770959,
+      "start_time": "2026-07-11T14:26:05.982904+05:30",
+      "end_time": "2026-07-11T14:26:06.606675+05:30"
+    },
+    {
+      "name": "RewardUnlocks",
+      "category": "reward",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "unlocks_visible",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Unlocks info in message: USER STATS: reputation=0, luck=1.00, unlocked_paradigms=[MAGITECH]. Command: 'unlock \u003cparadigm\u003e' to progress.",
+          "timestamp": "2026-07-11T14:26:07.018413+05:30"
+        }
+      ],
+      "duration_ms": 464411125,
+      "start_time": "2026-07-11T14:26:06.606679+05:30",
+      "end_time": "2026-07-11T14:26:07.071091+05:30"
+    },
+    {
+      "name": "RegressionDetection",
+      "category": "regression",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "challenge_count_stable",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Current: 32, Previous: 32",
+          "timestamp": "2026-07-11T14:26:07.07191+05:30"
+        },
+        {
+          "name": "no_challenges_removed",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Removed challenges: []",
+          "timestamp": "2026-07-11T14:26:07.071918+05:30"
+        },
+        {
+          "name": "endpoints_stable",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Endpoints: 3 -\u003e 3",
+          "timestamp": "2026-07-11T14:26:07.071918+05:30"
+        },
+        {
+          "name": "regression_check_complete",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Compared against baseline from 2026-07-11T14:24:58+05:30",
+          "timestamp": "2026-07-11T14:26:07.072126+05:30"
+        }
+      ],
+      "duration_ms": 1028792,
+      "start_time": "2026-07-11T14:26:07.071098+05:30",
+      "end_time": "2026-07-11T14:26:07.072126+05:30"
+    },
+    {
+      "name": "ContinuousPlaythrough",
+      "category": "e2e",
+      "status": "PASSED",
+      "steps": [
+        {
+          "name": "phase1_build",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Backend binary compiled",
+          "timestamp": "2026-07-11T14:26:07.183823+05:30"
+        },
+        {
+          "name": "phase1_launch",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Server launched on port 58811",
+          "timestamp": "2026-07-11T14:26:07.792952+05:30"
+        },
+        {
+          "name": "phase2_connect",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "WebSocket client connected",
+          "timestamp": "2026-07-11T14:26:07.794783+05:30"
+        },
+        {
+          "name": "phase3_mission_started",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Should receive initial snapshot",
+          "timestamp": "2026-07-11T14:26:07.795838+05:30"
+        },
+        {
+          "name": "phase3_mission",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Mission loaded: magitech_01_breach (Paradigm: MAGITECH)",
+          "timestamp": "2026-07-11T14:26:07.79584+05:30"
+        },
+        {
+          "name": "phase4_state_ready",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Game state initialized",
+          "timestamp": "2026-07-11T14:26:07.79585+05:30"
+        },
+        {
+          "name": "phase5_challenge_loaded",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge should be loaded",
+          "timestamp": "2026-07-11T14:26:07.79585+05:30"
+        },
+        {
+          "name": "phase5_has_modules",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Modules: 3",
+          "timestamp": "2026-07-11T14:26:07.795852+05:30"
+        },
+        {
+          "name": "phase5_has_triggers",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Triggers: [invoke_binding]",
+          "timestamp": "2026-07-11T14:26:07.795858+05:30"
+        },
+        {
+          "name": "phase6_round_0",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding | Vigilance: 0.00 | Complete: false",
+          "timestamp": "2026-07-11T14:26:07.796338+05:30"
+        },
+        {
+          "name": "phase6_round_1",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding | Vigilance: 0.10 | Complete: false",
+          "timestamp": "2026-07-11T14:26:07.79676+05:30"
+        },
+        {
+          "name": "phase6_round_2",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: surge_mana | Vigilance: 0.20 | Complete: false",
+          "timestamp": "2026-07-11T14:26:07.797584+05:30"
+        },
+        {
+          "name": "phase6_round_3",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding | Vigilance: 0.30 | Complete: false",
+          "timestamp": "2026-07-11T14:26:07.797794+05:30"
+        },
+        {
+          "name": "phase6_round_4",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding | Vigilance: 0.40 | Complete: false",
+          "timestamp": "2026-07-11T14:26:07.798203+05:30"
+        },
+        {
+          "name": "phase6_round_5",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: surge_mana | Vigilance: 0.50 | Complete: false",
+          "timestamp": "2026-07-11T14:26:07.79845+05:30"
+        },
+        {
+          "name": "phase6_round_6",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding | Vigilance: 0.60 | Complete: false",
+          "timestamp": "2026-07-11T14:26:07.799029+05:30"
+        },
+        {
+          "name": "phase6_round_7",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding | Vigilance: 0.70 | Complete: false",
+          "timestamp": "2026-07-11T14:26:07.799256+05:30"
+        },
+        {
+          "name": "phase6_round_8",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: trigger_release | Vigilance: 0.80 | Complete: false",
+          "timestamp": "2026-07-11T14:26:07.799369+05:30"
+        },
+        {
+          "name": "phase6_round_9",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Event: invoke_binding | Vigilance: 0.90 | Complete: true",
+          "timestamp": "2026-07-11T14:26:07.800274+05:30"
+        },
+        {
+          "name": "phase6_complete",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Challenge completed after 10 rounds",
+          "timestamp": "2026-07-11T14:26:07.800276+05:30"
+        },
+        {
+          "name": "phase7_cipher",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Cipher: LOGOS_MGT_77F_BREACH",
+          "timestamp": "2026-07-11T14:26:07.800277+05:30"
+        },
+        {
+          "name": "phase7_complete",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Mission completed successfully!",
+          "timestamp": "2026-07-11T14:26:07.800277+05:30"
+        },
+        {
+          "name": "phase9_save",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Server stopped (state persisted to DB)",
+          "timestamp": "2026-07-11T14:26:08.30416+05:30"
+        },
+        {
+          "name": "phase10_restart",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Server restarted on port 58824",
+          "timestamp": "2026-07-11T14:26:08.616913+05:30"
+        },
+        {
+          "name": "phase11_loaded",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Should receive snapshot after restart",
+          "timestamp": "2026-07-11T14:26:08.619375+05:30"
+        },
+        {
+          "name": "phase11_reload",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "State reloaded: magitech_01_breach",
+          "timestamp": "2026-07-11T14:26:08.619377+05:30"
+        },
+        {
+          "name": "phase12_paradigm_match",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Paradigm: MAGITECH -\u003e MAGITECH",
+          "timestamp": "2026-07-11T14:26:08.619378+05:30"
+        },
+        {
+          "name": "phase13_disconnect",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Final disconnect complete",
+          "timestamp": "2026-07-11T14:26:08.619439+05:30"
+        },
+        {
+          "name": "e2e_complete",
+          "status": "PASSED",
+          "duration_ms": 0,
+          "details": "Full playthrough completed. 10 rounds executed.",
+          "timestamp": "2026-07-11T14:26:08.619441+05:30"
+        }
+      ],
+      "duration_ms": 1550812000,
+      "start_time": "2026-07-11T14:26:07.072127+05:30",
+      "end_time": "2026-07-11T14:26:08.62294+05:30"
+    }
+  ],
+  "go_version": "go1.26.4",
+  "platform": "darwin/arm64"
+}

@@ -1,0 +1,2 @@
+2026/07/11 13:37:00 Warning: failed to load missions: failed to read mission directory data/missions: open data/missions: no such file or directory
+2026/07/11 13:37:00 Failed to load challenge backend/challenges/magitech_tier1/magitech_01.json: read challenge: open backend/challenges/magitech_tier1/magitech_01.json: no such file or directory

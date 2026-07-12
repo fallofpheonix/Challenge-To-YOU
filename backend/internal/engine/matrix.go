@@ -3,6 +3,7 @@ package engine
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 // Paradigm represents the thematic universe (Magitech, Cyberpunk, Cosmic)
@@ -36,21 +37,25 @@ type DemiurgicCondition struct {
 
 // UnsanctionedGlitch defines the emergent path/loophole the player is attempting to force open
 type UnsanctionedGlitch struct {
-	ID                  string               `json:"id"`
-	InputEvent          string               `json:"input_event"`
-	Conditions          []DemiurgicCondition `json:"conditions"`
-	Effects             []AxiomaticEffect    `json:"effects"`
-	FallbackEffects     []AxiomaticEffect    `json:"fallback_effects,omitempty"`
+	ID              string               `json:"id"`
+	InputEvent      string               `json:"input_event"`
+	Conditions      []DemiurgicCondition `json:"conditions"`
+	Effects         []AxiomaticEffect    `json:"effects"`
+	FallbackEffects []AxiomaticEffect    `json:"fallback_effects,omitempty"`
 }
 
 // AxiomaticFabric is our universal logic graph manager
 type AxiomaticFabric struct {
-	CurrentParadigm Paradigm                       `json:"paradigm"`
-	State           ParadigmState                  `json:"state"`
-	Glitches        map[string]*UnsanctionedGlitch `json:"glitches"`
-	WinConditionKey string                         `json:"win_condition_key"`
-	WinConditionVal StructuralValue                `json:"win_condition_val"`
-	ArchonVigilance float64                        `json:"archon_vigilance"`
+	CurrentParadigm   Paradigm                       `json:"paradigm"`
+	State             ParadigmState                  `json:"state"`
+	Glitches          map[string]*UnsanctionedGlitch `json:"glitches"`
+	WinConditionKey   string                         `json:"win_condition_key"`
+	WinConditionVal   StructuralValue                `json:"win_condition_val"`
+	ArchonVigilance   float64                        `json:"archon_vigilance"`
+	StartTime         time.Time                      `json:"-"`
+	MoveCount         int                            `json:"move_count"`
+	WallClockTimeSecs float64                        `json:"wall_clock_time_secs"`
+	LastEventTime     time.Time                      `json:"-"`
 }
 
 // NewAxiomaticFabric instantiates an empty reality-matrix container
@@ -62,6 +67,7 @@ func NewAxiomaticFabric(paradigm Paradigm, winKey string, winVal StructuralValue
 		WinConditionKey: winKey,
 		WinConditionVal: winVal,
 		ArchonVigilance: 0.0,
+		StartTime:       time.Now(),
 	}
 }
 

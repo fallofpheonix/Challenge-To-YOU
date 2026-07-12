@@ -1,0 +1,33 @@
+2026/07/11 14:24:15 Challenge Engine online — challenge: magitech_01_breach (The Fractured Ward)
+2026/07/11 14:24:15 Registered languages: [0x35d497f8f400]
+2026/07/11 14:24:15 New rift established.
+2026/07/11 14:24:15 http: panic serving [::1]:57182: concurrent write to websocket connection
+goroutine 53 [running]:
+net/http.(*conn).serve.func1()
+	/usr/local/go/src/net/http/server.go:1907 +0xac
+panic({0x1031428c0?, 0x10324d740?})
+	/usr/local/go/src/runtime/panic.go:860 +0x12c
+github.com/gorilla/websocket.(*messageWriter).flushFrame(0x35d497cf9290, 0x1, {0x0?, 0x103223120?, 0x35d497cdcb80?})
+	/Users/fallofpheonix/go/pkg/mod/github.com/gorilla/websocket@v1.5.1/conn.go:632 +0x410
+github.com/gorilla/websocket.(*messageWriter).Close(0x35d497b353f8?)
+	/Users/fallofpheonix/go/pkg/mod/github.com/gorilla/websocket@v1.5.1/conn.go:746 +0x44
+github.com/gorilla/websocket.(*Conn).WriteJSON(0x103219c00?, {0x103219c00, 0x35d497cf7040})
+	/Users/fallofpheonix/go/pkg/mod/github.com/gorilla/websocket@v1.5.1/json.go:29 +0xbc
+challenge-to-you/backend/internal/server.(*Server).sendSnapshotFromLoop(0x35d497c0a3c0?, {0x103251828, 0x35d497cfc580}, 0x35d497b17160, {0x0, 0x0}, {0x102a5d8ff, 0x2d}, 0x0)
+	/Users/fallofpheonix/Project/game/Challenge-To-YOU/backend/internal/server/rift.go:337 +0x238
+challenge-to-you/backend/internal/server.(*Server).handleRift(0x35d497c2c000, {0x103257ab8?, 0x35d497cfe3c0?}, 0x35d497cf2f00, 0x35d497cfe000, 0x35d497cc6c60)
+	/Users/fallofpheonix/Project/game/Challenge-To-YOU/backend/internal/server/rift.go:102 +0x844
+challenge-to-you/backend/internal/server.(*Server).Start.func1({0x103257ab8?, 0x35d497cfe3c0?}, 0x35d497d0bb18?)
+	/Users/fallofpheonix/Project/game/Challenge-To-YOU/backend/internal/server/server.go:95 +0x3c
+net/http.HandlerFunc.ServeHTTP(0x103449d20?, {0x103257ab8?, 0x35d497cfe3c0?}, 0x1029af788?)
+	/usr/local/go/src/net/http/server.go:2286 +0x38
+net/http.(*ServeMux).ServeHTTP(0x0?, {0x103257ab8, 0x35d497cfe3c0}, 0x35d497cf2f00)
+	/usr/local/go/src/net/http/server.go:2828 +0x190
+net/http.serverHandler.ServeHTTP({0x35d497cdca80?}, {0x103257ab8?, 0x35d497cfe3c0?}, 0x1?)
+	/usr/local/go/src/net/http/server.go:3311 +0xb0
+net/http.(*conn).serve(0x35d497cc6ea0, {0x103259378, 0x35d497cf8f90})
+	/usr/local/go/src/net/http/server.go:2073 +0x51c
+created by net/http.(*Server).Serve in goroutine 1
+	/usr/local/go/src/net/http/server.go:3464 +0x37c
+2026/07/11 14:24:15 Failed to send error: set tcp [::1]:57172: use of closed network connection
+2026/07/11 14:24:15 Rift severed: read tcp [::1]:57172->[::1]:57182: use of closed network connection

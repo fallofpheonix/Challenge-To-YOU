@@ -1,0 +1,380 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://challenge-to-you/schemas/challenge/v2.0.0",
+  "title": "Challenge",
+  "description": "Universal schema for all Challenge To YOU programming challenges (v2.0.0). Every challenge file must validate against this schema.",
+  "type": "object",
+  "required": [
+    "schema_version", "id", "version", "era", "tier", "paradigm", "mode",
+    "title", "story_arc", "mission_id", "difficulty", "estimated_minutes",
+    "category", "tags", "learning_goals", "prerequisites", "languages",
+    "description", "logos_token", "initial_state", "flaws", "win_condition",
+    "public_tests", "hidden_tests", "constraints", "hints",
+    "npc_dialogue_refs", "failure_messages", "success_messages",
+    "xp_reward", "credits_reward", "rewards", "unlock_conditions",
+    "achievements", "solution_explanation", "reference_solution",
+    "time_complexity", "space_complexity", "analytics_tags", "replay_metadata"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Schema version this challenge was authored against",
+      "examples": ["2.0.0"]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Globally unique challenge identifier. Format: {era}_{tier}_{seq}_{slug}",
+      "examples": ["magitech_t1_01_fractured_ward", "cyberpunk_t2_05_heap_overflow"]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Challenge content version for change tracking",
+      "examples": ["1.0.0"]
+    },
+    "era": {
+      "type": "string",
+      "enum": ["magitech", "cyberpunk", "cosmic", "cross_era"],
+      "description": "Which era/world this challenge belongs to"
+    },
+    "tier": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3,
+      "description": "Tier 1=beginner, 2=intermediate, 3=expert"
+    },
+    "paradigm": {
+      "type": "string",
+      "enum": ["MAGITECH", "CYBERPUNK", "COSMIC", "CROSS_ERA"],
+      "description": "Engine paradigm identifier (uppercase, maps to AxiomaticFabric renderer)"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["architect", "ghost", "saboteur"],
+      "description": "Gameplay mode this challenge targets"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 80,
+      "description": "Display title of the challenge"
+    },
+    "story_arc": {
+      "type": "string",
+      "description": "Narrative arc this challenge belongs to",
+      "examples": ["The Awakening", "Neon Rebellion", "Void Protocol"]
+    },
+    "mission_id": {
+      "type": "string",
+      "description": "Parent mission ID this challenge is part of",
+      "examples": ["mg_campaign_02", "cp_campaign_07", "cos_campaign_04"]
+    },
+    "difficulty": {
+      "type": "object",
+      "required": ["level", "numeric"],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": ["tutorial", "beginner", "easy", "easy_plus", "medium", "medium_plus", "hard", "hard_plus", "expert", "master", "legend"]
+        },
+        "numeric": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "0.0=tutorial, 1.0=legend"
+        }
+      }
+    },
+    "estimated_minutes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 180,
+      "description": "Estimated time to complete for a player of appropriate skill level"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "arrays", "strings", "hash_maps", "sorting", "searching",
+        "recursion", "backtracking", "linked_lists", "stacks", "queues",
+        "trees", "bst", "avl", "heaps", "priority_queue",
+        "graphs", "dfs", "bfs", "shortest_path", "union_find", "trie",
+        "dynamic_programming", "greedy", "bit_manipulation",
+        "sliding_window", "two_pointer", "prefix_sum", "intervals",
+        "math", "geometry", "game_theory", "binary_search",
+        "segment_tree", "fenwick_tree", "concurrency", "multithreading",
+        "operating_systems", "networking", "database", "compiler_design",
+        "memory_management", "system_design", "oop", "functional",
+        "debugging", "optimization", "security", "cryptography",
+        "reverse_engineering", "algorithms", "data_structures",
+        "simulation", "parsing", "virtual_machines", "interpreter",
+        "scheduling", "caching", "filesystem", "distributed_systems",
+        "ai_algorithms", "machine_learning", "state_machine"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true
+    },
+    "learning_goals": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 5 },
+      "minItems": 1,
+      "maxItems": 5,
+      "description": "What the player will learn by completing this challenge"
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+      "description": "Challenge IDs that must be completed before this unlocks"
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["runes", "python", "javascript", "c", "cpp", "java", "rust", "go", "kotlin", "csharp", "quantum"]
+      },
+      "minItems": 1,
+      "description": "Programming languages players can use for this challenge"
+    },
+    "starter_code": {
+      "type": "object",
+      "description": "Language-keyed starter code snippets shown in the IDE",
+      "additionalProperties": { "type": "string" }
+    },
+    "description": {
+      "type": "string",
+      "minLength": 20,
+      "description": "In-world narrative description of the challenge. Written from the perspective of the game world."
+    },
+    "mission_briefing": {
+      "type": "string",
+      "description": "Tactical briefing text shown in the mission screen"
+    },
+    "logos_token": {
+      "type": "string",
+      "pattern": "^LOGOS_[A-Z]{3}_[A-Z0-9_]+$",
+      "description": "Unique token identifier for the AxiomaticFabric engine. Format: LOGOS_{ERA}_{SLUG}"
+    },
+    "initial_state": {
+      "type": "object",
+      "description": "Starting state dictionary for the AxiomaticFabric state machine",
+      "additionalProperties": true
+    },
+    "flaws": {
+      "type": "array",
+      "description": "State machine flaw definitions — the core puzzle mechanics",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "trigger_event", "name", "flavor_text", "conditions", "mutations", "fallback_mutations"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+          "trigger_event": { "type": "string" },
+          "name": { "type": "string" },
+          "flavor_text": { "type": "string" },
+          "conditions": { "type": "object", "additionalProperties": true },
+          "mutations": { "type": "object", "additionalProperties": true },
+          "fallback_mutations": { "type": "object", "additionalProperties": true },
+          "skill_type": { "type": "string", "enum": ["execute", "optimize", "debug", "reverse", "construct"] },
+          "template_code": { "type": "string" },
+          "validation_script": { "type": "string" }
+        }
+      }
+    },
+    "win_condition": {
+      "type": "object",
+      "required": ["target_state_key", "expected_value"],
+      "properties": {
+        "target_state_key": { "type": "string" },
+        "expected_value": {},
+        "description": { "type": "string" }
+      }
+    },
+    "public_tests": {
+      "type": "array",
+      "description": "Test cases visible to the player",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "input", "expected_output"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "input": {},
+          "expected_output": {},
+          "explanation": { "type": "string" }
+        }
+      }
+    },
+    "hidden_tests": {
+      "type": "array",
+      "description": "Test cases hidden from the player — used for final grading",
+      "items": {
+        "type": "object",
+        "required": ["id", "input", "expected_output"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "input": {},
+          "expected_output": {},
+          "is_edge_case": { "type": "boolean" }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "required": ["time_limit_ms", "memory_limit_mb"],
+      "properties": {
+        "time_limit_ms": { "type": "integer", "minimum": 100, "maximum": 60000 },
+        "memory_limit_mb": { "type": "integer", "minimum": 16, "maximum": 1024 },
+        "max_operations": { "type": "integer" },
+        "input_size": { "type": "string", "description": "Constraint description e.g. '1 <= n <= 10^5'" }
+      }
+    },
+    "hints": {
+      "type": "array",
+      "description": "Progressive hint chain. Ordered from most gentle to most explicit.",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["level", "text", "cost_xp"],
+        "properties": {
+          "level": { "type": "integer", "minimum": 1, "maximum": 7 },
+          "label": { "type": "string" },
+          "text": { "type": "string", "minLength": 10 },
+          "cost_xp": { "type": "integer", "minimum": 0 },
+          "hint_type": {
+            "type": "string",
+            "enum": ["nudge", "algorithm", "complexity", "pseudo_solution", "common_mistake", "npc_dialogue", "visual"]
+          }
+        }
+      }
+    },
+    "npc_dialogue_refs": {
+      "type": "object",
+      "description": "Keys map to lifecycle events; values are NPC dialogue node IDs",
+      "properties": {
+        "intro": { "type": "string" },
+        "on_first_failure": { "type": "string" },
+        "on_second_failure": { "type": "string" },
+        "on_hint_request": { "type": "string" },
+        "on_success": { "type": "string" },
+        "on_perfect": { "type": "string" },
+        "ambient": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": { "type": "string" }
+    },
+    "failure_messages": {
+      "type": "array",
+      "minItems": 3,
+      "items": { "type": "string", "minLength": 5 },
+      "description": "In-world flavored failure messages — rotated on each failure"
+    },
+    "success_messages": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "type": "string", "minLength": 5 },
+      "description": "In-world flavored success messages"
+    },
+    "xp_reward": {
+      "type": "integer",
+      "minimum": 50,
+      "maximum": 5000,
+      "description": "Experience points awarded on first completion"
+    },
+    "credits_reward": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 2000,
+      "description": "In-game credits awarded on completion"
+    },
+    "rewards": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Item IDs or badge IDs unlocked upon challenge completion"
+    },
+    "unlock_conditions": {
+      "type": "object",
+      "required": ["requires"],
+      "properties": {
+        "requires": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Challenge IDs or achievement IDs required to unlock this challenge"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["all", "any"],
+          "default": "all"
+        },
+        "min_player_level": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "achievements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Achievement IDs that can be triggered by this challenge"
+    },
+    "solution_explanation": {
+      "type": "string",
+      "minLength": 50,
+      "description": "Plain-language explanation of the intended solution approach"
+    },
+    "reference_solution": {
+      "type": "object",
+      "description": "Language-keyed reference solutions (for validation and hint system)",
+      "additionalProperties": { "type": "string" }
+    },
+    "alternative_solutions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["approach", "code"],
+        "properties": {
+          "approach": { "type": "string" },
+          "code": { "type": "object", "additionalProperties": { "type": "string" } },
+          "tradeoffs": { "type": "string" }
+        }
+      }
+    },
+    "time_complexity": {
+      "type": "string",
+      "description": "Big-O time complexity of the reference solution",
+      "examples": ["O(n)", "O(n log n)", "O(n^2)", "O(1)"]
+    },
+    "space_complexity": {
+      "type": "string",
+      "description": "Big-O space complexity of the reference solution"
+    },
+    "common_mistakes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Common mistakes players make on this challenge"
+    },
+    "analytics_tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Tags for analytics grouping and ML feature engineering"
+    },
+    "replay_metadata": {
+      "type": "object",
+      "required": ["replayable"],
+      "properties": {
+        "replayable": { "type": "boolean" },
+        "variant_count": { "type": "integer", "minimum": 1 },
+        "seed_sensitive": { "type": "boolean" },
+        "luck_sensitive": { "type": "boolean" }
+      }
+    },
+    "localization_keys": {
+      "type": "object",
+      "description": "Maps content fields to localization key IDs for i18n",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

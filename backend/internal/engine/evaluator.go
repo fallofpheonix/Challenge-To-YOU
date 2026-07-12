@@ -3,6 +3,8 @@ package engine
 import (
 	"fmt"
 	"strconv"
+	"strings"
+	"time"
 )
 
 const vigilanceThreshold = 1.0 - 1e-9 // Tolerance for floating point comparison
@@ -10,10 +12,32 @@ const vigilanceThreshold = 1.0 - 1e-9 // Tolerance for floating point comparison
 // TriggerOntologicalShift forces an event through the fabric to assess state mutations
 // Returns: (passcode, levelComplete, error)
 func (af *AxiomaticFabric) TriggerOntologicalShift(eventID string) (string, bool, error) {
+	return af.TriggerOntologicalShiftWithPayload(eventID, "")
+}
+
+// TriggerOntologicalShiftWithPayload processes an event with dynamic string input for payload-based exploits
+func (af *AxiomaticFabric) TriggerOntologicalShiftWithPayload(eventID string, payload string) (string, bool, error) {
+	af.MoveCount++
 	af.ArchonVigilance += 0.10 // System friction baseline increase
 	if af.ArchonVigilance >= vigilanceThreshold {
 		return "", false, fmt.Errorf("ONTOLOGICAL_PURGE: The Vigilant Archon has terminated execution")
 	}
+
+	// Set dynamic input payload variables
+	af.State["input_payload_len"] = len(payload)
+	af.State["input_payload"] = payload
+
+	if af.StartTime.IsZero() {
+		af.StartTime = time.Now()
+	}
+
+	// Calculate time since last event if LastEventTime is set
+	if !af.LastEventTime.IsZero() {
+		af.State["time_since_last_event_ms"] = float64(time.Since(af.LastEventTime).Milliseconds())
+	} else {
+		af.State["time_since_last_event_ms"] = 0.0
+	}
+	af.LastEventTime = time.Now()
 
 	glitch, exists := af.Glitches[eventID]
 	if !exists {
@@ -51,6 +75,8 @@ func (af *AxiomaticFabric) TriggerOntologicalShift(eventID string) (string, bool
 	if currentVal, tracked := af.State[af.WinConditionKey]; tracked {
 		if fmt.Sprintf("%v", currentVal) == fmt.Sprintf("%v", af.WinConditionVal) {
 			levelComplete = true
+			// WallClockTimeSecs measures total real-world duration, primarily a UX/scoring metric.
+			af.WallClockTimeSecs = time.Since(af.StartTime).Seconds()
 		}
 	}
 
@@ -59,7 +85,15 @@ func (af *AxiomaticFabric) TriggerOntologicalShift(eventID string) (string, bool
 
 // evaluateCondition checks if a single condition is satisfied against current state
 func (af *AxiomaticFabric) evaluateCondition(cond DemiurgicCondition) bool {
-	currentVal, exists := af.State[cond.StateKey]
+	stateKey := cond.StateKey
+	if strings.HasPrefix(stateKey, "time_since_last_event_ms") {
+		stateKey = "time_since_last_event_ms"
+	}
+	if strings.HasPrefix(stateKey, "input_payload_len") {
+		stateKey = "input_payload_len"
+	}
+
+	currentVal, exists := af.State[stateKey]
 	if !exists {
 		return false
 	}

@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "era": "cosmic",
+  "name": "The Void Protocol",
+  "description": "Beyond the stars. Quantum logic, void entities, and the prevention of the omega cascade.",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "First Contact",
+      "description": "Initial encounters with alien systems and space station anomalies.",
+      "story_arc": "First Contact",
+      "challenge_count": 15,
+      "path": "tier1/",
+      "difficulty_range": [0.05, 0.35],
+      "unlocks": ["cosmic/tier2"]
+    },
+    {
+      "tier": 2,
+      "name": "The Void Protocol",
+      "description": "Deeper into the void. Quantum algorithms and xenomind protocols.",
+      "story_arc": "The Void Protocol",
+      "challenge_count": 15,
+      "path": "tier2/",
+      "difficulty_range": [0.35, 0.65],
+      "unlocks": ["cosmic/tier3"]
+    },
+    {
+      "tier": 3,
+      "name": "Omega Cascade",
+      "description": "Prevent reality collapse. The ultimate cosmic confrontation.",
+      "story_arc": "Omega Cascade",
+      "challenge_count": 10,
+      "path": "tier3/",
+      "difficulty_range": [0.65, 1.0],
+      "unlocks": ["cross_era"]
+    }
+  ],
+  "total_challenges": 40,
+  "paradigm": "COSMIC",
+  "languages": ["python", "quantum", "rust"],
+  "unlock_condition": "cyberpunk_tier3_complete"
+}

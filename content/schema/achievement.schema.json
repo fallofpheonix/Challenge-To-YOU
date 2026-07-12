@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://challenge-to-you/schemas/achievement/v1.0.0",
+  "title": "Achievement",
+  "description": "Schema for individual achievements in Challenge To YOU.",
+  "type": "object",
+  "required": [
+    "schema_version", "id", "version", "title", "description", "flavor_text",
+    "category", "rarity", "trigger_type", "trigger_conditions",
+    "xp_reward", "icon_key", "localization_keys"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "id": {
+      "type": "string",
+      "pattern": "^ach_[a-z][a-z0-9_]*$",
+      "examples": ["ach_first_breach", "ach_speed_demon_5m", "ach_no_hints"]
+    },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "title": { "type": "string", "minLength": 3, "maxLength": 60 },
+    "description": { "type": "string", "minLength": 10, "maxLength": 200 },
+    "flavor_text": {
+      "type": "string",
+      "maxLength": 150,
+      "description": "Optional in-world lore quote or witty remark shown in the achievement panel"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "learning", "exploration", "speed", "perfect_solution",
+        "debugging", "optimization", "secret", "easter_egg",
+        "story", "collection", "social", "streak", "first_time",
+        "challenge_mastery", "era_mastery", "mode_mastery"
+      ]
+    },
+    "rarity": {
+      "type": "string",
+      "enum": ["common", "uncommon", "rare", "epic", "legendary", "secret"]
+    },
+    "hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, title/description are hidden until unlocked (secret achievement)"
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": [
+        "challenge_complete", "challenge_perfect", "challenge_streak",
+        "challenge_speed", "mission_complete", "mission_no_hints",
+        "era_complete", "campaign_complete", "npc_dialogue_complete",
+        "item_collect", "lore_discover", "custom_event", "login_streak",
+        "total_xp", "total_challenges", "total_missions"
+      ]
+    },
+    "trigger_conditions": {
+      "type": "object",
+      "description": "Conditions that must be met for this achievement to trigger",
+      "properties": {
+        "challenge_id": { "type": "string" },
+        "mission_id": { "type": "string" },
+        "era": { "type": "string" },
+        "count": { "type": "integer", "minimum": 1 },
+        "streak_count": { "type": "integer", "minimum": 2 },
+        "time_limit_seconds": { "type": "integer", "minimum": 1 },
+        "no_hints": { "type": "boolean" },
+        "no_failures": { "type": "boolean" },
+        "first_attempt": { "type": "boolean" },
+        "mode": { "type": "string", "enum": ["architect", "ghost", "saboteur"] },
+        "min_xp": { "type": "integer" },
+        "item_id": { "type": "string" },
+        "lore_entry_id": { "type": "string" },
+        "custom_event_id": { "type": "string" },
+        "custom_event_data": { "type": "object" }
+      }
+    },
+    "xp_reward": { "type": "integer", "minimum": 0 },
+    "credits_reward": { "type": "integer", "minimum": 0, "default": 0 },
+    "item_rewards": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Item IDs awarded when this achievement unlocks"
+    },
+    "icon_key": {
+      "type": "string",
+      "description": "Asset key for the achievement icon sprite"
+    },
+    "badge_key": {
+      "type": "string",
+      "description": "Asset key for the profile badge (if achievement grants a badge)"
+    },
+    "prerequisite_achievements": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Achievement IDs that must be unlocked before this can trigger"
+    },
+    "points": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Achievement score points for leaderboard ranking"
+    },
+    "sound_cue": { "type": "string" },
+    "era_specific": {
+      "type": "string",
+      "enum": ["magitech", "cyberpunk", "cosmic", "all"],
+      "default": "all"
+    },
+    "localization_keys": {
+      "type": "object",
+      "required": ["title", "description"],
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "flavor_text": { "type": "string" }
+      }
+    }
+  }
+}

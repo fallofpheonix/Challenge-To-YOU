@@ -39,12 +39,22 @@ func _process(_delta: float) -> void:
 		_is_connected = false
 		print("Rift disconnected.")
 
+## Transmit a plain event with no payload (modify/exploit path).
 func transmit_event(event_id: String) -> void:
 	if not _is_connected:
 		print("Cannot transmit — rift dormant.")
 		return
-	var payload = {"event": event_id}
-	_socket.send_text(JSON.stringify(payload))
+	var msg = {"event": event_id}
+	_socket.send_text(JSON.stringify(msg))
+
+## Transmit an event with an attached payload (recognize, optimize, write_from_spec).
+## payload is the player's answer string or full code block.
+func transmit_event_with_payload(event_id: String, payload: String) -> void:
+	if not _is_connected:
+		print("Cannot transmit — rift dormant.")
+		return
+	var msg = {"event": event_id, "payload": payload}
+	_socket.send_text(JSON.stringify(msg))
 
 func _parse_inbound(raw_json: String) -> void:
 	var json = JSON.new()

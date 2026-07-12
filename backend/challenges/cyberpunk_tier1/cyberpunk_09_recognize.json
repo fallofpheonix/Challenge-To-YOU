@@ -1,0 +1,28 @@
+{
+  "id": "cyberpunk_09_recognize",
+  "paradigm": "CYBERPUNK",
+  "name": "Vulnerability Scanner Override",
+  "description": "Examine the system code snippet below. Identify which line number introduces the buffer overflow vulnerability and submit just that number.\n\nLine 1: function processBuffer(input) {\nLine 2:     let buf = new Array(8);\nLine 3:     for (let i = 0; i <= input.length; i++) {\nLine 4:         buf[i] = input[i];\nLine 5:     }\nLine 6:     return buf;\nLine 7: }",
+  "logos_token": "LOGOS_CPK_VULN_RECOGNIZE_03",
+  "skill_type": "recognize",
+  "expected_answer": "4",
+  "initial_state": {
+    "vulnerability_identified": false,
+    "system_firewall_disabled": false
+  },
+  "flaws": [
+    {
+      "id": "recognize_answer",
+      "trigger_event": "submit_answer",
+      "name": "Submit Vulnerable Line Number",
+      "flavor_text": "Submit the line number directly to the vulnerability scanner.",
+      "conditions": {},
+      "mutations": {},
+      "fallback_mutations": {}
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "system_firewall_disabled",
+    "expected_value": true
+  }
+}

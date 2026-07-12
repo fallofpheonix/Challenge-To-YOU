@@ -1,0 +1,5 @@
+2026/07/11 13:57:14 Challenge Engine online — challenge: magitech_01_breach (The Fractured Ward)
+2026/07/11 13:57:14 Registered languages: [0x386b89f4b400]
+2026/07/11 13:57:15 New rift established (GameLoop-driven).
+2026/07/11 13:57:15 Failed to send snapshot: set tcp [::1]:59580: use of closed network connection
+2026/07/11 13:57:15 Rift severed: read tcp [::1]:59580->[::1]:59592: use of closed network connection

@@ -1,0 +1,404 @@
+{
+  "schema_version": "1.0.0",
+  "version": "1.0.0",
+  "description": "Challenge To YOU Analytics Event Schema — defines all telemetry events and derived metrics",
+  "events": {
+    "challenge_started": {
+      "description": "Fired when a player begins a challenge",
+      "fields": {
+        "player_id": { "type": "string", "description": "Anonymized player identifier (hashed)" },
+        "challenge_id": { "type": "string" },
+        "era": { "type": "string", "enum": ["magitech", "cyberpunk", "cosmic", "cross_era"] },
+        "tier": { "type": "integer", "minimum": 1, "maximum": 3 },
+        "mode": { "type": "string", "enum": ["architect", "ghost", "saboteur"] },
+        "player_level": { "type": "integer" },
+        "luck_stat": { "type": "float", "description": "Current luck stat 0.0-1.0" },
+        "attempt_number": { "type": "integer", "description": "Which attempt this is (1=first)" },
+        "seed": { "type": "string", "description": "Procedural generation seed used" },
+        "session_id": { "type": "string" },
+        "timestamp": { "type": "datetime", "format": "ISO8601" }
+      },
+      "indexes": ["challenge_id", "era", "player_id", "timestamp", "attempt_number"]
+    },
+    "challenge_completed": {
+      "description": "Fired when a player successfully completes a challenge",
+      "fields": {
+        "player_id": { "type": "string" },
+        "challenge_id": { "type": "string" },
+        "era": { "type": "string" },
+        "tier": { "type": "integer" },
+        "mode": { "type": "string" },
+        "attempt_number": { "type": "integer" },
+        "time_taken_seconds": { "type": "integer" },
+        "hints_used": { "type": "integer" },
+        "entropy_final": { "type": "integer" },
+        "xp_earned": { "type": "integer" },
+        "events_sequence": { "type": "array", "items": { "type": "string" }, "description": "The sequence of events the player triggered" },
+        "first_completion": { "type": "boolean" },
+        "session_id": { "type": "string" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["challenge_id", "player_id", "era", "timestamp", "first_completion"]
+    },
+    "challenge_failed": {
+      "description": "Fired when a player fails a challenge attempt",
+      "fields": {
+        "player_id": { "type": "string" },
+        "challenge_id": { "type": "string" },
+        "era": { "type": "string" },
+        "mode": { "type": "string" },
+        "attempt_number": { "type": "integer" },
+        "fail_reason": { "type": "string", "enum": ["wrong_sequence", "entropy_overflow", "timeout", "compile_error", "runtime_error", "purge"] },
+        "last_event_triggered": { "type": "string" },
+        "entropy_at_failure": { "type": "integer" },
+        "time_taken_seconds": { "type": "integer" },
+        "events_attempted": { "type": "array", "items": { "type": "string" } },
+        "session_id": { "type": "string" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["challenge_id", "fail_reason", "player_id", "timestamp"]
+    },
+    "hint_requested": {
+      "description": "Fired when a player uses a hint",
+      "fields": {
+        "player_id": { "type": "string" },
+        "challenge_id": { "type": "string" },
+        "hint_level": { "type": "integer", "minimum": 1, "maximum": 7 },
+        "hint_type": { "type": "string" },
+        "xp_cost": { "type": "integer" },
+        "attempt_number": { "type": "integer" },
+        "time_since_challenge_start_seconds": { "type": "integer" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["challenge_id", "hint_level", "player_id"]
+    },
+    "archon_taunt_received": {
+      "description": "Fired when the Archon AI taunts the player",
+      "fields": {
+        "player_id": { "type": "string" },
+        "challenge_id": { "type": "string" },
+        "archon_id": { "type": "string" },
+        "taunt_text": { "type": "string" },
+        "entropy_level": { "type": "integer" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["archon_id", "challenge_id"]
+    },
+    "entropy_increased": {
+      "description": "Fired when player entropy increases",
+      "fields": {
+        "player_id": { "type": "string" },
+        "challenge_id": { "type": "string" },
+        "entropy_before": { "type": "integer" },
+        "entropy_after": { "type": "integer" },
+        "entropy_delta": { "type": "integer" },
+        "trigger_event": { "type": "string" },
+        "flaw_id": { "type": "string" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["challenge_id", "flaw_id"]
+    },
+    "compile_error": {
+      "description": "Fired when player code fails compilation (code execution challenges only)",
+      "fields": {
+        "player_id": { "type": "string" },
+        "challenge_id": { "type": "string" },
+        "language": { "type": "string" },
+        "error_type": { "type": "string" },
+        "error_message": { "type": "string" },
+        "error_line": { "type": "integer" },
+        "attempt_number": { "type": "integer" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["challenge_id", "error_type", "language"]
+    },
+    "runtime_error": {
+      "description": "Fired when player code throws a runtime error",
+      "fields": {
+        "player_id": { "type": "string" },
+        "challenge_id": { "type": "string" },
+        "language": { "type": "string" },
+        "error_type": { "type": "string" },
+        "error_message": { "type": "string" },
+        "test_case_id": { "type": "string" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["challenge_id", "error_type"]
+    },
+    "mission_started": {
+      "description": "Fired when a player enters a mission",
+      "fields": {
+        "player_id": { "type": "string" },
+        "mission_id": { "type": "string" },
+        "era": { "type": "string" },
+        "campaign": { "type": "string" },
+        "player_level": { "type": "integer" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["mission_id", "campaign", "player_id"]
+    },
+    "mission_completed": {
+      "description": "Fired when a player completes all required objectives in a mission",
+      "fields": {
+        "player_id": { "type": "string" },
+        "mission_id": { "type": "string" },
+        "era": { "type": "string" },
+        "campaign": { "type": "string" },
+        "time_taken_seconds": { "type": "integer" },
+        "optional_challenges_completed": { "type": "integer" },
+        "total_xp_earned": { "type": "integer" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["mission_id", "campaign", "player_id"]
+    },
+    "achievement_unlocked": {
+      "description": "Fired when a player earns an achievement",
+      "fields": {
+        "player_id": { "type": "string" },
+        "achievement_id": { "type": "string" },
+        "category": { "type": "string" },
+        "rarity": { "type": "string" },
+        "xp_earned": { "type": "integer" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["achievement_id", "category", "player_id"]
+    },
+    "era_completed": {
+      "description": "Fired when a player completes an era campaign",
+      "fields": {
+        "player_id": { "type": "string" },
+        "era": { "type": "string" },
+        "total_time_hours": { "type": "float" },
+        "total_challenges": { "type": "integer" },
+        "total_missions": { "type": "integer" },
+        "max_luck_achieved": { "type": "float" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["era", "player_id"]
+    },
+    "item_unlocked": {
+      "description": "Fired when a player unlocks an item",
+      "fields": {
+        "player_id": { "type": "string" },
+        "item_id": { "type": "string" },
+        "item_type": { "type": "string" },
+        "rarity": { "type": "string" },
+        "unlock_method": { "type": "string", "enum": ["achievement", "mission_reward", "purchase", "secret"] },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["item_id", "item_type", "player_id"]
+    },
+    "level_up": {
+      "description": "Fired when a player levels up",
+      "fields": {
+        "player_id": { "type": "string" },
+        "new_level": { "type": "integer" },
+        "total_xp": { "type": "integer" },
+        "current_era": { "type": "string" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["player_id", "new_level"]
+    },
+    "dialogue_triggered": {
+      "description": "Fired when a dialogue tree plays",
+      "fields": {
+        "player_id": { "type": "string" },
+        "dialogue_id": { "type": "string" },
+        "npc_id": { "type": "string" },
+        "context": { "type": "string" },
+        "skipped": { "type": "boolean" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["dialogue_id", "npc_id"]
+    },
+    "npc_interaction": {
+      "description": "Fired when a player completes a full dialogue tree",
+      "fields": {
+        "player_id": { "type": "string" },
+        "npc_id": { "type": "string" },
+        "dialogue_id": { "type": "string" },
+        "choices_made": { "type": "array", "items": { "type": "string" } },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["npc_id", "player_id"]
+    },
+    "lore_discovered": {
+      "description": "Fired when a player discovers a lore entry",
+      "fields": {
+        "player_id": { "type": "string" },
+        "lore_id": { "type": "string" },
+        "category": { "type": "string" },
+        "era": { "type": "string" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["lore_id", "category"]
+    },
+    "session_started": {
+      "description": "Fired when a player starts a game session",
+      "fields": {
+        "player_id": { "type": "string" },
+        "session_id": { "type": "string" },
+        "platform": { "type": "string" },
+        "game_version": { "type": "string" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["player_id", "session_id", "timestamp"]
+    },
+    "session_ended": {
+      "description": "Fired when a player ends a game session",
+      "fields": {
+        "player_id": { "type": "string" },
+        "session_id": { "type": "string" },
+        "duration_seconds": { "type": "integer" },
+        "challenges_completed": { "type": "integer" },
+        "xp_earned": { "type": "integer" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["player_id", "session_id"]
+    },
+    "save_created": {
+      "description": "Fired when a save slot is created",
+      "fields": {
+        "player_id": { "type": "string" },
+        "save_slot": { "type": "integer" },
+        "timestamp": { "type": "datetime" }
+      },
+      "indexes": ["player_id"]
+    }
+  },
+  "derived_metrics": {
+    "success_rate": {
+      "description": "Percentage of attempts that result in completion",
+      "formula": "challenge_completed.count / (challenge_completed.count + challenge_failed.count)",
+      "aggregation": "per_challenge",
+      "dimensions": ["challenge_id", "era", "tier", "mode"]
+    },
+    "average_attempts_to_complete": {
+      "description": "Average number of attempts before first completion",
+      "formula": "mean(attempt_number) WHERE challenge_completed.first_completion = true",
+      "aggregation": "per_challenge",
+      "dimensions": ["challenge_id", "era"]
+    },
+    "average_time_to_complete_seconds": {
+      "description": "Average time from challenge start to first completion",
+      "formula": "mean(time_taken_seconds) WHERE challenge_completed.first_completion = true",
+      "aggregation": "per_challenge",
+      "dimensions": ["challenge_id", "difficulty_level"]
+    },
+    "hint_dependency_rate": {
+      "description": "Percentage of completions that used at least one hint",
+      "formula": "count(completions WHERE hints_used > 0) / count(all_completions)",
+      "aggregation": "per_challenge",
+      "dimensions": ["challenge_id", "hint_level"]
+    },
+    "entropy_overflow_rate": {
+      "description": "Percentage of failures due to entropy overflow (purge)",
+      "formula": "count(failures WHERE fail_reason = 'purge') / count(all_failures)",
+      "aggregation": "per_challenge",
+      "dimensions": ["challenge_id", "era"]
+    },
+    "most_common_fail_events": {
+      "description": "Which trigger events most commonly precede a failure",
+      "formula": "frequency_analysis(last_event_triggered) GROUP BY challenge_id",
+      "aggregation": "per_challenge"
+    },
+    "learning_velocity": {
+      "description": "Rate at which a player is improving (XP gained per session hour)",
+      "formula": "sum(xp_earned) / sum(duration_hours) GROUP BY player_id, rolling_7_day",
+      "aggregation": "per_player"
+    },
+    "concept_mastery_index": {
+      "description": "Percentage of challenges completed per concept category",
+      "formula": "count(completed) / count(total) GROUP BY player_id, category",
+      "aggregation": "per_player_per_category"
+    },
+    "dropout_point": {
+      "description": "The challenge/mission where most players stop playing",
+      "formula": "max_sequential_challenge_reached per player, then mode of that distribution",
+      "aggregation": "global"
+    },
+    "optimal_difficulty_curve": {
+      "description": "Detect where difficulty spikes cause unusual dropout",
+      "formula": "compare success_rate against expected_difficulty (challenge.difficulty.numeric), flag outliers",
+      "aggregation": "global_per_era"
+    },
+    "average_session_length": {
+      "description": "Average session duration in minutes",
+      "formula": "mean(duration_seconds / 60) GROUP BY player_id",
+      "aggregation": "per_player"
+    },
+    "daily_active_players": {
+      "description": "Number of unique player_ids with session_started per day",
+      "formula": "count_distinct(player_id) GROUP BY date(timestamp)",
+      "aggregation": "global_daily"
+    },
+    "most_replayed_challenges": {
+      "description": "Challenges with highest replay count after first completion",
+      "formula": "count(challenge_started WHERE attempt_number > 1 AND first_completion already exists) GROUP BY challenge_id",
+      "aggregation": "per_challenge"
+    },
+    "npc_engagement_rate": {
+      "description": "Percentage of dialogue trees that were not skipped",
+      "formula": "count(dialogue_triggered WHERE skipped = false) / count(all dialogue_triggered)",
+      "aggregation": "per_dialogue"
+    },
+    "archon_encounter_survival_rate": {
+      "description": "Percentage of archon taunts that don't result in purge within 60 seconds",
+      "formula": "count(archon_taunt_received NOT followed by fail_reason=purge within 60s) / count(all archon_taunt_received)",
+      "aggregation": "per_archon"
+    }
+  },
+  "dashboards": [
+    {
+      "id": "player_progress",
+      "name": "Player Progress Dashboard",
+      "description": "Individual player learning curve and progression metrics",
+      "charts": [
+        { "id": "xp_over_time", "type": "line_chart", "metric": "cumulative_xp", "x_axis": "session_date" },
+        { "id": "concept_radar", "type": "radar_chart", "metric": "concept_mastery_index", "dimensions": "all_categories" },
+        { "id": "challenge_completion_heatmap", "type": "heatmap", "metric": "success_rate", "x_axis": "challenge_sequence", "y_axis": "player_id" }
+      ]
+    },
+    {
+      "id": "challenge_health",
+      "name": "Challenge Health Dashboard",
+      "description": "Per-challenge difficulty and completion statistics for content tuning",
+      "charts": [
+        { "id": "success_rate_bar", "type": "bar_chart", "metric": "success_rate", "x_axis": "challenge_id", "group_by": "era" },
+        { "id": "avg_attempts_scatter", "type": "scatter_plot", "x_axis": "difficulty_numeric", "y_axis": "average_attempts_to_complete" },
+        { "id": "hint_usage_distribution", "type": "stacked_bar", "metric": "hint_dependency_rate", "dimensions": "hint_level" },
+        { "id": "fail_reason_pie", "type": "pie_chart", "metric": "failure_count", "dimension": "fail_reason", "filter": "per_challenge" }
+      ]
+    },
+    {
+      "id": "curriculum_flow",
+      "name": "Curriculum Flow Dashboard",
+      "description": "Where players drop off and where concepts are mastered",
+      "charts": [
+        { "id": "dropout_funnel", "type": "funnel_chart", "metric": "player_count_at_challenge", "x_axis": "challenge_sequence" },
+        { "id": "concept_mastery_histogram", "type": "histogram", "metric": "concept_mastery_index", "bin_by": "category" }
+      ]
+    },
+    {
+      "id": "engagement",
+      "name": "Engagement Dashboard",
+      "description": "Player retention and session metrics",
+      "charts": [
+        { "id": "dau_trend", "type": "line_chart", "metric": "daily_active_players", "x_axis": "date" },
+        { "id": "session_length_distribution", "type": "histogram", "metric": "session_duration_minutes" },
+        { "id": "npc_engagement", "type": "bar_chart", "metric": "npc_engagement_rate", "x_axis": "npc_id" }
+      ]
+    }
+  ],
+  "retention_policy": {
+    "raw_events": "90 days",
+    "derived_metrics": "2 years",
+    "anonymization": "Player IDs are SHA-256 hashes of internal user IDs. No PII stored."
+  },
+  "privacy_notes": {
+    "data_collected": "Anonymized gameplay telemetry only",
+    "no_pii": true,
+    "opt_out_mechanism": "settings.analytics_opt_out flag checked before each event emission",
+    "gdpr_compliant": true
+  }
+}

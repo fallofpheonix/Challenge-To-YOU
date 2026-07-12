@@ -8,7 +8,7 @@ import (
 
 func challengePath() string {
 	_, file, _, _ := runtime.Caller(0)
-	return filepath.Join(filepath.Dir(file), "..", "..", "challenges", "magitech_01.json")
+	return filepath.Join(filepath.Dir(file), "..", "..", "challenges", "magitech_tier1", "magitech_01.json")
 }
 
 func TestLoadMagitechChallenge(t *testing.T) {

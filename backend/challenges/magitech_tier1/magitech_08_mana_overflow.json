@@ -1,0 +1,54 @@
+{
+  "id": "magitech_08_mana_overflow",
+  "paradigm": "MAGITECH",
+  "name": "The Overloaded Mana Ward",
+  "description": "Bypass the high-frequency defense ward by overflowing its runic inscription buffer, causing the barrier to collapse.",
+  "logos_token": "LOGOS_MGT_MANA_OVERFLOW_99X",
+  "exploit_class": "buffer_overflow",
+  "telemetry_hooks": {
+    "track_input_len": true,
+    "track_solve_time": true
+  },
+  "initial_state": {
+    "ward_active": true,
+    "mana_buffer_size": 16,
+    "input_payload_len": 0,
+    "door_sealed": true,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "inject_mana",
+      "trigger_event": "inject_mana",
+      "name": "Inject Unsanctioned Rune Stream",
+      "flavor_text": "Stream high-density mana runes directly into the ward's inscription buffer.",
+      "conditions": {
+        "ward_active": true
+      },
+      "mutations": {
+        "entropy": 10
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "overflow_ward",
+      "trigger_event": "inject_mana",
+      "name": "Force Buffer Overflow",
+      "flavor_text": "An overflow conditions check: input_payload_len exceeds the ward's buffer capacity.",
+      "conditions": {
+        "ward_active": true,
+        "input_payload_len": "GREATER_THAN:16"
+      },
+      "mutations": {
+        "ward_active": false,
+        "door_sealed": false,
+        "entropy": 30
+      },
+      "fallback_mutations": {}
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "door_sealed",
+    "expected_value": false
+  }
+}

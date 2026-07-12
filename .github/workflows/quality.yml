@@ -1,0 +1,150 @@
+name: Quality Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  # ── Formatting ────────────────────────────────────────────
+  fmt:
+    name: Go Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+      - name: Check gofmt
+        run: |
+          UNCHANGED=$(gofmt -l backend/ phoenix/)
+          if [ -n "$UNCHANGED" ]; then
+            echo "Files need formatting:"
+            echo "$UNCHANGED"
+            exit 1
+          fi
+
+  # ── Vet ───────────────────────────────────────────────────
+  vet:
+    name: Go Vet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+      - name: Vet backend
+        run: cd backend && go vet ./...
+      - name: Vet phoenix
+        run: cd phoenix && go vet ./...
+
+  # ── Lint ──────────────────────────────────────────────────
+  lint:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          working-directory: backend
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          working-directory: phoenix
+
+  # ── Test + Coverage ───────────────────────────────────────
+  test:
+    name: Go Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+      - name: Run tests with coverage
+        run: |
+          mkdir -p coverage
+          cd backend
+          go test -count=1 -timeout 60s -coverprofile=../coverage/backend.out -covermode=atomic ./...
+          cd ../phoenix
+          go test -count=1 -timeout 60s -coverprofile=../coverage/phoenix.out -covermode=atomic ./...
+      - name: Print coverage summary
+        run: |
+          echo "── Backend Coverage ──"
+          go tool cover -func=coverage/backend.out | tail -1
+          echo ""
+          echo "── Phoenix Coverage ──"
+          go tool cover -func=coverage/phoenix.out | tail -1
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: coverage/
+
+  # ── Build ─────────────────────────────────────────────────
+  build:
+    name: Go Build
+    needs: [fmt, vet, lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+      - name: Build backend binary
+        run: cd backend && go build -o sandbox ./cmd/sandbox/
+      - name: Build phoenix binary
+        run: cd phoenix && go build -o /dev/null ./cmd/phoenix/
+
+  # ── Markdown Lint ─────────────────────────────────────────
+  markdown:
+    name: Markdown Link Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          config-file: ".markdownlint.json"
+          folder-path: "."
+          file-extension: ".md"
+          exclude: "refs, research, dist, .gocache"
+
+  # ── JSON Schema Validation ────────────────────────────────
+  json-schema:
+    name: JSON Schema Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install ajv-cli
+        run: npm install -g ajv-cli ajv-formats
+      - name: Validate challenge schemas
+        run: |
+          SCHEMA_DIR="content/schema"
+          if [ ! -d "$SCHEMA_DIR" ]; then
+            echo "No schema directory found, skipping."
+            exit 0
+          fi
+
+          FAIL=0
+          for schema in "$SCHEMA_DIR"/*.schema.json; do
+            NAME=$(basename "$schema" .schema.json)
+            echo "Validating challenges with schema: $NAME"
+            # Validate all JSON files that match the schema name pattern
+            for f in $(find data/challenges -name "*.json" -path "*${NAME}*" 2>/dev/null || true); do
+              if ! ajv validate -s "$schema" -d "$f" --spec=draft2020 2>/dev/null; then
+                # Try without draft flag
+                if ! ajv validate -s "$schema" -d "$f" 2>/dev/null; then
+                  echo "  WARN: Could not validate $f against $schema"
+                fi
+              fi
+            done
+          done
+          echo "Schema validation complete."

@@ -1,0 +1,22 @@
+{
+  "id": "composite_01_vault_breach",
+  "paradigm": "CYBERPUNK",
+  "name": "Vault Breach Protocol",
+  "description": "Two security layers stand between you and the vault. Layer 1: optimize the mainframe's access function to derive the first passcode digit. Layer 2: identify the buffer overflow line that exposes the second digit. Submit both — the vault opens when combined.",
+  "logos_token": "LOGOS_CPK_COMPOSITE_CONCAT_01",
+  "skill_type": "composite",
+  "sub_challenges": [
+    { "id": "cyberpunk_07_optimize", "output_key": "fib_result" },
+    { "id": "cyberpunk_09_recognize", "output_key": "vuln_line" }
+  ],
+  "dependencies": {},
+  "combine": {
+    "type": "concat",
+    "order": ["fib_result", "vuln_line"],
+    "expected": "554"
+  },
+  "win_condition": {
+    "target_state_key": "vault_breached",
+    "expected_value": true
+  }
+}

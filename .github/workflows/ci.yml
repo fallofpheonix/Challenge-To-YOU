@@ -1,0 +1,56 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        module: [ 'backend', 'phoenix' ]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+
+      - name: Install dependencies
+        run: |
+          cd ${{ matrix.module }}
+          go mod download
+
+      - name: Verify Formatting
+        run: |
+          cd ${{ matrix.module }}
+          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+            echo "Formatting issues detected in the following files:"
+            gofmt -s -l .
+            exit 1
+          fi
+
+      - name: Run Go Vet
+        run: |
+          cd ${{ matrix.module }}
+          go vet ./...
+
+      - name: Build Modules
+        run: |
+          cd ${{ matrix.module }}
+          go build -v ./...
+
+      - name: Run Unit Tests
+        run: |
+          cd ${{ matrix.module }}
+          go test -v -race ./...

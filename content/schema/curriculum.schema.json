@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://challenge-to-you/schemas/curriculum/v1.0.0",
+  "title": "CurriculumMap",
+  "description": "The complete programming curriculum dependency graph. Defines the canonical learning path and prerequisite relationships between all concepts.",
+  "type": "object",
+  "required": ["schema_version", "version", "concepts", "paths"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string" },
+    "version": { "type": "string" },
+    "concepts": {
+      "type": "object",
+      "description": "Map of concept_id -> ConceptDefinition",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "name", "description", "prerequisites", "learning_outcomes", "common_mistakes", "challenge_ids"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "category": { "type": "string" },
+          "difficulty_tier": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "prerequisites": { "type": "array", "items": { "type": "string" } },
+          "corequisites": { "type": "array", "items": { "type": "string" } },
+          "learning_outcomes": { "type": "array", "items": { "type": "string" } },
+          "common_mistakes": { "type": "array", "items": { "type": "string" } },
+          "suggested_order": { "type": "integer" },
+          "challenge_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Challenge IDs that teach this concept"
+          },
+          "mastery_threshold": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Number of challenges to complete for concept mastery"
+          },
+          "tags": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "description": "Named learning paths through the curriculum",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "name", "description", "ordered_concepts"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "target_audience": { "type": "string" },
+          "ordered_concepts": { "type": "array", "items": { "type": "string" } },
+          "estimated_hours": { "type": "number" }
+        }
+      }
+    }
+  }
+}

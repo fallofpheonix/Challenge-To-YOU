@@ -9,23 +9,23 @@ import (
 
 // PackDefinition represents a collection of challenges (a "chapter" or "tier").
 type PackDefinition struct {
-	Version      int                `json:"version"`
-	Era          string             `json:"era"`
-	Tier         int                `json:"tier"`
-	Name         string             `json:"name"`
-	Description  string             `json:"description"`
-	Prerequisites []string          `json:"prerequisites,omitempty"`
-	Unlocks      []string           `json:"unlocks,omitempty"`
-	Challenges   []ChallengeRef     `json:"challenges"`
-	LuckModifier float64            `json:"luck_modifier,omitempty"`
+	Version       int            `json:"version"`
+	Era           string         `json:"era"`
+	Tier          int            `json:"tier"`
+	Name          string         `json:"name"`
+	Description   string         `json:"description"`
+	Prerequisites []string       `json:"prerequisites,omitempty"`
+	Unlocks       []string       `json:"unlocks,omitempty"`
+	Challenges    []ChallengeRef `json:"challenges"`
+	LuckModifier  float64        `json:"luck_modifier,omitempty"`
 }
 
 // ChallengeRef is a reference to a challenge file within the pack.
 type ChallengeRef struct {
-	ID         string `json:"id"`
-	File       string `json:"file"`
+	ID         string  `json:"id"`
+	File       string  `json:"file"`
 	Difficulty float64 `json:"difficulty"`
-	Mode       string `json:"mode,omitempty"` // "architect", "ghost", "saboteur"
+	Mode       string  `json:"mode,omitempty"` // "architect", "ghost", "saboteur"
 }
 
 // LoadPack loads a challenge pack from a directory.
@@ -57,7 +57,7 @@ func LoadPack(packPath string) (*PackDefinition, error) {
 		if def.ID != ref.ID {
 			return nil, fmt.Errorf("challenge ID mismatch: pack says %s, file has %s", ref.ID, def.ID)
 		}
-		loadedChallenges = append(loadedChallenges, def)
+		loadedChallenges = append(loadedChallenges, def) //nolint:staticcheck // retained for validation side-effects during pack load
 	}
 
 	return &pack, nil

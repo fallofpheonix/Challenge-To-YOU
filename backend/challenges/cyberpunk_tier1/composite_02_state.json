@@ -1,0 +1,24 @@
+{
+  "id": "composite_02_dual_lockdown",
+  "paradigm": "CYBERPUNK",
+  "name": "Dual Lockdown Override",
+  "description": "Two independent security systems are running simultaneously. You must exploit both to trigger a system-wide lockdown override. Neither exploit depends on the other — crack them in any order.",
+  "logos_token": "LOGOS_CPK_COMPOSITE_STATE_02",
+  "skill_type": "composite",
+  "sub_challenges": [
+    { "id": "cyberpunk_07_optimize", "output_key": "optimize_done" },
+    { "id": "cyberpunk_08_spec", "output_key": "spec_done" }
+  ],
+  "dependencies": {},
+  "combine": {
+    "type": "all_state_match",
+    "required_state": {
+      "security_bypass": true,
+      "access_granted": true
+    }
+  },
+  "win_condition": {
+    "target_state_key": "lockdown_override",
+    "expected_value": true
+  }
+}

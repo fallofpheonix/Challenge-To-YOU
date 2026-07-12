@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "era": "cyberpunk",
+  "name": "Neon Depths",
+  "description": "Hack the megacity. From street-level terminal access to dismantling the corporate AI at its core.",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "Street Code",
+      "description": "Entry-level exploits targeting corporate weak points from the street level.",
+      "story_arc": "Neon Uprising",
+      "challenge_count": 15,
+      "path": "tier1/",
+      "difficulty_range": [0.05, 0.35],
+      "unlocks": ["cyberpunk/tier2"]
+    },
+    {
+      "tier": 2,
+      "name": "Corporate War",
+      "description": "Deep inside the corporate networks. Data structures, algorithms, and network penetration.",
+      "story_arc": "Corporate War",
+      "challenge_count": 15,
+      "path": "tier2/",
+      "difficulty_range": [0.35, 0.65],
+      "unlocks": ["cyberpunk/tier3"]
+    },
+    {
+      "tier": 3,
+      "name": "The Singularity Heist",
+      "description": "The ultimate corporate confrontation. System-level exploits and megacorp AI defeat.",
+      "story_arc": "The Singularity Heist",
+      "challenge_count": 10,
+      "path": "tier3/",
+      "difficulty_range": [0.65, 1.0],
+      "unlocks": ["cosmic"]
+    }
+  ],
+  "total_challenges": 40,
+  "paradigm": "CYBERPUNK",
+  "languages": ["python", "javascript", "c", "rust"],
+  "unlock_condition": "magitech_tier3_complete"
+}

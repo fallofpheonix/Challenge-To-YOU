@@ -1,9 +1,12 @@
 package engine
 
 import (
+	"challenge-to-you/backend/internal/sandbox"
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 )
 
 // BrokenModule is display metadata for a challenge module the player reads.
@@ -17,13 +20,13 @@ type BrokenModule struct {
 // Flaw is a glitch/loophole the player can exploit.
 // This maps to UnsanctionedGlitch internally.
 type Flaw struct {
-	ID                string         `json:"id"`
-	TriggerEvent      string         `json:"trigger_event"`
-	Name              string         `json:"name"`
-	FlavorText        string         `json:"flavor_text"`
-	Conditions        ParadigmState  `json:"conditions"`
-	Mutations         ParadigmState  `json:"mutations"`
-	FallbackMutations ParadigmState  `json:"fallback_mutations"`
+	ID                string        `json:"id"`
+	TriggerEvent      string        `json:"trigger_event"`
+	Name              string        `json:"name"`
+	FlavorText        string        `json:"flavor_text"`
+	Conditions        ParadigmState `json:"conditions"`
+	Mutations         ParadigmState `json:"mutations"`
+	FallbackMutations ParadigmState `json:"fallback_mutations"`
 }
 
 // WinCondition defines the victory state.
@@ -35,14 +38,51 @@ type WinCondition struct {
 // ChallengeDefinition is a single playable level loaded from JSON.
 // Uses the new data-driven format with "flaws" instead of "glitches".
 type ChallengeDefinition struct {
-	ID              string          `json:"id"`
-	Paradigm        Paradigm        `json:"paradigm"`
-	Name            string          `json:"name"`
-	Description     string          `json:"description"`
-	LogosToken      string          `json:"logos_token"`
-	InitialState    ParadigmState   `json:"initial_state"`
-	Flaws           []Flaw          `json:"flaws"`
-	WinCondition    WinCondition    `json:"win_condition"`
+	ID               string                 `json:"id"`
+	Paradigm         Paradigm               `json:"paradigm"`
+	Name             string                 `json:"name"`
+	Description      string                 `json:"description"`
+	LogosToken       string                 `json:"logos_token"`
+	ExploitClass     string                 `json:"exploit_class,omitempty"`
+	TelemetryHooks   map[string]interface{} `json:"telemetry_hooks,omitempty"`
+	InitialState     ParadigmState          `json:"initial_state"`
+	Flaws            []Flaw                 `json:"flaws"`
+	WinCondition     WinCondition           `json:"win_condition"`
+	TemplateCode     string                 `json:"template_code,omitempty"`
+	ValidationScript string                 `json:"validation_script,omitempty"`
+	SkillType        string                 `json:"skill_type,omitempty"`
+	// ExpectedAnswer is used for recognize-type challenges: grading short-circuits
+	// to a direct comparison against this value — the sandbox never runs.
+	ExpectedAnswer string `json:"expected_answer,omitempty"`
+}
+
+// EvaluateAnswer grades a player's submitted answer for recognize-type challenges.
+// It does NOT spin up the Goja sandbox — it compares the answer directly against
+// ExpectedAnswer, mutates state on match, and returns an error on mismatch.
+// Call ExecuteScript instead for optimize / write_from_spec / modify challenges.
+func (c *ChallengeDefinition) EvaluateAnswer(answer string, state map[string]interface{}) (map[string]interface{}, error) {
+	if c.SkillType != "recognize" {
+		return nil, fmt.Errorf("EvaluateAnswer called on non-recognize challenge (type=%q), use ExecuteScript instead", c.SkillType)
+	}
+	if c.ExpectedAnswer == "" {
+		return nil, fmt.Errorf("challenge %s has skill_type=recognize but no expected_answer defined", c.ID)
+	}
+	if strings.TrimSpace(answer) != strings.TrimSpace(c.ExpectedAnswer) {
+		return nil, fmt.Errorf("incorrect answer: got %q, want %q", answer, c.ExpectedAnswer)
+	}
+	// Clone state and apply the win condition mutation
+	result := make(map[string]interface{}, len(state))
+	for k, v := range state {
+		result[k] = v
+	}
+	result[c.WinCondition.TargetStateKey] = c.WinCondition.ExpectedValue
+	return result, nil
+}
+
+// ExecuteScript executes player submitted code concatenated with validation test suite inside the sandbox
+func (c *ChallengeDefinition) ExecuteScript(playerCode string, state map[string]interface{}) (*sandbox.Result, error) {
+	fullCode := playerCode + "\n" + c.ValidationScript
+	return sandbox.Execute(fullCode, state, 2*time.Second)
 }
 
 // LoadChallenge reads and parses a challenge JSON file (new format).
@@ -94,10 +134,30 @@ func (c *ChallengeDefinition) BuildFabric() *AxiomaticFabric {
 func (f *Flaw) ConditionsToConditions() []DemiurgicCondition {
 	var conds []DemiurgicCondition
 	for k, v := range f.Conditions {
+		valStr := fmt.Sprintf("%v", v)
+		operator := "EQUALS"
+		value := valStr
+
+		if str, ok := v.(string); ok {
+			if strings.HasPrefix(str, "GREATER_THAN:") {
+				operator = "GREATER_THAN"
+				value = strings.TrimPrefix(str, "GREATER_THAN:")
+			} else if strings.HasPrefix(str, "LESS_THAN:") {
+				operator = "LESS_THAN"
+				value = strings.TrimPrefix(str, "LESS_THAN:")
+			} else if strings.HasPrefix(str, "NOT:") {
+				operator = "NOT"
+				value = strings.TrimPrefix(str, "NOT:")
+			} else if strings.HasPrefix(str, "EQUALS:") {
+				operator = "EQUALS"
+				value = strings.TrimPrefix(str, "EQUALS:")
+			}
+		}
+
 		conds = append(conds, DemiurgicCondition{
 			StateKey: k,
-			Operator: "EQUALS",
-			Value:    fmt.Sprintf("%v", v),
+			Operator: operator,
+			Value:    value,
 		})
 	}
 	return conds
@@ -133,6 +193,7 @@ type Snapshot struct {
 	Paradigm      string         `json:"paradigm"`
 	Title         string         `json:"title"`
 	Description   string         `json:"description"`
+	SkillType     string         `json:"skill_type,omitempty"` // "modify" | "recognize" | "optimize" | "write_from_spec" | "composite"
 	Modules       []BrokenModule `json:"modules"`
 	State         ParadigmState  `json:"state"`
 	Vigilance     float64        `json:"vigilance"`
@@ -150,6 +211,7 @@ func (c *ChallengeDefinition) NewSnapshot(fabric *AxiomaticFabric, lastCipher, m
 		Paradigm:      string(c.Paradigm),
 		Title:         c.Name,
 		Description:   c.Description,
+		SkillType:     c.SkillType,
 		Modules:       c.ToModules(),
 		State:         fabric.State,
 		Vigilance:     fabric.ArchonVigilance,

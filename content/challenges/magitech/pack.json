@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "era": "magitech",
+  "name": "The Arcane Halls",
+  "description": "Journey through the mystical realm of Magitech — from fractured wards to the ultimate ascension ritual.",
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "Rune Binding Basics",
+      "description": "Learn the fundamentals of rune resonance, mana channeling, and arcane fault exploitation.",
+      "story_arc": "The Awakening",
+      "challenge_count": 15,
+      "path": "tier1/",
+      "difficulty_range": [0.05, 0.35],
+      "unlocks": ["magitech/tier2"]
+    },
+    {
+      "tier": 2,
+      "name": "The Arcane Rebellion",
+      "description": "Deeper arcane systems — recursive spells, dependency trees, and multi-path exploits.",
+      "story_arc": "The Arcane Rebellion",
+      "challenge_count": 15,
+      "path": "tier2/",
+      "difficulty_range": [0.35, 0.65],
+      "unlocks": ["magitech/tier3"]
+    },
+    {
+      "tier": 3,
+      "name": "The Ascension Crisis",
+      "description": "Boss-tier arcane challenges. Face the Lich Archon and halt the cataclysm.",
+      "story_arc": "The Ascension Crisis",
+      "challenge_count": 10,
+      "path": "tier3/",
+      "difficulty_range": [0.65, 1.0],
+      "unlocks": ["cyberpunk"]
+    }
+  ],
+  "total_challenges": 40,
+  "paradigm": "MAGITECH",
+  "languages": ["runes", "python", "javascript"],
+  "unlock_condition": null
+}

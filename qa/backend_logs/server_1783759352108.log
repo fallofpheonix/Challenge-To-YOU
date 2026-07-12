@@ -1,0 +1,32 @@
+2026/07/11 14:12:32 Axiomatic Fabric online — challenge: magitech_01_breach (The Fractured Ward)
+2026/07/11 14:12:32 New rift established.
+2026/07/11 14:12:32 Failed to send error: set tcp [::1]:52769: use of closed network connection
+2026/07/11 14:12:32 Rift severed: read tcp [::1]:52769->[::1]:52779: use of closed network connection
+2026/07/11 14:12:32 http: panic serving [::1]:52779: concurrent write to websocket connection
+goroutine 39 [running]:
+net/http.(*conn).serve.func1()
+	/usr/local/go/src/net/http/server.go:1907 +0xac
+panic({0x101ae2820?, 0x101be5c00?})
+	/usr/local/go/src/runtime/panic.go:860 +0x12c
+github.com/gorilla/websocket.(*messageWriter).flushFrame(0x7f04c0821800, 0x1, {0x0?, 0x101bbc0c0?, 0x7f04c0740780?})
+	/Users/fallofpheonix/go/pkg/mod/github.com/gorilla/websocket@v1.5.1/conn.go:632 +0x410
+github.com/gorilla/websocket.(*messageWriter).Close(0x7f04c06dd368?)
+	/Users/fallofpheonix/go/pkg/mod/github.com/gorilla/websocket@v1.5.1/conn.go:746 +0x44
+github.com/gorilla/websocket.(*Conn).WriteJSON(0x101bb30c0?, {0x101bb30c0, 0x7f04c0874000})
+	/Users/fallofpheonix/go/pkg/mod/github.com/gorilla/websocket@v1.5.1/json.go:29 +0xbc
+main.sendSnapshot(0x7f04c086c2c0, 0x7f04c06becf0, {0x0, 0x0}, {0x1014137ea, 0x2d}, 0x0)
+	/Users/fallofpheonix/Project/game/Challenge-To-YOU/backend/cmd/sandbox/main.go:427 +0x228
+main.handleRift({0x101befce0?, 0x7f04c08321e0?}, 0x7f04c084c3c0, 0x7f04c0832000, 0x7f04c06a2bd0)
+	/Users/fallofpheonix/Project/game/Challenge-To-YOU/backend/cmd/sandbox/main.go:205 +0xb68
+main.main.func1({0x101befce0?, 0x7f04c08321e0?}, 0x7f04c0905b18?)
+	/Users/fallofpheonix/Project/game/Challenge-To-YOU/backend/cmd/sandbox/main.go:74 +0x28
+net/http.HandlerFunc.ServeHTTP(0x101de1aa0?, {0x101befce0?, 0x7f04c08321e0?}, 0x100f4dd68?)
+	/usr/local/go/src/net/http/server.go:2286 +0x38
+net/http.(*ServeMux).ServeHTTP(0x0?, {0x101befce0, 0x7f04c08321e0}, 0x7f04c084c3c0)
+	/usr/local/go/src/net/http/server.go:2828 +0x190
+net/http.serverHandler.ServeHTTP({0x7f04c07406c0?}, {0x101befce0?, 0x7f04c08321e0?}, 0x1?)
+	/usr/local/go/src/net/http/server.go:3311 +0xb0
+net/http.(*conn).serve(0x7f04c06a2e10, {0x101bf1588, 0x7f04c08214d0})
+	/usr/local/go/src/net/http/server.go:2073 +0x51c
+created by net/http.(*Server).Serve in goroutine 1
+	/usr/local/go/src/net/http/server.go:3464 +0x37c

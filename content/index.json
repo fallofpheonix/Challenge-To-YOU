@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0.0",
+  "project": "Challenge To YOU",
+  "version": "1.0.0",
+  "last_updated": "2026-07-11",
+  "status": "production",
+  "eras": [
+    {
+      "id": "magitech",
+      "name": "Medieval Magitech",
+      "paradigm": "MAGITECH",
+      "theme": "Dark fantasy — rune magic as code",
+      "aesthetic": "Ancient stone, glowing sigils, arcane terminals",
+      "tiers": 3,
+      "total_challenges": 40,
+      "pack_file": "challenges/magitech/pack.json"
+    },
+    {
+      "id": "cyberpunk",
+      "name": "Cyberpunk Neon",
+      "paradigm": "CYBERPUNK",
+      "theme": "Dystopian megacity — Python/JS hacking",
+      "aesthetic": "Neon rain, holographic ads, dark corporate towers",
+      "tiers": 3,
+      "total_challenges": 40,
+      "pack_file": "challenges/cyberpunk/pack.json"
+    },
+    {
+      "id": "cosmic",
+      "name": "Cosmic Void",
+      "paradigm": "COSMIC",
+      "theme": "Deep space quantum — reality manipulation",
+      "aesthetic": "Void black, starfields, reality-warping geometry",
+      "tiers": 3,
+      "total_challenges": 40,
+      "pack_file": "challenges/cosmic/pack.json"
+    },
+    {
+      "id": "cross_era",
+      "name": "The Convergence",
+      "paradigm": "CROSS_ERA",
+      "theme": "Multi-paradigm — all eras collide",
+      "aesthetic": "Reality fracturing, overlapping dimensions",
+      "tiers": 1,
+      "total_challenges": 5,
+      "pack_file": "challenges/cross_era/pack.json"
+    }
+  ],
+  "content_summary": {
+    "total_challenges": 125,
+    "total_missions": 60,
+    "total_npcs": 100,
+    "total_dialogue_trees": 180,
+    "total_achievements": 250,
+    "total_items": 120,
+    "total_lore_entries": 100,
+    "total_factions": 18,
+    "total_locations": 18
+  },
+  "directories": {
+    "challenges": "challenges/",
+    "missions": "missions/",
+    "npcs": "npcs/",
+    "dialogue": "dialogue/",
+    "achievements": "achievements/",
+    "items": "items/",
+    "curriculum": "curriculum/",
+    "hints": "hints/",
+    "world": "world/",
+    "localization": "localization/",
+    "schema": "schema/",
+    "analytics": "analytics/",
+    "docs": "docs/",
+    "validation": "validation/"
+  },
+  "schema_files": {
+    "challenge": "schema/challenge.schema.json",
+    "mission": "schema/mission.schema.json",
+    "npc": "schema/npc.schema.json",
+    "dialogue": "schema/dialogue.schema.json",
+    "achievement": "schema/achievement.schema.json",
+    "item": "schema/item.schema.json",
+    "curriculum": "schema/curriculum.schema.json"
+  }
+}

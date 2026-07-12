@@ -1,0 +1,55 @@
+{
+  "id": "magitech_09_resonance",
+  "paradigm": "MAGITECH",
+  "name": "The Chrono-Resonance Cascade",
+  "description": "Align the chrono-fluid flow and the gravity lock inside the optimal time window (between 200ms and 500ms) to trigger a resonance cascade and collapse the stasis field.",
+  "logos_token": "LOGOS_MGT_CHRONO_RESONANCE_77B",
+  "exploit_class": "resonance_cascade",
+  "telemetry_hooks": {
+    "track_solve_time": true
+  },
+  "initial_state": {
+    "gravity_lock_sealed": true,
+    "pulse_active": false,
+    "time_since_last_event_ms": 0.0,
+    "entropy": 0
+  },
+  "flaws": [
+    {
+      "id": "start_pulse",
+      "trigger_event": "start_pulse",
+      "name": "Initiate Chrono Pulse",
+      "flavor_text": "Launch a chrono-fluid pulse. Aligning the next action with the pulse apex is critical.",
+      "conditions": {},
+      "mutations": {
+        "pulse_active": true,
+        "entropy": 5
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "engage_lock",
+      "trigger_event": "engage_lock",
+      "name": "Engage Gravity Lock",
+      "flavor_text": "Engaging the gravity lock precisely at the chrono-fluid pulse apex (200-500ms) overrides the lock state, otherwise causing entropic feedback.",
+      "conditions": {
+        "pulse_active": true,
+        "time_since_last_event_ms_min": "GREATER_THAN:200",
+        "time_since_last_event_ms_max": "LESS_THAN:500"
+      },
+      "mutations": {
+        "gravity_lock_sealed": false,
+        "pulse_active": false,
+        "entropy": 10
+      },
+      "fallback_mutations": {
+        "pulse_active": false,
+        "entropy": 30
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "gravity_lock_sealed",
+    "expected_value": false
+  }
+}

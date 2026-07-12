@@ -1,0 +1,29 @@
+{
+  "id": "cyberpunk_08_spec",
+  "paradigm": "CYBERPUNK",
+  "name": "Session Packet Decoder",
+  "description": "Implement a packet decoder algorithm to unpack run-length encoded session packets and restore administrative access credentials.",
+  "logos_token": "LOGOS_CPK_RLE_DECODE_02",
+  "skill_type": "write_from_spec",
+  "template_code": "function decodePacket(packet) {\n    // Write your solution here\n}",
+  "validation_script": "if (decodePacket('A3B2C4') !== 'AAABBCCCC') throw new Error('decodePacket(\"A3B2C4\") failed');\nif (decodePacket('X1Y5Z2') !== 'XYYYYYZZ') throw new Error('decodePacket(\"X1Y5Z2\") failed');\nif (decodePacket('') !== '') throw new Error('decodePacket(\"\") failed');\nsetState('packet_decoded', true);\nsetState('access_granted', true);",
+  "initial_state": {
+    "packet_decoded": false,
+    "access_granted": false
+  },
+  "flaws": [
+    {
+      "id": "decode_script",
+      "trigger_event": "execute_script",
+      "name": "Submit Decoder Script",
+      "flavor_text": "Submit the RLE decoder script to the validation server.",
+      "conditions": {},
+      "mutations": {},
+      "fallback_mutations": {}
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "access_granted",
+    "expected_value": true
+  }
+}

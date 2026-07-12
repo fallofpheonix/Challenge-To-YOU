@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "era": "cross_era",
+  "name": "The Convergence",
+  "description": "Challenges that bridge all three eras. The ultimate test of multi-paradigm mastery.",
+  "challenge_count": 5,
+  "path": "cross_era/",
+  "difficulty_range": [0.5, 0.9],
+  "story_arc": "The Convergence",
+  "paradigm": "CROSS_ERA",
+  "languages": ["runes", "python", "quantum"],
+  "unlock_condition": "all_tier2_complete"
+}

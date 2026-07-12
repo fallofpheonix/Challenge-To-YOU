@@ -32,34 +32,60 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="VBox" type="VBoxContainer" parent="Margin"]
+[node name="MainHBox" type="HBoxContainer" parent="Margin"]
 layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="LeftConsoleVBox" type="VBoxContainer" parent="Margin/MainHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.5
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="Margin/VBox"]
+[node name="Title" type="Label" parent="Margin/MainHBox/LeftConsoleVBox"]
 layout_mode = 2
-text = "CHALLENGE TO YOU — TERMINAL INTERFACE"
+text = "CHALLENGE TO YOU — COGNITIVE ENGINE"
 theme_override_font_sizes/font_size = 18
 
-[node name="ConfigArea" type="HBoxContainer" parent="Margin/VBox"]
+[node name="HUDPanel" type="HBoxContainer" parent="Margin/MainHBox/LeftConsoleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HUDReputation" type="Label" parent="Margin/MainHBox/LeftConsoleVBox/HUDPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Reputation: 0"
+
+[node name="HUDLuck" type="Label" parent="Margin/MainHBox/LeftConsoleVBox/HUDPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Luck: 1.00"
+
+[node name="HUDUnlockedParadigms" type="Label" parent="Margin/MainHBox/LeftConsoleVBox/HUDPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Eras Unlocked: MAGITECH"
+
+[node name="ConfigArea" type="HBoxContainer" parent="Margin/MainHBox/LeftConsoleVBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SeedLabel" type="Label" parent="Margin/VBox/ConfigArea"]
+[node name="SeedLabel" type="Label" parent="Margin/MainHBox/LeftConsoleVBox/ConfigArea"]
 layout_mode = 2
 text = "Seed:"
 
-[node name="SeedEdit" type="LineEdit" parent="Margin/VBox/ConfigArea"]
+[node name="SeedEdit" type="LineEdit" parent="Margin/MainHBox/LeftConsoleVBox/ConfigArea"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Random Seed"
 
-[node name="LuckLabel" type="Label" parent="Margin/VBox/ConfigArea"]
+[node name="LuckLabel" type="Label" parent="Margin/MainHBox/LeftConsoleVBox/ConfigArea"]
 layout_mode = 2
 text = "Luck:"
 
-[node name="LuckSpin" type="SpinBox" parent="Margin/VBox/ConfigArea"]
+[node name="LuckSpin" type="SpinBox" parent="Margin/MainHBox/LeftConsoleVBox/ConfigArea"]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 0.0
@@ -67,11 +93,11 @@ max_value = 1.0
 step = 0.05
 value = 1.0
 
-[node name="ParadigmLabel" type="Label" parent="Margin/VBox/ConfigArea"]
+[node name="ParadigmLabel" type="Label" parent="Margin/MainHBox/LeftConsoleVBox/ConfigArea"]
 layout_mode = 2
 text = "Era:"
 
-[node name="ParadigmOption" type="OptionButton" parent="Margin/VBox/ConfigArea"]
+[node name="ParadigmOption" type="OptionButton" parent="Margin/MainHBox/LeftConsoleVBox/ConfigArea"]
 unique_name_in_owner = true
 layout_mode = 2
 selected = 1
@@ -83,12 +109,12 @@ popup/item_1/id = 1
 popup/item_2/text = "COSMIC"
 popup/item_2/id = 2
 
-[node name="ConnectButton" type="Button" parent="Margin/VBox/ConfigArea"]
+[node name="ConnectButton" type="Button" parent="Margin/MainHBox/LeftConsoleVBox/ConfigArea"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Establish Rift"
 
-[node name="OutputLog" type="RichTextLabel" parent="Margin/VBox"]
+[node name="OutputLog" type="RichTextLabel" parent="Margin/MainHBox/LeftConsoleVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
@@ -97,21 +123,210 @@ scroll_active = true
 fit_content = false
 text = "INITIATING TERMINAL PROTOCOL...\nAWAITING AXIOMATIC FABRIC CONNECTION...\n"
 
-[node name="InputArea" type="HBoxContainer" parent="Margin/VBox"]
+[node name="DialoguePanel" type="PanelContainer" parent="Margin/MainHBox/LeftConsoleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+visible = false
+
+[node name="HBox" type="HBoxContainer" parent="Margin/MainHBox/LeftConsoleVBox/DialoguePanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Portrait" type="ColorRect" parent="Margin/MainHBox/LeftConsoleVBox/DialoguePanel/HBox"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+color = Color(0.1, 0.3, 0.2, 1.0)
+
+[node name="PortraitLabel" type="Label" parent="Margin/MainHBox/LeftConsoleVBox/DialoguePanel/HBox/Portrait"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+text = "NPC"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextVBox" type="VBoxContainer" parent="Margin/MainHBox/LeftConsoleVBox/DialoguePanel/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SpeakerName" type="Label" parent="Margin/MainHBox/LeftConsoleVBox/DialoguePanel/HBox/TextVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Speaker"
+theme_override_font_sizes/font_size = 14
+
+[node name="DialogueText" type="Label" parent="Margin/MainHBox/LeftConsoleVBox/DialoguePanel/HBox/TextVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Dialogue goes here..."
+autowrap_mode = 3
+
+[node name="DialogueChoices" type="HBoxContainer" parent="Margin/MainHBox/LeftConsoleVBox/DialoguePanel/HBox/TextVBox"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Prompt" type="Label" parent="Margin/VBox/InputArea"]
+[node name="DialogueNextBtn" type="Button" parent="Margin/MainHBox/LeftConsoleVBox/DialoguePanel/HBox/TextVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Next >"
+
+[node name="CodePanel" type="VBoxContainer" parent="Margin/MainHBox/LeftConsoleVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+visible = false
+theme_override_constants/separation = 4
+
+[node name="CodeLabel" type="Label" parent="Margin/MainHBox/LeftConsoleVBox/CodePanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "CODE SUBMISSION PANEL"
+theme_override_font_sizes/font_size = 13
+
+[node name="CodeEditor" type="TextEdit" parent="Margin/MainHBox/LeftConsoleVBox/CodePanel"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 160)
+placeholder_text = "// Your code here"
+
+[node name="CodeSubmitBtn" type="Button" parent="Margin/MainHBox/LeftConsoleVBox/CodePanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "⚡ EXECUTE SCRIPT"
+
+[node name="InputArea" type="HBoxContainer" parent="Margin/MainHBox/LeftConsoleVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Prompt" type="Label" parent="Margin/MainHBox/LeftConsoleVBox/InputArea"]
 layout_mode = 2
 text = "root@fabric:~#"
 theme_override_font_sizes/font_size = 16
 
-[node name="CommandLine" type="LineEdit" parent="Margin/VBox/InputArea"]
+[node name="CommandLine" type="LineEdit" parent="Margin/MainHBox/LeftConsoleVBox/InputArea"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 caret_blink = true
 placeholder_text = "Enter command (help, inject_adrenaline, cut_power, etc.)"
+
+[node name="SidebarPanel" type="TabContainer" parent="Margin/MainHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Exploration" type="VBoxContainer" parent="Margin/MainHBox/SidebarPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="RoomNameLabel" type="Label" parent="Margin/MainHBox/SidebarPanel/Exploration"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Room Name"
+theme_override_font_sizes/font_size = 16
+
+[node name="RoomDescLabel" type="Label" parent="Margin/MainHBox/SidebarPanel/Exploration"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Room Description goes here..."
+autowrap_mode = 3
+
+[node name="ExitsTitle" type="Label" parent="Margin/MainHBox/SidebarPanel/Exploration"]
+layout_mode = 2
+text = "Exits"
+
+[node name="RoomExitsContainer" type="VBoxContainer" parent="Margin/MainHBox/SidebarPanel/Exploration"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ObjectsTitle" type="Label" parent="Margin/MainHBox/SidebarPanel/Exploration"]
+layout_mode = 2
+text = "Inspectable Objects"
+
+[node name="RoomObjectsContainer" type="VBoxContainer" parent="Margin/MainHBox/SidebarPanel/Exploration"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Inventory" type="VBoxContainer" parent="Margin/MainHBox/SidebarPanel"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="InventoryTitle" type="Label" parent="Margin/MainHBox/SidebarPanel/Inventory"]
+layout_mode = 2
+text = "Player Inventory"
+theme_override_font_sizes/font_size = 16
+
+[node name="InventoryContainer" type="VBoxContainer" parent="Margin/MainHBox/SidebarPanel/Inventory"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Journal" type="VBoxContainer" parent="Margin/MainHBox/SidebarPanel"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="JournalTitle" type="Label" parent="Margin/MainHBox/SidebarPanel/Journal"]
+layout_mode = 2
+text = "Active Objectives"
+theme_override_font_sizes/font_size = 16
+
+[node name="JournalContainer" type="VBoxContainer" parent="Margin/MainHBox/SidebarPanel/Journal"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MainMenuPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Center" type="CenterContainer" parent="MainMenuPanel"]
+layout_mode = 2
+
+[node name="MenuVBox" type="VBoxContainer" parent="MainMenuPanel/Center"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MenuTitle" type="Label" parent="MainMenuPanel/Center/MenuVBox"]
+layout_mode = 2
+text = "CHALLENGE TO YOU"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 32
+
+[node name="MenuSubtitle" type="Label" parent="MainMenuPanel/Center/MenuVBox"]
+layout_mode = 2
+text = "Multiversal Hacker RPG — Version 1.0.0"
+horizontal_alignment = 1
+
+[node name="SaveSlotLabel" type="Label" parent="MainMenuPanel/Center/MenuVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Save Slot: Active Profile"
+horizontal_alignment = 1
+
+[node name="PlayBtn" type="Button" parent="MainMenuPanel/Center/MenuVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "PLAY CAMPAIGN"
+
+[node name="ContinueBtn" type="Button" parent="MainMenuPanel/Center/MenuVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "CONTINUE GAME"
+
+[node name="CreditsBtn" type="Button" parent="MainMenuPanel/Center/MenuVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "CREDITS"
+
+[node name="ExitBtn" type="Button" parent="MainMenuPanel/Center/MenuVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "EXIT"
 
 [node name="BackBufferCopy" type="BackBufferCopy" parent="."]
 copy_mode = 2

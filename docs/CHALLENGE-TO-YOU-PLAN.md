@@ -69,7 +69,7 @@
 │  │              GDExtension Bridge (Native)               │  │
 │  └──────┬────────────────────────────────────────────────┘  │
 └─────────┼───────────────────────────────────────────────────┘
-          │
+        │
 ┌─────────▼───────────────────────────────────────────────────┐
 │                    Go Backend (Shared Library)               │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
@@ -103,104 +103,352 @@
 
 ---
 
-## 📅 1-Month Production Timeline
+## Milestone Roadmap
 
-### Week 1 (Days 1-7): Core Infrastructure
+This is the authoritative long-range implementation sequence for architecture-driven work. Each milestone is gated by explicit dependencies and exit criteria so future implementation slices, ADRs, and issues can derive from it without drifting into feature work too early.
 
-**Goal**: Basic Go backend + Godot editor that can execute simple code
+### Milestone 3: Infrastructure Decoupling
 
-| Task | Owner | Deliverable |
-|------|-------|-------------|
-| Set up Go module with GDExtension | Solo Dev | `challenge-to-you/backend/` |
-| Implement WASM sandbox (Extism) | Solo Dev | Basic execution pipeline |
-| Create Godot project structure | Solo Dev | `challenge-to-you/client/` |
-| Build minimal code editor UI | Solo Dev | Text input → execute → output |
-| Pay Steam Direct fee ($100) | Solo Dev | Store page approval started |
-| Create terminal UI theme | Freelancer | Retro-cyber visual theme |
+**Prerequisites**
 
-**Milestone**: Code typed in Godot executes in Go sandbox
+- Single runtime `ChallengeDefinition`
+- Thin server entry point
+- Green verification pipeline
 
-### Week 2 (Days 8-14): Procedural Generation
+**Objectives**
 
-**Goal**: Seed-based challenge generation with luck mechanic
+- Eliminate remaining package-level globals.
+- Establish explicit ownership for infrastructure services.
+- Complete dependency injection.
 
-| Task | Owner | Deliverable |
-|------|-------|-------------|
-| Design 10 modular "junk code blocks" | Solo Dev | `backend/modules/` |
-| Build seed-based RNG generator | Solo Dev | `backend/generator.go` |
-| Implement Luck stat system | Solo Dev | `backend/luck.go` |
-| Create Magitech DSL parser | Solo Dev | `backend/pscript/` |
-| Write level flavor text | Collaborator | `backend/narrative/` |
-| Build level selection UI | Solo Dev | Era/mode selection screen |
+**Deliverables**
 
-**Milestone**: Randomly generated challenges execute and produce output
+- DB service ownership.
+- SessionManager.
+- Service-oriented server composition.
+- Clear lifecycle boundaries.
 
-### Week 3 (Days 15-21): Gameplay Modes
+**Exit criteria**
 
-**Goal**: Implement Architect, Ghost, and Saboteur modes
+- No package-level mutable runtime state.
+- Session lifecycle owned entirely by `SessionManager`.
+- `make verify` and QA suite remain green.
 
-| Task | Owner | Deliverable |
-|------|-------|-------------|
-| Implement Architect mode | Solo Dev | Write/fix code objectives |
-| Implement Ghost mode | Solo Dev | CPU usage tracking, stealth meter |
-| Implement Saboteur mode | Solo Dev | Break code, chain reactions |
-| Build tracking meter UI | Solo Dev | Detection/stealth indicators |
-| Create passcode generation engine | Solo Dev | `backend/passcode.go` |
-| Add CC0 synth music | Sound Designer | Audio atmosphere |
+### Milestone 3 Vertical Slices
 
-**Milestone**: All 3 modes playable with passcode generation
+Each slice is independently deliverable and must leave the repository releasable with `make verify` and the QA suite passing.
 
-### Week 4 (Days 22-30): Polish & Launch
+#### Slice 1: Database Service
 
-**Goal**: Bug fixes, safety clamps, Itch.io launch
+**Objective**
 
-| Task | Owner | Deliverable |
-|------|-------|-------------|
-| Implement infinite loop timeout | Solo Dev | 10s execution cap |
-| Add hint archive system | Solo Dev | Save/load hints |
-| Package desktop builds | Solo Dev | Windows/Mac/Linux |
-| Set up Itch.io page | Solo Dev | Store listing, screenshots |
-| Smoke test with players | Community | Bug reports |
-| Launch on Itch.io | Solo Dev | Free/PWYW Alpha |
-| Direct traffic to Steam wishlist | Solo Dev | Marketing push |
+Convert the database into an owned service.
 
-**Milestone**: Itch.io alpha live, Steam page collecting wishlists
+**Tasks**
 
----
+- Create `type DB struct`.
+- Move initialization into `server.New()`.
+- Inject `*db.DB` into dependent services.
+- Remove singleton access.
 
-## 🧠 Universal Logic Engine
+**Deliverables**
 
-**Key Insight**: This is NOT a code compiler game — it's a **Universal Logic Manipulation Engine**.
+- Constructor-based ownership.
+- Unit tests unchanged.
+- QA unchanged.
 
-The engine treats all game elements (magic runes, code scripts, physical gears) as the same data structure: **Events, Conditions, and Effects** in a Directed Acyclic Graph (DAG).
+**Risk**
 
-### Core Concept
+- Low.
+
+#### Slice 2: SessionManager
+
+**Objective**
+
+Extract session lifecycle from transport code.
+
+**Tasks**
+
+- Reconnect.
+- Session creation.
+- Persistence.
+- Lookup.
+- Eviction.
+
+**API**
+
+```go
+type SessionManager interface {
+   Create(...)
+   Attach(...)
+   Save(...)
+   Remove(...)
+}
+```
+
+**Exit criteria**
+
+- WebSocket no longer manages session lifecycle.
+- Integration tests unchanged.
+
+#### Slice 3: Service Wiring
+
+**Objective**
+
+Move construction into one place.
+
+**Current**
 
 ```
-[INPUT EVENT] ───► [CONDITION/STATE CHECK] ───► [OUTPUT EFFECT]
+handler
+creates DB
+
+creates sandbox
+
+creates oracle
 ```
 
-### Theme Examples
+**Target**
 
-| Theme | Player Sees | Engine Sees |
-|-------|-------------|-------------|
-| **Magitech** | Fire rune on spell-book | `Event: fire_rune, Power: 100` |
-| **Cyberpunk** | Python code in terminal | `Event: audio_driver, Port: 80` |
-| **Industrial** | Metal gear on conveyor | `Event: gear, Voltage: 220` |
+```
+server.New()
 
-### Implementation
+↓
 
-See `docs/UNIVERSAL-LOGIC-ENGINE.md` for complete technical specification.
+constructs everything
 
-**Key Components**:
-1. **GameNode** — Universal element (Event/Condition/Effect)
-2. **GameGraph** — Cause-and-effect network
-3. **GlitchDetector** — Finds emergent solutions
-4. **WinCondition** — State/event/chain-based verification
+↓
 
----
+passes dependencies
+```
 
-## 📁 Project Structure
+#### Slice 4: Constructor Migration
+
+**Objective**
+
+Convert remaining constructors to explicit dependency injection.
+
+**Deliverables**
+
+- Explicit dependencies.
+- Easier testing.
+- Deterministic initialization.
+
+#### Slice 5: Shutdown Lifecycle
+
+**Objective**
+
+Implement graceful shutdown.
+
+**Sequence**
+
+```
+SIGINT
+     ↓
+Stop accepting clients
+     ↓
+Persist active sessions
+     ↓
+Stop game loops
+     ↓
+Close DB
+     ↓
+Exit
+```
+
+**Tests**
+
+- Shutdown during mission.
+- Reconnect after restart.
+- Persistence verification.
+
+#### Slice 6: Observability
+
+**Objective**
+
+Standardize logging across request paths.
+
+Every request carries:
+
+```
+SessionID
+
+MissionID
+
+PlayerID
+
+Tick
+
+RequestID
+```
+
+This makes reconnect and replay debugging significantly easier.
+
+### Milestone 4: Event Model and Transport Abstraction
+
+This milestone should begin by stabilizing the event model before introducing new transports.
+
+**Objectives**
+
+Define a canonical simulation event schema.
+
+Example events:
+
+```
+MissionStarted
+MissionLoaded
+TickAdvanced
+CodeExecuted
+ResourceCollected
+ObjectiveCompleted
+PasscodeGenerated
+MissionWon
+MissionLost
+```
+
+Then introduce a transport interface:
+
+```
+GameLoop
+   ↓
+Simulation Events
+   ↓
+Transport
+   ├── WebSocket
+   ├── Replay
+   ├── QA Runner
+   └── Future CLI
+```
+
+**Exit criteria**
+
+- GameLoop contains no WebSocket-specific logic.
+- QA runner consumes the same event stream.
+- Replay is event-driven rather than transport-driven.
+
+### Milestone 5: Constraint Solver
+
+This becomes a foundational subsystem rather than an isolated feature.
+
+Dependencies:
+
+- Stable event model.
+- Stable deterministic simulation.
+
+Subsystems consuming it include:
+
+- procedural generation,
+- challenge validation,
+- difficulty estimation,
+- hint generation,
+- dependency analysis,
+- glitch propagation.
+
+Core algorithms:
+
+- AC-3,
+- forward checking,
+- MRV,
+- degree heuristic,
+- IDA*,
+- memoization,
+- cycle detection.
+
+**Exit criteria**
+
+- Every generated challenge can be validated automatically for solvability and structural correctness.
+
+### Milestone 6: P-Script and Swarm Evolution
+
+These should progress together because communication primitives directly affect emergent behavior.
+
+P-Script additions:
+
+- deterministic collections,
+- persistent state,
+- message passing,
+- timers,
+- richer VM instructions.
+
+Swarm capabilities:
+
+- local communication,
+- broadcast,
+- quorum voting,
+- pheromone systems,
+- coordinated task allocation.
+
+**Exit criteria**
+
+- Player scripts can express meaningful multi-agent coordination without sacrificing deterministic execution.
+
+### Milestone 7: Emergent Gameplay
+
+Build gameplay on top of the mature engine.
+
+Features include:
+
+- coordinated drone strategies,
+- sabotage mechanics,
+- dynamic passcodes,
+- multi-step dependency chains,
+- emergent puzzle solutions.
+
+The emphasis shifts from adding systems to creating interactions between existing systems.
+
+### Milestone 8: Content Pipeline
+
+Designer tooling depends on the earlier milestones.
+
+Pipeline:
+
+```
+Author
+   ↓
+Validator
+   ↓
+Constraint Solver
+   ↓
+Replay Verification
+   ↓
+Difficulty Estimator
+   ↓
+Publish
+```
+
+Every challenge should satisfy:
+
+- deterministic execution,
+- solvability,
+- replay reproducibility,
+- dependency correctness,
+- expected difficulty.
+
+### Milestone 9: Polish and Production
+
+Focus areas:
+
+- visual polish,
+- audio,
+- balancing,
+- accessibility,
+- performance,
+- telemetry,
+- progression,
+- achievements,
+- release preparation.
+
+## Development Contract
+
+Each milestone follows the same engineering discipline:
+
+1. Implement a focused vertical slice.
+2. Add or update automated tests.
+3. Run the QA scenario suite.
+4. Run `make verify`.
+5. Merge only when all verification gates remain green.
+
+This keeps the repository continuously releasable while allowing increasingly sophisticated gameplay systems to be layered onto a stable deterministic engine.
 
 ```
 challenge-to-you/

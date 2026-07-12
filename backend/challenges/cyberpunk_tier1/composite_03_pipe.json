@@ -1,0 +1,23 @@
+{
+  "id": "composite_03_cipher_pipeline",
+  "paradigm": "CYBERPUNK",
+  "name": "Cipher Pipeline",
+  "description": "Stage 1: Identify which line in the archived log exposes the ciphertext injection point. Your answer becomes the key fed to Stage 2. Stage 2: Implement the decoder function — it receives the key from Stage 1 as 'input_data' in its execution context and must validate it.",
+  "logos_token": "LOGOS_CPK_COMPOSITE_PIPE_03",
+  "skill_type": "composite",
+  "sub_challenges": [
+    { "id": "cyberpunk_09_recognize", "output_key": "cipher_key" },
+    { "id": "cyberpunk_08_spec",       "output_key": "decoded_data" }
+  ],
+  "dependencies": {
+    "cyberpunk_08_spec": ["cyberpunk_09_recognize"]
+  },
+  "combine": {
+    "type": "pipe",
+    "inject_as": "input_data"
+  },
+  "win_condition": {
+    "target_state_key": "access_granted",
+    "expected_value": true
+  }
+}

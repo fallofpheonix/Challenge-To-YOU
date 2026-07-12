@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://challenge-to-you/schemas/npc/v1.0.0",
+  "title": "NPC",
+  "description": "Schema for all non-player characters in Challenge To YOU.",
+  "type": "object",
+  "required": [
+    "schema_version", "id", "version", "name", "era", "role",
+    "biography", "personality", "voice_style", "portrait_prompt",
+    "dialogue_tree_root", "relationship_graph", "mission_involvement",
+    "catchphrases", "unlock_condition"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "id": {
+      "type": "string",
+      "pattern": "^npc_[a-z][a-z0-9_]*$",
+      "examples": ["npc_elder_arithmos", "npc_ghost_aria", "npc_archon_sentinel"]
+    },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "name": { "type": "string", "minLength": 2, "maxLength": 60 },
+    "title": { "type": "string", "description": "NPC's in-world title or rank" },
+    "era": {
+      "type": "string",
+      "enum": ["magitech", "cyberpunk", "cosmic", "cross_era", "all"]
+    },
+    "role": {
+      "type": "string",
+      "enum": ["mentor", "quest_giver", "antagonist", "ally", "neutral", "vendor", "informant", "ai_entity", "boss", "mysterious", "comic_relief"]
+    },
+    "faction": {
+      "type": "string",
+      "description": "Which faction this NPC belongs to"
+    },
+    "biography": {
+      "type": "string",
+      "minLength": 100,
+      "description": "Full backstory and character history"
+    },
+    "personality": {
+      "type": "object",
+      "required": ["traits", "speech_pattern", "motivation", "fear"],
+      "properties": {
+        "traits": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 6,
+          "items": {
+            "type": "string",
+            "enum": [
+              "analytical", "mysterious", "warm", "cold", "sarcastic", "earnest",
+              "chaotic", "lawful", "paranoid", "confident", "humble", "arrogant",
+              "philosophical", "pragmatic", "mentor", "trickster", "warrior",
+              "scholar", "rebel", "loyalist", "cryptic", "blunt"
+            ]
+          }
+        },
+        "speech_pattern": {
+          "type": "string",
+          "enum": ["archaic_formal", "technical_jargon", "street_slang", "poetic", "clipped_military", "warm_casual", "cryptic_riddles", "quantum_paradox", "binary_metaphors"]
+        },
+        "motivation": { "type": "string", "minLength": 20 },
+        "fear": { "type": "string", "minLength": 10 },
+        "alignment": {
+          "type": "string",
+          "enum": ["helpful", "neutral", "deceptive", "antagonistic", "evolving"]
+        }
+      }
+    },
+    "voice_style": {
+      "type": "object",
+      "required": ["tone", "pace", "accent_description"],
+      "properties": {
+        "tone": { "type": "string", "enum": ["deep", "high", "raspy", "smooth", "robotic", "whispery", "booming", "melodic"] },
+        "pace": { "type": "string", "enum": ["slow", "measured", "normal", "quick", "erratic"] },
+        "accent_description": { "type": "string" },
+        "voice_line_hooks": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "portrait_prompt": {
+      "type": "string",
+      "minLength": 20,
+      "description": "AI image generation prompt for this NPC's portrait — used by asset pipeline"
+    },
+    "dialogue_tree_root": {
+      "type": "string",
+      "description": "Root dialogue node ID for this NPC's main conversation tree"
+    },
+    "relationship_graph": {
+      "type": "array",
+      "description": "Relationships with other NPCs",
+      "items": {
+        "type": "object",
+        "required": ["npc_id", "relationship_type", "description"],
+        "properties": {
+          "npc_id": { "type": "string" },
+          "relationship_type": {
+            "type": "string",
+            "enum": ["ally", "rival", "enemy", "mentor", "student", "neutral", "complicated", "love_interest", "family"]
+          },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "mission_involvement": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["mission_id", "role"],
+        "properties": {
+          "mission_id": { "type": "string" },
+          "role": { "type": "string" },
+          "importance": { "type": "string", "enum": ["primary", "secondary", "cameo"] }
+        }
+      }
+    },
+    "catchphrases": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 8,
+      "items": { "type": "string" },
+      "description": "Signature phrases this NPC uses. Used for taunt, hint, and ambient lines."
+    },
+    "unlock_condition": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["always_available", "mission_unlock", "challenge_complete", "achievement", "item_owned"] },
+        "mission_id": { "type": "string" },
+        "challenge_id": { "type": "string" },
+        "achievement_id": { "type": "string" }
+      }
+    },
+    "shop_inventory": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Item IDs this vendor NPC sells"
+    },
+    "archon_data": {
+      "type": "object",
+      "description": "AI entity-specific fields (for Archon-class NPCs)",
+      "properties": {
+        "model_name": { "type": "string" },
+        "vigilance_personality": { "type": "string" },
+        "taunt_pool": { "type": "array", "items": { "type": "string" } },
+        "repair_mutation_style": { "type": "string" }
+      }
+    },
+    "localization_keys": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

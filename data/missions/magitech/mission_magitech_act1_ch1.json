@@ -1,0 +1,97 @@
+{
+  "id": "mission_magitech_act1_ch1",
+  "title": "The Fractured Ward",
+  "description": "A protective ward has been shattered. Repair the ancient rune sequence before the kingdom falls.",
+  "world": {
+    "start_room": "Rune Chamber",
+    "rooms": {
+      "Rune Chamber": {
+        "description": "An ancient stone vault etched with faint blue lines.",
+        "exits": ["Forbidden Library"],
+        "objects": ["scribe", "stone_door"]
+      },
+      "Forbidden Library": {
+        "description": "Towering shelves containing thousands of decaying spell records.",
+        "exits": ["Rune Chamber", "Axiomatic Ward"],
+        "objects": ["scroll_rack", "ancient_terminal"]
+      },
+      "Axiomatic Ward": {
+        "description": "The chamber holding the fractured central ward logic core.",
+        "exits": ["Forbidden Library"],
+        "objects": ["fractured_ward"]
+      }
+    }
+  },
+  "era": "magitech",
+  "act": 1,
+  "chapter": 1,
+  "paradigm": "MAGITECH",
+  "difficulty": 0.2,
+  "est_time_mins": 15,
+
+  "intro": {
+    "id": "cutscene_magitech_intro",
+    "type": "cinematic",
+    "scenes": [
+      {
+        "background": "castle_gate",
+        "characters": ["narrator"],
+        "dialogue": [
+          {"speaker": "narrator", "text": "The ward that protected Ashenvale has been shattered.", "emotion": "grave"},
+          {"speaker": "narrator", "text": "Ancient runes flicker and die across the kingdom's defenses.", "emotion": "grave"},
+          {"speaker": "narrator", "text": "You are the last Rune Hacker. The ward must be restored.", "emotion": "determined"}
+        ],
+        "duration": 8000,
+        "effect": "fade_in"
+      }
+    ]
+  },
+
+  "dialogue": ["npc_rune_scribe_intro"],
+
+  "objectives": [
+    {
+      "id": "obj_complete_breach",
+      "type": "complete_challenge",
+      "target": "magitech_01_breach",
+      "description": "Repair the Fractured Ward by completing the rune breach challenge",
+      "is_required": true
+    },
+    {
+      "id": "obj_find_rune_shard",
+      "type": "find_item",
+      "target": "item_rune_shard_01",
+      "description": "Find the hidden rune shard in the Forbidden Library",
+      "is_optional": true
+    },
+    {
+      "id": "obj_talk_scribe",
+      "type": "talk_to_npc",
+      "target": "npc_elder_scribe",
+      "description": "Consult the Elder Scribe about ancient ward techniques",
+      "is_optional": true
+    }
+  ],
+
+  "challenges": [
+    {
+      "id": "magitech_01_breach",
+      "difficulty": 0.2,
+      "mode": "architect",
+      "is_required": true
+    }
+  ],
+
+  "reward": {
+    "xp": 150,
+    "credits": 50,
+    "unlocks": ["mission_magitech_act1_ch2"],
+    "achievements": ["first_ward_repaired"],
+    "items": ["item_rune_knife"]
+  },
+
+  "requirements": [],
+
+  "is_side_quest": false,
+  "is_repeatable": false
+}

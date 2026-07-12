@@ -4,7 +4,26 @@
 # Database & binary outputs
 backend/challenge.db
 backend/sandbox
+backend/cmd/sandbox/sandbox
+backend/sandbox_server_test
 dist/
 .gocache/
 .DS_Store
 **/.DS_Store
+
+# Quality pipeline artifacts
+coverage/
+
+# External reference clones (not part of this repo)
+refs/
+research/coding-challenges/
+research/competitive-programming/
+research/dothop/
+research/gdextension/
+research/godot_puzzle_dependencies/
+research/godot_recipes/
+research/godot-coding-challenge/
+research/godot-go/
+research/godot-go-demo-projects/
+research/GodotSudoku/
+research/Sudoku-puzzle-generator/
