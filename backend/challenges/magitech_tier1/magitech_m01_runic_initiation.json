@@ -1,0 +1,29 @@
+{
+  "id": "magitech_m01_runic_initiation",
+  "paradigm": "MAGITECH",
+  "name": "Runic Initiation",
+  "description": "Archmage Goja's workshop lies dormant. Channel your first rune: declare the mana reserve and charge it to full to ignite the stone campfire.",
+  "logos_token": "LOGOS_MGT_RUNIC_INIT_01",
+  "skill_type": "write_from_spec",
+  "template_code": "// Declare a variable named mana_current and assign it the value 100.\n",
+  "validation_script": "if (typeof mana_current === 'undefined') { throw new Error('mana_current is not declared'); }\nif (mana_current !== 100) { throw new Error('mana_current must equal 100, got ' + mana_current); }\nsetState('campfire_lit', true);",
+  "initial_state": {
+    "campfire_lit": false,
+    "mana_current": 0
+  },
+  "flaws": [
+    {
+      "id": "channel_rune",
+      "trigger_event": "execute_script",
+      "name": "Channel the Rune",
+      "flavor_text": "Submit your rune inscription to the leyline for validation.",
+      "conditions": {},
+      "mutations": {},
+      "fallback_mutations": {}
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "campfire_lit",
+    "expected_value": true
+  }
+}

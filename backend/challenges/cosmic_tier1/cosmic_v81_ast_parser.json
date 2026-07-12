@@ -1,0 +1,28 @@
+{
+  "id": "cosmic_v81_ast_parser",
+  "paradigm": "COSMIC",
+  "name": "AST Parser",
+  "description": "A coordinate structure has collapsed into a flat token stream. Rebuild the floating bridge by folding the sorted tokens into a balanced binary syntax tree.",
+  "logos_token": "LOGOS_COS_AST_PARSER_81",
+  "skill_type": "write_from_spec",
+  "template_code": "// Implement buildAST(sortedValues): return a balanced binary tree.\n// Each node is { v: <value>, left: <node|null>, right: <node|null> }.\nfunction buildAST(sortedValues) {\n    // Write your solution here\n}",
+  "validation_script": "function height(n){ if(!n) return 0; return 1 + Math.max(height(n.left), height(n.right)); }\nfunction balanced(n){ if(!n) return true; if(Math.abs(height(n.left)-height(n.right)) > 1) return false; return balanced(n.left) && balanced(n.right); }\nvar big = buildAST([1,2,3,4,5,6,7]);\nif (!big || big.v !== 4) { throw new Error('root of [1..7] must be 4'); }\nif (!big.left || big.left.v !== 2) { throw new Error('left subtree root must be 2'); }\nif (!big.right || big.right.v !== 6) { throw new Error('right subtree root must be 6'); }\nif (!balanced(big)) { throw new Error('tree is not height-balanced'); }\nvar small = buildAST([1,2,3]);\nif (!small || small.v !== 2 || !small.left || small.left.v !== 1 || !small.right || small.right.v !== 3) { throw new Error('buildAST([1,2,3]) is malformed'); }\nif (buildAST([]) !== null) { throw new Error('buildAST([]) must return null'); }\nsetState('bridge_rebuilt', true);",
+  "initial_state": {
+    "bridge_rebuilt": false
+  },
+  "flaws": [
+    {
+      "id": "fold_tree",
+      "trigger_event": "execute_script",
+      "name": "Fold the Tree",
+      "flavor_text": "Submit your parser to fold the token stream into the bridge lattice.",
+      "conditions": {},
+      "mutations": {},
+      "fallback_mutations": {}
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "bridge_rebuilt",
+    "expected_value": true
+  }
+}

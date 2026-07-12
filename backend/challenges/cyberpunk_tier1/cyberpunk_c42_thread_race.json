@@ -1,0 +1,46 @@
+{
+  "id": "cyberpunk_c42_thread_race",
+  "paradigm": "CYBERPUNK",
+  "name": "Thread Race",
+  "description": "Bypass the corporate sensor gate by forcing two data threads to write to the authorization register at the same instant — before the security daemon can lock it.",
+  "logos_token": "LOGOS_CPK_THREAD_RACE_42",
+  "exploit_class": "race_condition",
+  "initial_state": {
+    "gate_open": false,
+    "daemon_locked": false,
+    "thread_a_writing": false
+  },
+  "flaws": [
+    {
+      "id": "spawn_writer_thread",
+      "trigger_event": "spawn_writer_thread",
+      "name": "Spawn Writer Thread",
+      "flavor_text": "Launch the first unsynchronized thread to hold the authorization register open.",
+      "conditions": {},
+      "mutations": {
+        "thread_a_writing": true
+      },
+      "fallback_mutations": {}
+    },
+    {
+      "id": "race_second_thread",
+      "trigger_event": "race_second_thread",
+      "name": "Race the Second Thread",
+      "flavor_text": "Fire the second thread while the first still holds the register. With no mutex, both writes land and the gate flips before the daemon can lock it.",
+      "conditions": {
+        "thread_a_writing": true,
+        "daemon_locked": false
+      },
+      "mutations": {
+        "gate_open": true
+      },
+      "fallback_mutations": {
+        "daemon_locked": true
+      }
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "gate_open",
+    "expected_value": true
+  }
+}

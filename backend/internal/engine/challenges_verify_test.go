@@ -33,6 +33,7 @@ func TestVerifyAllChallenges(t *testing.T) {
 		"cyberpunk_04_barista":  {"fill_order_queue", "overheat_frother"},
 		"cyberpunk_05_drone":    {"spoof_altimeter", "deploy_flotation"},
 		"cyberpunk_06_traffic":  {"force_all_red", "trigger_shorted_button"},
+		"cyberpunk_c42_thread_race": {"spawn_writer_thread", "race_second_thread"},
 
 		// Cosmic
 		"cosmic_01_airlock":     {"trigger_siren", "blind_observer", "materialize_door"},

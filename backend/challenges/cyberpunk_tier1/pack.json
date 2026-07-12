@@ -43,6 +43,12 @@
       "file": "cyberpunk_06_traffic.json",
       "difficulty": 0.7,
       "mode": "architect"
+    },
+    {
+      "id": "cyberpunk_c42_thread_race",
+      "file": "cyberpunk_c42_thread_race.json",
+      "difficulty": 0.72,
+      "mode": "saboteur"
     }
   ]
 }

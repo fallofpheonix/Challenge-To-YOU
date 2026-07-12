@@ -10,9 +10,9 @@ Legend: ✓ Implemented · ◐ Partial · ✗ Missing
 
 | # | Universe | Engine paradigm? | Challenge files | Campaign pack | Missions | Status |
 |---|----------|:----------------:|:---------------:|:-------------:|:--------:|:------:|
-| 1 | Medieval Magitech | ✓ MAGITECH | 9 (+3 packs) | 7 wired | 1 | ◐ |
-| 2 | Cyberpunk Neon | ✓ CYBERPUNK | 12 | 6 wired | 0 | ◐ |
-| 3 | Cosmic Void | ✓ COSMIC | 8 | 8 wired | 0 | ◐ |
+| 1 | Medieval Magitech | ✓ MAGITECH | 10 (+3 composites) | 7 wired | 1 | ◐ |
+| 2 | Cyberpunk Neon | ✓ CYBERPUNK | 13 | 6 wired | 0 | ◐ |
+| 3 | Cosmic Void | ✓ COSMIC | 9 | 8 wired | 0 | ◐ |
 | 4 | Silicon Wastes | ✗ none | 0 | ✗ | 0 | ✗ |
 | 5 | Neural Labyrinth | ✗ none | 0 | ✗ | 0 | ✗ |
 | 6 | Chrono Registry | ✗ none | 0 | ✗ | 0 | ✗ |
@@ -33,9 +33,25 @@ challenge files, no packs, no missions, no NPC/dialogue data.
 | Metric | Count |
 |--------|-------|
 | Documented target (`docs/problems/database.md`) | 560 |
-| Playable engine challenges implemented | ~29 (magitech 9, cyberpunk 12, cosmic 8) |
+| Playable engine challenges implemented | ~32 (magitech 10, cyberpunk 13, cosmic 9) |
 | Additionally, generic algorithm challenges (`data/challenges/`) | 7 |
-| **Coverage** | **~5%** |
+| **Coverage** | **~6%** |
+
+### Documented milestone challenges (`specifications.md`) — campaign spine
+
+The three milestone challenges documented for the implemented paradigms are now built
+in the engine's canonical format and covered by tests:
+
+| Doc ID | Universe | Implementation | Type | Integration | Test |
+|--------|----------|----------------|------|-------------|------|
+| M-01 Runic Initiation | Magitech | `magitech_m01_runic_initiation.json` | write_from_spec | loadable (served via routes) | `TestWriteFromSpecChallenges` |
+| C-42 Thread Race | Cyberpunk | `cyberpunk_c42_thread_race.json` | flaw-based | wired into cyberpunk campaign pack | `TestVerifyAllChallenges` |
+| V-81 AST Parser | Cosmic | `cosmic_v81_ast_parser.json` | write_from_spec | loadable (served via routes) | `TestWriteFromSpecChallenges` |
+
+`write_from_spec` challenges intentionally stay outside the linear flaw-based campaign
+packs (the pack/verify model is flaw-trigger based); they are solvable code-submission
+challenges exercised by a dedicated reference-solution test. The remaining 11 milestone
+challenges (universes 4–14) require engine paradigms that do not exist yet (see B1).
 
 ### Documentation-depth reality (why "560 as documented" is not literally possible)
 
