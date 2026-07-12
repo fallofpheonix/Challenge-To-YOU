@@ -51,10 +51,12 @@ jobs:
       - uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+          install-mode: goinstall
           working-directory: backend
       - uses: golangci/golangci-lint-action@v6
         with:
           version: latest
+          install-mode: goinstall
           working-directory: phoenix
 
   # ── Test + Coverage ───────────────────────────────────────
