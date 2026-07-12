@@ -247,3 +247,28 @@ func TestNativeSandbox_AuditLogDoesNotPanic(t *testing.T) {
 		auditLog(fmt.Sprintf("concurrent audit test %d", i))
 	}
 }
+
+// TestNativeSandbox_EnvIsolation ensures untrusted code cannot read host
+// environment variables (e.g. inherited secrets) — the process runs with a
+// minimal, sandbox-owned environment.
+func TestNativeSandbox_EnvIsolation(t *testing.T) {
+	const secretKey = "SANDBOX_SECRET_TEST"
+	t.Setenv(secretKey, "topsecret-should-not-leak")
+
+	sb := NewProcessSandbox()
+	req := &Request{
+		Code:     `import os; print(os.environ.get("` + secretKey + `", "<absent>"))`,
+		Language: "python",
+		Config:   DefaultConfig(),
+	}
+	resp, err := sb.Execute(context.Background(), req)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if strings.Contains(resp.Output, "topsecret") {
+		t.Errorf("host secret leaked into sandbox environment: %q", resp.Output)
+	}
+	if !strings.Contains(resp.Output, "<absent>") {
+		t.Errorf("expected secret to be absent, got %q", resp.Output)
+	}
+}

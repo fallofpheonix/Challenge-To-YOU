@@ -22,7 +22,10 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          # Pin the exact patch that fixes GO-2026-5856 (crypto/tls ECH leak);
+          # the generic '1.25' resolves to 1.25.11 which still ships the CVE.
+          go-version: '1.25.12'
+          check-latest: true
           cache: true
           cache-dependency-path: ${{ matrix.module }}/go.sum
 

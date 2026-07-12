@@ -11,10 +11,33 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/dop251/goja"
 )
+
+// hardenCmd applies sandbox process hardening before a command runs:
+//   - a minimal environment, so untrusted player code cannot read host secrets
+//     inherited from the parent process (API keys, tokens, etc.);
+//   - its own process group, so a timeout kills the whole process tree
+//     (e.g. the binary `go run` compiles and spawns), not just the direct child.
+func hardenCmd(cmd *exec.Cmd, workDir string) {
+	cmd.Env = []string{
+		"PATH=" + os.Getenv("PATH"),
+		"HOME=" + workDir,
+		"TMPDIR=" + workDir,
+		"LANG=C.UTF-8",
+	}
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd.Cancel = func() error {
+		if cmd.Process == nil {
+			return nil
+		}
+		// A negative PID signals the entire process group.
+		return syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+	}
+}
 
 var (
 	auditLogMu sync.Mutex
@@ -107,28 +130,35 @@ func (s *ProcessSandbox) Execute(ctx context.Context, req *Request) (*Response, 
 	}()
 
 	var fileName string
-	var runCmd string
+	var compileArgv []string
+	var runArgv []string
 
+	base := func(name string) string { return filepath.Join(tmpDir, name) }
+
+	// Build the argv directly (never a shell string) so player-controlled
+	// paths cannot be word-split or injected, and compiled languages get an
+	// explicit compile step instead of a shell "&&".
 	switch req.Language {
 	case "python", "python3":
 		fileName = "solution.py"
-		runCmd = "python3 -I " + filepath.Join(tmpDir, fileName)
-		// -I: isolated mode (no site-packages, no user site)
+		// -I: isolated mode (no site-packages, no user site, ignore PYTHON* env)
+		runArgv = []string{"python3", "-I", base(fileName)}
 	case "go":
 		fileName = "main.go"
-		runCmd = "go run " + filepath.Join(tmpDir, fileName)
+		runArgv = []string{"go", "run", base(fileName)}
 	case "javascript", "js", "node":
 		fileName = "solution.js"
-		runCmd = "node --experimental-policy= --experimental-disable-wasm --max-old-space-size=64 " + filepath.Join(tmpDir, fileName)
+		runArgv = []string{"node", "--experimental-disable-wasm", "--max-old-space-size=64", base(fileName)}
 	case "java":
 		fileName = "Main.java"
-		runCmd = "javac " + filepath.Join(tmpDir, fileName) + " && java -cp " + tmpDir + " Main"
+		compileArgv = []string{"javac", base(fileName)}
+		runArgv = []string{"java", "-cp", tmpDir, "Main"}
 	default:
 		fileName = "solution.txt"
-		runCmd = "cat " + filepath.Join(tmpDir, fileName)
+		runArgv = []string{"cat", base(fileName)}
 	}
 
-	filePath := filepath.Join(tmpDir, fileName)
+	filePath := base(fileName)
 	if err := os.WriteFile(filePath, []byte(req.Code), 0600); err != nil {
 		auditLog(fmt.Sprintf("[%d] FAILED write_file: %v", auditID, err))
 		return nil, fmt.Errorf("failed to write code file: %w", err)
@@ -145,9 +175,28 @@ func (s *ProcessSandbox) Execute(ctx context.Context, req *Request) (*Response, 
 	execCtx, execCancel := context.WithTimeout(ctx, timeout)
 	defer execCancel()
 
-	parts := strings.Fields(runCmd)
-	cmd := exec.CommandContext(execCtx, parts[0], parts[1:]...)
+	// Compile step (e.g. javac) runs first; a compile failure is surfaced as output.
+	if compileArgv != nil {
+		ccmd := exec.CommandContext(execCtx, compileArgv[0], compileArgv[1:]...)
+		ccmd.Dir = tmpDir
+		hardenCmd(ccmd, tmpDir)
+		var cout bytes.Buffer
+		ccmd.Stdout = &cout
+		ccmd.Stderr = &cout
+		if cerr := ccmd.Run(); cerr != nil {
+			auditLog(fmt.Sprintf("[%d] COMPILE_FAIL lang=%s err=%v", auditID, req.Language, cerr))
+			return &Response{
+				Success:  false,
+				Output:   strings.TrimSpace(cout.String()),
+				Error:    "compilation failed",
+				ExitCode: 1,
+			}, nil
+		}
+	}
+
+	cmd := exec.CommandContext(execCtx, runArgv[0], runArgv[1:]...)
 	cmd.Dir = tmpDir
+	hardenCmd(cmd, tmpDir)
 
 	if req.Input != "" {
 		cmd.Stdin = strings.NewReader(req.Input)
@@ -163,7 +212,6 @@ func (s *ProcessSandbox) Execute(ctx context.Context, req *Request) (*Response, 
 
 	if execCtx.Err() == context.DeadlineExceeded {
 		auditLog(fmt.Sprintf("[%d] TIMEOUT lang=%s duration=%dms timeout=%dms", auditID, req.Language, duration, req.Config.TimeoutMs))
-		_ = strings.Join(cmd.Args, " ")
 		if killErr := cmd.Cancel(); killErr != nil {
 			_ = cmd.Wait()
 		}
@@ -276,6 +324,10 @@ func Execute(code string, state map[string]interface{}, timeout time.Duration) (
 			return nil, fmt.Errorf("EXECUTION_ERROR: %v", timeoutErr)
 		}
 	case <-time.After(timeout):
+		// Interrupt the VM so the worker goroutine unwinds instead of leaking;
+		// RunString returns an *InterruptedError and closes done.
+		vm.Interrupt("execution timed out")
+		<-done
 		auditLog(fmt.Sprintf("[%d] JS_TIMEOUT timeout=%v", auditID, timeout))
 		return nil, fmt.Errorf("TIMEOUT: execution exceeded %v", timeout)
 	}
