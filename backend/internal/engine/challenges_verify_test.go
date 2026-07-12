@@ -27,12 +27,12 @@ func TestVerifyAllChallenges(t *testing.T) {
 		"magitech_07_loom":       {"tangle_thread", "crank_tension", "snap_thread"},
 
 		// Cyberpunk
-		"cyberpunk_01_autodoc":  {"inject_adrenaline", "cut_power"},
-		"cyberpunk_02_elevator": {"spoof_negative_mass", "deploy_brakes"},
-		"cyberpunk_03_server":   {"send_bad_packet", "trigger_compactor"},
-		"cyberpunk_04_barista":  {"fill_order_queue", "overheat_frother"},
-		"cyberpunk_05_drone":    {"spoof_altimeter", "deploy_flotation"},
-		"cyberpunk_06_traffic":  {"force_all_red", "trigger_shorted_button"},
+		"cyberpunk_01_autodoc":      {"inject_adrenaline", "cut_power"},
+		"cyberpunk_02_elevator":     {"spoof_negative_mass", "deploy_brakes"},
+		"cyberpunk_03_server":       {"send_bad_packet", "trigger_compactor"},
+		"cyberpunk_04_barista":      {"fill_order_queue", "overheat_frother"},
+		"cyberpunk_05_drone":        {"spoof_altimeter", "deploy_flotation"},
+		"cyberpunk_06_traffic":      {"force_all_red", "trigger_shorted_button"},
 		"cyberpunk_c42_thread_race": {"spawn_writer_thread", "race_second_thread"},
 
 		// Cosmic
