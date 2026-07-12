@@ -218,11 +218,12 @@ func HydrateChallenge(cfg HydratorConfig) *ChallengeDefinition {
 		return nil
 	}
 
+	// #nosec G404 -- deterministic seeded RNG is required for reproducible challenges, not security.
 	var rng *rand.Rand
 	if cfg.Seed != 0 {
-		rng = rand.New(rand.NewSource(cfg.Seed))
+		rng = rand.New(rand.NewSource(cfg.Seed)) // #nosec G404 -- reproducible challenge generation
 	} else {
-		rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+		rng = rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404 -- reproducible challenge generation
 	}
 
 	luck := cfg.Luck

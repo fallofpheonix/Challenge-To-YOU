@@ -11,7 +11,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"syscall"
 	"time"
 
 	"github.com/dop251/goja"
@@ -20,8 +19,11 @@ import (
 // hardenCmd applies sandbox process hardening before a command runs:
 //   - a minimal environment, so untrusted player code cannot read host secrets
 //     inherited from the parent process (API keys, tokens, etc.);
-//   - its own process group, so a timeout kills the whole process tree
-//     (e.g. the binary `go run` compiles and spawns), not just the direct child.
+//   - its own process group (on supported platforms), so a timeout kills the
+//     whole process tree (e.g. the binary `go run` compiles and spawns), not
+//     just the direct child.
+//
+// The process-group behaviour is platform-specific; see procattr_*.go.
 func hardenCmd(cmd *exec.Cmd, workDir string) {
 	cmd.Env = []string{
 		"PATH=" + os.Getenv("PATH"),
@@ -29,14 +31,8 @@ func hardenCmd(cmd *exec.Cmd, workDir string) {
 		"TMPDIR=" + workDir,
 		"LANG=C.UTF-8",
 	}
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	cmd.Cancel = func() error {
-		if cmd.Process == nil {
-			return nil
-		}
-		// A negative PID signals the entire process group.
-		return syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
-	}
+	setProcessGroup(cmd)
+	cmd.Cancel = func() error { return killProcessGroup(cmd) }
 }
 
 var (

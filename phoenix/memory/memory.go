@@ -35,10 +35,10 @@ type MemoryManager struct {
 
 func NewMemoryManager(brainDir string) *MemoryManager {
 	// Initialize directories
-	_ = os.MkdirAll(filepath.Join(brainDir, "build_failures"), 0755)
-	_ = os.MkdirAll(filepath.Join(brainDir, "runtime_failures"), 0755)
-	_ = os.MkdirAll(filepath.Join(brainDir, "successful_repairs"), 0755)
-	_ = os.MkdirAll(filepath.Join(brainDir, "rejected_repairs"), 0755)
+	_ = os.MkdirAll(filepath.Join(brainDir, "build_failures"), 0750)
+	_ = os.MkdirAll(filepath.Join(brainDir, "runtime_failures"), 0750)
+	_ = os.MkdirAll(filepath.Join(brainDir, "successful_repairs"), 0750)
+	_ = os.MkdirAll(filepath.Join(brainDir, "rejected_repairs"), 0750)
 
 	return &MemoryManager{BrainDir: brainDir}
 }
@@ -58,7 +58,7 @@ func (m *MemoryManager) SaveFailure(f *FailureRecord) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0600)
 }
 
 func (m *MemoryManager) SaveRepair(r *RepairRecord, successful bool) error {
@@ -75,7 +75,7 @@ func (m *MemoryManager) SaveRepair(r *RepairRecord, successful bool) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0600)
 }
 
 func (m *MemoryManager) SearchSimilar(diagnostic string) ([]*RepairRecord, error) {

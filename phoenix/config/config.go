@@ -42,7 +42,7 @@ func LoadConfig(path string) (*Config, error) {
 		cfg := DefaultConfig()
 		data, errMarshal := json.MarshalIndent(cfg, "", "  ")
 		if errMarshal == nil {
-			_ = os.WriteFile(path, data, 0644)
+			_ = os.WriteFile(path, data, 0600)
 		}
 		return cfg, nil
 	}

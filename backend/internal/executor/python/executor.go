@@ -29,7 +29,7 @@ func (e *Executor) Compile(ctx context.Context, code string, lang *compiler.Lang
 	defer os.RemoveAll(tmpDir)
 
 	pyFile := filepath.Join(tmpDir, "solution.py")
-	if err := os.WriteFile(pyFile, []byte(code), 0644); err != nil {
+	if err := os.WriteFile(pyFile, []byte(code), 0600); err != nil {
 		return nil, fmt.Errorf("failed to write python file: %w", err)
 	}
 
@@ -75,13 +75,13 @@ func (e *Executor) Execute(ctx context.Context, code string, input string, lang 
 	defer os.RemoveAll(tmpDir)
 
 	pyFile := filepath.Join(tmpDir, "solution.py")
-	if err := os.WriteFile(pyFile, []byte(code), 0644); err != nil {
+	if err := os.WriteFile(pyFile, []byte(code), 0600); err != nil {
 		return nil, fmt.Errorf("failed to write python file: %w", err)
 	}
 
 	if input != "" {
 		inputFile := filepath.Join(tmpDir, "input.txt")
-		if err := os.WriteFile(inputFile, []byte(input), 0644); err != nil {
+		if err := os.WriteFile(inputFile, []byte(input), 0600); err != nil {
 			return nil, fmt.Errorf("failed to write input file: %w", err)
 		}
 	}

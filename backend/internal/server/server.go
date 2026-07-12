@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"challenge-to-you/backend/internal/ai"
 	"challenge-to-you/backend/internal/compiler"
@@ -105,5 +106,12 @@ func (s *Server) Start() {
 	if port == "" {
 		port = "8080"
 	}
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	// ReadHeaderTimeout bounds slow-header (Slowloris) attacks. WriteTimeout is
+	// left unset because WebSocket connections are intentionally long-lived.
+	srv := &http.Server{
+		Addr:              ":" + port,
+		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+	}
+	log.Fatal(srv.ListenAndServe())
 }

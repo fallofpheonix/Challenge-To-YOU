@@ -112,7 +112,8 @@ var cosmicVocab = struct {
 
 // GenerateChallenge procedurally builds a fully solvable level config with luck-based noise
 func GenerateChallenge(seed int64, luck float64, paradigm engine.Paradigm) (*engine.ChallengeDefinition, error) {
-	// Create seed-based local random generator
+	// Create seed-based local random generator.
+	// #nosec G404 -- deterministic seeded RNG is required for reproducible challenges, not security.
 	r := rand.New(rand.NewSource(seed))
 
 	var title string
