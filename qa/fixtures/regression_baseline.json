@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-07-11T14:26:07.071925+05:30",
-  "challenge_count": 32,
+  "timestamp": "2026-07-13T02:49:03.267571+05:30",
+  "challenge_count": 35,
   "challenge_ids": [
     "magitech_01.json",
     "magitech_02_centrifuge.json",
@@ -11,6 +11,7 @@
     "magitech_07_loom.json",
     "magitech_08_mana_overflow.json",
     "magitech_09_resonance.json",
+    "magitech_m01_runic_initiation.json",
     "pack.json",
     "composite_01_concat.json",
     "composite_02_state.json",
@@ -24,6 +25,7 @@
     "cyberpunk_07_optimize.json",
     "cyberpunk_08_spec.json",
     "cyberpunk_09_recognize.json",
+    "cyberpunk_c42_thread_race.json",
     "pack.json",
     "cosmic_01_airlock.json",
     "cosmic_02_nav.json",
@@ -33,6 +35,7 @@
     "cosmic_06_singularity.json",
     "cosmic_07_relay.json",
     "cosmic_08_valve.json",
+    "cosmic_v81_ast_parser.json",
     "pack.json"
   ],
   "mission_ids": null,

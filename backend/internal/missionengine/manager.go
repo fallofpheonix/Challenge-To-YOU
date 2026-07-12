@@ -3,13 +3,15 @@ package missionengine
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
 	"challenge-to-you/backend/internal/db"
 	"challenge-to-you/backend/internal/eventbus"
+	"challenge-to-you/backend/internal/obs"
 )
+
+var log = obs.Default().Component("missionengine")
 
 // MissionManager manages all active mission sessions
 type MissionManager struct {
@@ -46,7 +48,7 @@ func NewMissionManager(registry *MissionRegistry, bus *eventbus.EventBus, databa
 func (mm *MissionManager) loadPersistedState() {
 	completed, err := mm.db.GetCompletedMissions()
 	if err != nil {
-		log.Printf("Warning: failed to load completed missions: %v", err)
+		log.Warn("failed to load completed missions", "error", err)
 		return
 	}
 	for _, cm := range completed {
@@ -59,13 +61,13 @@ func (mm *MissionManager) loadPersistedState() {
 	// Restore active mission sessions (preserves fabric state across restarts / reconnects)
 	activeMissions, err := mm.db.GetActiveMissions()
 	if err != nil {
-		log.Printf("Warning: failed to load active missions: %v", err)
+		log.Warn("failed to load active missions", "error", err)
 		return
 	}
 	for _, am := range activeMissions {
 		var sess MissionSession
 		if err := json.Unmarshal([]byte(am.SessionJSON), &sess); err != nil {
-			log.Printf("Warning: failed to deserialize active session %s: %v", am.MissionID, err)
+			log.Warn("failed to deserialize active session", "mission_id", am.MissionID, "error", err)
 			continue
 		}
 		// Backward compatibility: if FabricState is empty but State has data, migrate it
@@ -83,15 +85,14 @@ func (mm *MissionManager) loadPersistedState() {
 		if mission, ok := mm.registry.Get(am.MissionID); ok {
 			sess.Mission = mission
 		} else {
-			log.Printf("Warning: mission %s not found in registry, skipping restore", am.MissionID)
+			log.Warn("mission not found in registry, skipping restore", "mission_id", am.MissionID)
 			continue
 		}
 		if mm.sessions[am.PlayerID] == nil {
 			mm.sessions[am.PlayerID] = make(map[string]*MissionSession)
 		}
 		mm.sessions[am.PlayerID][am.MissionID] = &sess
-		log.Printf("Restored active mission session: player=%s mission=%s fabric_keys=%d",
-			am.PlayerID, am.MissionID, len(sess.FabricState))
+		log.Info("restored active mission", "player_id", am.PlayerID, "mission_id", am.MissionID, "fabric_keys", len(sess.FabricState))
 	}
 }
 
@@ -170,7 +171,7 @@ func (mm *MissionManager) StartMission(playerID string, missionID string) (*Miss
 
 	// Persist to database
 	if err := mm.db.SaveActiveMission(missionID, playerID, session); err != nil {
-		log.Printf("Warning: failed to persist active mission %s: %v", missionID, err)
+		log.Warn("failed to persist active mission", "mission_id", missionID, "error", err)
 	}
 
 	// Publish event
@@ -363,14 +364,14 @@ func (mm *MissionManager) handleMissionComplete(playerID string, session *Missio
 
 	// Persist to database
 	if _, err := mm.db.RecordMissionCompletion(session.Mission.ID); err != nil {
-		log.Printf("Warning: failed to record mission completion %s: %v", session.Mission.ID, err)
+		log.Warn("failed to record mission completion", "mission_id", session.Mission.ID, "error", err)
 	}
 	if err := mm.db.RemoveActiveMission(session.Mission.ID); err != nil {
-		log.Printf("Warning: failed to remove active mission %s from DB: %v", session.Mission.ID, err)
+		log.Warn("failed to remove active mission from DB", "mission_id", session.Mission.ID, "error", err)
 	}
 	if session.Mission.Reward != nil && session.Mission.Reward.XP > 0 {
 		if err := mm.db.AddXP(session.Mission.Reward.XP); err != nil {
-			log.Printf("Warning: failed to add XP for mission %s: %v", session.Mission.ID, err)
+			log.Warn("failed to add XP for mission", "mission_id", session.Mission.ID, "error", err)
 		}
 	}
 }

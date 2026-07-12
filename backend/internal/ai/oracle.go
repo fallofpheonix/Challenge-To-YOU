@@ -2,14 +2,16 @@ package ai
 
 import (
 	"bytes"
+	"challenge-to-you/backend/internal/obs"
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
 )
+
+var log = obs.Default().Component("ai")
 
 type OracleClient struct {
 	BaseURL    string
@@ -169,7 +171,7 @@ func (c *OracleClient) GenerateRepair(ctx context.Context, paradigm string, curr
 
 	validated, rejected := validateRepairPatch(rawPatch)
 	if len(rejected) > 0 {
-		log.Printf("[AI-SAFETY] Rejected %d repair fields: %v", len(rejected), rejected)
+		log.Warn("repair fields rejected", "count", len(rejected), "rejected", rejected)
 	}
 
 	if len(validated) == 0 {

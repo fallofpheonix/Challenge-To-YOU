@@ -14,6 +14,10 @@ dist/
 # Quality pipeline artifacts
 coverage/
 
+# QA run artifacts (regenerated each run)
+qa/backend_logs/
+qa/sandbox_server_test
+
 # External reference clones (not part of this repo)
 refs/
 research/coding-challenges/

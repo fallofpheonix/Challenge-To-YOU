@@ -4,32 +4,28 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"challenge-to-you/backend/internal/engine"
+	"challenge-to-you/backend/internal/obs"
+
+	"github.com/gorilla/websocket"
 )
 
-func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.ChallengeDefinition, baseFabric *engine.AxiomaticFabric) {
-	conn, err := s.upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println("Rift connection failed:", err)
-		return
-	}
-	defer conn.Close()
+func (s *Server) handleRift(ctx context.Context, r *http.Request, conn *websocket.Conn, def *engine.ChallengeDefinition, baseFabric *engine.AxiomaticFabric) {
+	rlog := s.log.WithContext(ctx)
 
 	profile, errProfile := s.db.GetOrCreateProfile()
 	if errProfile != nil {
-		log.Println("Failed to retrieve player profile:", errProfile)
+		rlog.Error("profile load failed", "error", errProfile, "class", obs.ClassPersistence)
 	}
 
 	q := r.URL.Query()
 	var fabric *engine.AxiomaticFabric
 	var activeDef *engine.ChallengeDefinition = def
 
-	// It can be done without switching for each paradigm — this is a single approach:
 	if q.Get("seed") != "" && q.Get("luck") != "" && q.Get("paradigm") != "" {
 		var seed int64
 		var luck float64
@@ -44,7 +40,7 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 				if paradigm == engine.Cosmic {
 					cost = 100
 				}
-				s.sendError(conn, &session{challenge: def, fabric: baseFabric}, fmt.Sprintf("LOCKED_PARADIGM: Paradigm %s is locked. Cost to unlock: %d Reputation.", paradigm, cost))
+				s.sendError(conn, def, baseFabric, fmt.Sprintf("LOCKED_PARADIGM: Paradigm %s is locked. Cost to unlock: %d Reputation.", paradigm, cost))
 				return
 			}
 
@@ -53,7 +49,7 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 				activeDef = genDef
 				fabric = genFabric
 			} else {
-				log.Printf("Procedural generation failed for seed=%d", seed)
+				rlog.Warn("procedural generation failed", "seed", seed)
 			}
 		}
 	} else {
@@ -62,7 +58,7 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 			if baseFabric.CurrentParadigm == engine.Cosmic {
 				cost = 100
 			}
-			s.sendError(conn, &session{challenge: def, fabric: baseFabric}, fmt.Sprintf("LOCKED_PARADIGM: Static paradigm %s is locked. Cost to unlock: %d Reputation.", baseFabric.CurrentParadigm, cost))
+			s.sendError(conn, def, baseFabric, fmt.Sprintf("LOCKED_PARADIGM: Static paradigm %s is locked. Cost to unlock: %d Reputation.", baseFabric.CurrentParadigm, cost))
 			return
 		}
 	}
@@ -71,15 +67,16 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 		fabric = s.createDefaultFabric(baseFabric)
 	}
 
-	sess := &session{
-		challenge: activeDef,
-		fabric:    fabric,
-	}
+	sess := s.sessionManager.Create("", activeDef, fabric)
+	defer s.sessionManager.Remove(sess.ID)
+
+	ctx = obs.WithSessionID(ctx, string(sess.ID))
+	rlog = s.log.WithContext(ctx)
 
 	eventChan := make(chan riftEvent, 10)
 	done := make(chan struct{})
 
-	go s.readLoop(conn, sess, eventChan, done)
+	go s.readLoop(conn, activeDef, fabric, eventChan, done)
 
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
@@ -97,17 +94,24 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 		}
 	}()
 
-	log.Println("New rift established.")
-	s.sendSnapshotFromLoop(conn, sess, "", "Challenge loaded. Select a module to trigger.", false)
+	rlog.Lifecycle("SessionCreated", "session_id", string(sess.ID), "challenge_id", activeDef.ID)
+	s.metrics.ActiveSessions.Add(1)
+	defer s.metrics.ActiveSessions.Add(-1)
+
+	s.sessionManager.Touch(sess.ID)
+	s.sendSnapshotFromLoop(conn, activeDef, fabric, "", "Challenge loaded. Select a module to trigger.", false)
 
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case <-done:
 			return
 		case ev := <-eventChan:
 			if ev.Type == eventPlayerInput {
+				s.sessionManager.Touch(sess.ID)
 				if ev.InputEvent == "" {
-					s.sendError(conn, sess, "MISSING_EVENT: send {\"event\": \"TRIGGER_...\"}")
+					s.sendError(conn, activeDef, fabric, "MISSING_EVENT: send {\"event\": \"TRIGGER_...\"}")
 					continue
 				}
 
@@ -117,9 +121,9 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 					}
 					if profile != nil {
 						msg := fmt.Sprintf("USER STATS: reputation=%d, luck=%.2f, unlocked_paradigms=[%s]. Command: 'unlock <paradigm>' to progress.", profile.Reputation, profile.Luck, profile.UnlockedParadigms)
-						s.sendSnapshotFromLoop(conn, sess, "", msg, false)
+						s.sendSnapshotFromLoop(conn, activeDef, fabric, "", msg, false)
 					} else {
-						s.sendSnapshotFromLoop(conn, sess, "", "Offline profile mode. SQLite connection inactive.", false)
+						s.sendSnapshotFromLoop(conn, activeDef, fabric, "", "Offline profile mode. SQLite connection inactive.", false)
 					}
 					continue
 				}
@@ -127,7 +131,7 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 				if strings.HasPrefix(strings.ToLower(ev.InputEvent), "unlock ") {
 					target := strings.ToUpper(strings.TrimSpace(strings.TrimPrefix(strings.ToLower(ev.InputEvent), "unlock ")))
 					if target != "CYBERPUNK" && target != "COSMIC" {
-						s.sendSnapshotFromLoop(conn, sess, "", "UNLOCK_ERROR: Available paradigms to unlock: CYBERPUNK (Cost: 50 rep), COSMIC (Cost: 100 rep)", false)
+						s.sendSnapshotFromLoop(conn, activeDef, fabric, "", "UNLOCK_ERROR: Available paradigms to unlock: CYBERPUNK (Cost: 50 rep), COSMIC (Cost: 100 rep)", false)
 						continue
 					}
 
@@ -136,12 +140,12 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 					}
 
 					if profile == nil {
-						s.sendSnapshotFromLoop(conn, sess, "", "UNLOCK_ERROR: Profile not loaded.", false)
+						s.sendSnapshotFromLoop(conn, activeDef, fabric, "", "UNLOCK_ERROR: Profile not loaded.", false)
 						continue
 					}
 
 					if profile.IsParadigmUnlocked(target) {
-						s.sendSnapshotFromLoop(conn, sess, "", fmt.Sprintf("UNLOCK_ERROR: Paradigm %s is already unlocked.", target), false)
+						s.sendSnapshotFromLoop(conn, activeDef, fabric, "", fmt.Sprintf("UNLOCK_ERROR: Paradigm %s is already unlocked.", target), false)
 						continue
 					}
 
@@ -151,22 +155,22 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 					}
 
 					if profile.Reputation < cost {
-						s.sendSnapshotFromLoop(conn, sess, "", fmt.Sprintf("UNLOCK_ERROR: Insufficient reputation. Need %d, you have %d.", cost, profile.Reputation), false)
+						s.sendSnapshotFromLoop(conn, activeDef, fabric, "", fmt.Sprintf("UNLOCK_ERROR: Insufficient reputation. Need %d, you have %d.", cost, profile.Reputation), false)
 						continue
 					}
 
 					profile.Reputation -= cost
 					profile.UnlockedParadigms += "," + target
 					if errSave := s.db.SaveProfile(profile); errSave != nil {
-						log.Println("Failed to save profile:", errSave)
+						rlog.Error("profile save failed", "error", errSave, "class", obs.ClassPersistence)
 					}
 
-					s.sendSnapshotFromLoop(conn, sess, "", fmt.Sprintf("SUCCESS: Paradigm %s unlocked! Remaining Reputation: %d", target, profile.Reputation), false)
+					s.sendSnapshotFromLoop(conn, activeDef, fabric, "", fmt.Sprintf("SUCCESS: Paradigm %s unlocked! Remaining Reputation: %d", target, profile.Reputation), false)
 					continue
 				}
 
 				if ev.InputEvent == "mending_protocol" {
-					entropyVal, _ := sess.fabric.GetState("entropy")
+					entropyVal, _ := fabric.GetState("entropy")
 					var entropy int
 					switch e := entropyVal.(type) {
 					case int:
@@ -177,24 +181,27 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 						entropy = int(e)
 					}
 
-					sess.fabric.SetState("entropy", entropy+30)
-					s.sendSnapshotFromLoop(conn, sess, "", "Mending protocol initiated. System entropy spiked by 30.", false)
+					fabric.SetState("entropy", entropy+30)
+					s.sendSnapshotFromLoop(conn, activeDef, fabric, "", "Mending protocol initiated. System entropy spiked by 30.", false)
 
-					s.triggerAsyncRepairFromLoop(sess, eventChan, done)
+					s.triggerAsyncRepairFromLoop(ctx, activeDef, fabric, eventChan, done)
 					continue
 				}
 
-				cipher, complete, err := sess.fabric.TriggerOntologicalShift(ev.InputEvent)
+				cipher, complete, err := fabric.TriggerOntologicalShift(ev.InputEvent)
 				if err != nil {
-					s.sendError(conn, sess, err.Error())
-					s.triggerAsyncTauntFromLoop(sess, ev.InputEvent, eventChan, done)
-					if sess.fabric.IsPurged() {
+					s.sendError(conn, activeDef, fabric, err.Error())
+					s.triggerAsyncTauntFromLoop(ctx, activeDef, fabric, ev.InputEvent, eventChan, done)
+					if fabric.IsPurged() {
 						return
 					}
 					continue
 				}
 
 				msgText := outcomeMessage(ev.InputEvent, cipher, complete)
+				if complete {
+					rlog.Lifecycle("ChallengeSolved", "cipher", cipher, "event", ev.InputEvent)
+				}
 				if complete && cipher != "" && profile != nil {
 					isNew, errToken := s.db.RecordToken(cipher)
 					if errToken == nil {
@@ -213,9 +220,9 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 					}
 				}
 
-				s.sendSnapshotFromLoop(conn, sess, cipher, msgText, complete)
+				s.sendSnapshotFromLoop(conn, activeDef, fabric, cipher, msgText, complete)
 				if !complete {
-					s.triggerAsyncTauntFromLoop(sess, ev.InputEvent, eventChan, done)
+					s.triggerAsyncTauntFromLoop(ctx, activeDef, fabric, ev.InputEvent, eventChan, done)
 				}
 			} else if ev.Type == eventAIResponse {
 				payload := map[string]interface{}{
@@ -223,22 +230,23 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 					"message": ev.Text,
 				}
 				if err := conn.WriteJSON(payload); err != nil {
-					log.Println("Failed to send AI response:", err)
+					rlog.Error("AI response send failed", "error", err, "class", obs.ClassTransport)
 				}
 			} else if ev.Type == eventAIRepairResponse {
 				for k, v := range ev.RepairPatch {
 					if k == "entropy" {
 						continue
 					}
-					sess.fabric.SetState(k, v)
+					fabric.SetState(k, v)
 				}
 
-				complete := sess.fabric.CheckWinCondition()
+				complete := fabric.CheckWinCondition()
 				var cipher string
 				msgText := "Mending execution complete. State repaired."
 				if complete {
-					cipher = sess.challenge.LogosToken
+					cipher = activeDef.LogosToken
 					msgText = "Mending achieved confluence!"
+					rlog.Lifecycle("ChallengeSolved", "cipher", cipher, "event", "mending_protocol")
 					if cipher != "" && profile != nil {
 						isNew, errToken := s.db.RecordToken(cipher)
 						if errToken == nil {
@@ -257,9 +265,10 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 						}
 					}
 				}
-				s.sendSnapshotFromLoop(conn, sess, cipher, msgText, complete)
+				s.sendSnapshotFromLoop(conn, activeDef, fabric, cipher, msgText, complete)
 			} else if ev.Type == eventTick {
-				entropyVal, hasEntropy := sess.fabric.GetState("entropy")
+				s.metrics.Ticks.Add(1)
+				entropyVal, hasEntropy := fabric.GetState("entropy")
 				var entropy float64
 				if hasEntropy {
 					switch e := entropyVal.(type) {
@@ -273,17 +282,17 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 				}
 
 				if entropy > 0 {
-					sess.fabric.ArchonVigilance += entropy * 0.002
-					if sess.fabric.ArchonVigilance > 1.0 {
-						sess.fabric.ArchonVigilance = 1.0
+					fabric.ArchonVigilance += entropy * 0.002
+					if fabric.ArchonVigilance > 1.0 {
+						fabric.ArchonVigilance = 1.0
 					}
 
-					if sess.fabric.IsPurged() {
-						s.sendError(conn, sess, "ONTOLOGICAL_PURGE: The Vigilant Archon has terminated execution due to high entropy!")
+					if fabric.IsPurged() {
+						s.sendError(conn, activeDef, fabric, "ONTOLOGICAL_PURGE: The Vigilant Archon has terminated execution due to high entropy!")
 						return
 					}
 
-					s.sendSnapshotFromLoop(conn, sess, "", fmt.Sprintf("Archon vigilance rising! Current entropy: %.0f", entropy), false)
+					s.sendSnapshotFromLoop(conn, activeDef, fabric, "", fmt.Sprintf("Archon vigilance rising! Current entropy: %.0f", entropy), false)
 				}
 			}
 		}
@@ -293,12 +302,11 @@ func (s *Server) handleRift(w http.ResponseWriter, r *http.Request, def *engine.
 func (s *Server) readLoop(conn interface {
 	ReadMessage() (int, []byte, error)
 	WriteJSON(interface{}) error
-}, sess *session, eventChan chan<- riftEvent, done chan struct{}) {
+}, def *engine.ChallengeDefinition, fabric *engine.AxiomaticFabric, eventChan chan<- riftEvent, done chan struct{}) {
 	defer close(done)
 	for {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("Rift severed:", err)
 			return
 		}
 
@@ -306,7 +314,7 @@ func (s *Server) readLoop(conn interface {
 			Event string `json:"event"`
 		}
 		if err := json.Unmarshal(msg, &payload); err != nil {
-			s.sendError(conn, sess, "MALFORMED_PAYLOAD: "+err.Error())
+			s.sendError(conn, def, fabric, "MALFORMED_PAYLOAD: "+err.Error())
 			continue
 		}
 
@@ -319,48 +327,48 @@ func (s *Server) readLoop(conn interface {
 
 func (s *Server) sendSnapshotFromLoop(conn interface {
 	WriteJSON(interface{}) error
-}, sess *session, cipher, message string, complete bool) {
+}, def *engine.ChallengeDefinition, fabric *engine.AxiomaticFabric, cipher, message string, complete bool) {
 	snap := engine.Snapshot{
-		ChallengeID:   sess.challenge.ID,
-		Paradigm:      string(sess.challenge.Paradigm),
-		Title:         sess.challenge.Name,
-		Description:   sess.challenge.Description,
-		Modules:       sess.challenge.ToModules(),
-		State:         sess.fabric.State,
-		Vigilance:     sess.fabric.ArchonVigilance,
-		Triggerable:   sess.fabric.EvaluateAllGlitches(),
+		ChallengeID:   def.ID,
+		Paradigm:      string(def.Paradigm),
+		Title:         def.Name,
+		Description:   def.Description,
+		Modules:       def.ToModules(),
+		State:         fabric.State,
+		Vigilance:     fabric.ArchonVigilance,
+		Triggerable:   fabric.EvaluateAllGlitches(),
 		LastCipher:    cipher,
 		LevelComplete: complete,
 		Message:       message,
 	}
 	if err := conn.WriteJSON(snap); err != nil {
-		log.Println("Failed to send snapshot:", err)
+		s.log.Error("snapshot send failed", "error", err, "class", obs.ClassTransport)
 	}
 }
 
 func (s *Server) sendError(conn interface {
 	WriteJSON(interface{}) error
-}, sess *session, msg string) {
+}, def *engine.ChallengeDefinition, fabric *engine.AxiomaticFabric, msg string) {
 	snap := engine.Snapshot{
-		ChallengeID:   sess.challenge.ID,
-		Paradigm:      string(sess.challenge.Paradigm),
+		ChallengeID:   def.ID,
+		Paradigm:      string(def.Paradigm),
 		Title:         "Error",
-		Description:   sess.challenge.Description,
-		Modules:       sess.challenge.ToModules(),
-		State:         sess.fabric.State,
-		Vigilance:     sess.fabric.ArchonVigilance,
-		Triggerable:   sess.fabric.EvaluateAllGlitches(),
+		Description:   def.Description,
+		Modules:       def.ToModules(),
+		State:         fabric.State,
+		Vigilance:     fabric.ArchonVigilance,
+		Triggerable:   fabric.EvaluateAllGlitches(),
 		LastCipher:    "",
 		LevelComplete: false,
 		ErrorMessage:  msg,
 	}
 	if err := conn.WriteJSON(snap); err != nil {
-		log.Println("Failed to send error:", err)
+		s.log.Error("error snapshot send failed", "error", err, "class", obs.ClassTransport)
 	}
 }
 
-func (s *Server) triggerAsyncTauntFromLoop(sess *session, action string, eventChan chan<- riftEvent, done <-chan struct{}) {
-	entropyVal, _ := sess.fabric.GetState("entropy")
+func (s *Server) triggerAsyncTauntFromLoop(ctx context.Context, def *engine.ChallengeDefinition, fabric *engine.AxiomaticFabric, action string, eventChan chan<- riftEvent, done <-chan struct{}) {
+	entropyVal, _ := fabric.GetState("entropy")
 	var entropy int
 	switch e := entropyVal.(type) {
 	case int:
@@ -372,12 +380,15 @@ func (s *Server) triggerAsyncTauntFromLoop(sess *session, action string, eventCh
 	}
 
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		s.metrics.OracleRequests.Add(1)
+		defer s.metrics.OracleRequests.Add(-1)
+
+		tctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		taunt, err := s.oracle.GenerateTaunt(ctx, string(sess.challenge.Paradigm), action, entropy)
+		taunt, err := s.oracle.GenerateTaunt(tctx, string(def.Paradigm), action, entropy)
 		if err != nil {
-			log.Println("AI taunt generation skipped:", err)
+			s.log.Warn("AI taunt skipped", "error", err, "class", obs.ClassAI)
 			return
 		}
 
@@ -393,14 +404,17 @@ func (s *Server) triggerAsyncTauntFromLoop(sess *session, action string, eventCh
 	}()
 }
 
-func (s *Server) triggerAsyncRepairFromLoop(sess *session, eventChan chan<- riftEvent, done <-chan struct{}) {
+func (s *Server) triggerAsyncRepairFromLoop(ctx context.Context, def *engine.ChallengeDefinition, fabric *engine.AxiomaticFabric, eventChan chan<- riftEvent, done <-chan struct{}) {
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		s.metrics.OracleRequests.Add(1)
+		defer s.metrics.OracleRequests.Add(-1)
+
+		tctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 
-		patch, err := s.oracle.GenerateRepair(ctx, string(sess.challenge.Paradigm), sess.fabric.GetStateMap())
+		patch, err := s.oracle.GenerateRepair(tctx, string(def.Paradigm), fabric.GetStateMap())
 		if err != nil {
-			log.Println("AI repair generation failed:", err)
+			s.log.Error("AI repair failed", "error", err, "class", obs.ClassAI)
 			return
 		}
 

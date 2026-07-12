@@ -1,16 +1,18 @@
 package db
 
 import (
+	"challenge-to-you/backend/internal/obs"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	_ "modernc.org/sqlite"
 )
+
+var log = obs.Default().Component("db")
 
 type DB struct {
 	conn *sql.DB
@@ -325,7 +327,7 @@ func (d *DB) GetOrCreateProfile() (*PlayerProfile, error) {
 	_ = d.conn.QueryRow("SELECT checksum, save_version FROM player_profile WHERE id = 1").Scan(&checksum, &saveVersion)
 
 	if !verifyIntegrity(profileData, checksum) {
-		log.Printf("[DB-INTEGRITY] Profile checksum mismatch! Expected %s, got %s for data %s", checksum, computeChecksum(profileData), profileData)
+		log.Warn("profile checksum mismatch", "expected", checksum, "got", computeChecksum(profileData), "data", profileData)
 	}
 
 	return &p, nil

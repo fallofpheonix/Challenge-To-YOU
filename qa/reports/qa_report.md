@@ -1,9 +1,9 @@
 # QA Automation Report
 
 **Project:** Challenge To YOU
-**Run ID:** qa_1783760119061
-**Time:** 2026-07-11T14:25:19+05:30 — 2026-07-11T14:26:08+05:30
-**Duration:** 49561ms
+**Run ID:** qa_1783891092150
+**Time:** 2026-07-13T02:48:12+05:30 — 2026-07-13T02:49:04+05:30
+**Duration:** 52586ms
 
 ## Summary
 
@@ -21,7 +21,7 @@
 
 ### [PASS] FrameworkSelfTest (framework)
 
-Duration: 0ms
+Duration: 1ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -37,18 +37,18 @@ Duration: 0ms
 
 ### [PASS] BackendLaunchAndShutdown (backend)
 
-Duration: 1180ms
+Duration: 1507ms
 
 | Step | Status | Details |
 |------|--------|--------|
 | build_success | PASSED | Binary built: /Users/fallofpheonix/Project/game/Challenge-To-YOU/backend/sand... |
-| server_started | PASSED | Server started on port 57973 |
-| server_running | PASSED | Server uptime: 531.288167ms |
+| server_started | PASSED | Server started on port 52441 |
+| server_running | PASSED | Server uptime: 826.198625ms |
 | server_stopped | PASSED | Port should be free after shutdown |
 
 ### [PASS] BackendHealthCheck (backend)
 
-Duration: 635ms
+Duration: 659ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -58,16 +58,16 @@ Duration: 635ms
 
 ### [PASS] BackendLogCapture (backend)
 
-Duration: 1433ms
+Duration: 1662ms
 
 | Step | Status | Details |
 |------|--------|--------|
-| logs_captured | PASSED | Log size: 158 bytes |
-| log_content | PASSED | Captured 158 bytes of server logs |
+| logs_captured | PASSED | Log size: 484 bytes |
+| log_content | PASSED | Captured 484 bytes of server logs |
 
 ### [PASS] WebSocketConnect (websocket)
 
-Duration: 1134ms
+Duration: 1513ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -76,7 +76,7 @@ Duration: 1134ms
 
 ### [PASS] WebSocketDisconnect (websocket)
 
-Duration: 618ms
+Duration: 854ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -85,7 +85,7 @@ Duration: 618ms
 
 ### [PASS] WebSocketReconnect (websocket)
 
-Duration: 870ms
+Duration: 722ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -94,7 +94,7 @@ Duration: 870ms
 
 ### [PASS] WebSocketInvalidMessage (websocket)
 
-Duration: 1310ms
+Duration: 1199ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -103,7 +103,7 @@ Duration: 1310ms
 
 ### [PASS] WebSocketTimeout (websocket)
 
-Duration: 1519ms
+Duration: 2145ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -112,7 +112,7 @@ Duration: 1519ms
 
 ### [PASS] MissionStart (mission)
 
-Duration: 1012ms
+Duration: 1532ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -123,7 +123,7 @@ Duration: 1012ms
 
 ### [PASS] MissionObjectives (mission)
 
-Duration: 921ms
+Duration: 1329ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -134,35 +134,34 @@ Duration: 921ms
 
 ### [PASS] MissionStateTransitions (mission)
 
-Duration: 634ms
+Duration: 740ms
 
 | Step | Status | Details |
 |------|--------|--------|
-| initial_state | PASSED | State keys: [entropy mana_critical ward_sealed binding_active] |
+| initial_state | PASSED | State keys: [binding_active entropy mana_critical ward_sealed] |
 | trigger_event | PASSED | Triggering: invoke_binding |
 | trigger_processed | PASSED | State changed: false, Vigilance: 0.00 -> 0.00, Message: "USER STATS: reputati... |
 
 ### [PASS] MissionCompletion (mission)
 
-Duration: 637ms
+Duration: 666ms
 
 | Step | Status | Details |
 |------|--------|--------|
 | trigger_0 | PASSED | Event: invoke_binding, Complete: false, Vigilance: 0.00 |
 | trigger_1 | PASSED | Event: invoke_binding, Complete: false, Vigilance: 0.10 |
-| trigger_2 | PASSED | Event: surge_mana, Complete: false, Vigilance: 0.20 |
-| trigger_3 | PASSED | Event: invoke_binding, Complete: false, Vigilance: 0.30 |
-| trigger_4 | PASSED | Event: invoke_binding, Complete: false, Vigilance: 0.40 |
+| trigger_2 | PASSED | Event: invoke_binding, Complete: false, Vigilance: 0.20 |
+| trigger_3 | PASSED | Event: surge_mana, Complete: false, Vigilance: 0.30 |
+| trigger_4 | PASSED | Event: surge_mana, Complete: false, Vigilance: 0.40 |
 | trigger_5 | PASSED | Event: invoke_binding, Complete: false, Vigilance: 0.50 |
 | trigger_6 | PASSED | Event: invoke_binding, Complete: false, Vigilance: 0.60 |
-| trigger_7 | PASSED | Event: invoke_binding, Complete: false, Vigilance: 0.70 |
-| trigger_8 | PASSED | Event: surge_mana, Complete: false, Vigilance: 0.80 |
-| trigger_9 | PASSED | Event: invoke_binding, Complete: false, Vigilance: 0.90 |
+| trigger_7 | PASSED | Event: trigger_release, Complete: false, Vigilance: 0.70 |
+| trigger_8 | PASSED | Event: invoke_binding, Complete: true, Vigilance: 0.80 |
 | system_responded | PASSED | System should respond to trigger events |
 
 ### [PASS] MissionUnlocks (mission)
 
-Duration: 741ms
+Duration: 454ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -170,7 +169,7 @@ Duration: 741ms
 
 ### [PASS] ChallengeLoad (challenge)
 
-Duration: 4ms
+Duration: 11ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -201,8 +200,11 @@ Duration: 4ms
 | has_id_magitech_09_resonance.json | PASSED | Challenge must have id |
 | has_paradigm_magitech_09_resonance.json | PASSED | Challenge must have paradigm |
 | has_flaws_magitech_09_resonance.json | PASSED | Challenge must have flaws |
+| has_id_magitech_m01_runic_initiation.json | PASSED | Challenge must have id |
+| has_paradigm_magitech_m01_runic_initiation.json | PASSED | Challenge must have paradigm |
+| has_flaws_magitech_m01_runic_initiation.json | PASSED | Challenge must have flaws |
 | skip_pack.json | PASSED | Pack/composite file, skipping validation |
-| era_magitech_tier1 | PASSED | Loaded 10 challenges from magitech_tier1 |
+| era_magitech_tier1 | PASSED | Loaded 11 challenges from magitech_tier1 |
 | skip_composite_01_concat.json | PASSED | Pack/composite file, skipping validation |
 | skip_composite_02_state.json | PASSED | Pack/composite file, skipping validation |
 | skip_composite_03_pipe.json | PASSED | Pack/composite file, skipping validation |
@@ -233,8 +235,11 @@ Duration: 4ms
 | has_id_cyberpunk_09_recognize.json | PASSED | Challenge must have id |
 | has_paradigm_cyberpunk_09_recognize.json | PASSED | Challenge must have paradigm |
 | has_flaws_cyberpunk_09_recognize.json | PASSED | Challenge must have flaws |
+| has_id_cyberpunk_c42_thread_race.json | PASSED | Challenge must have id |
+| has_paradigm_cyberpunk_c42_thread_race.json | PASSED | Challenge must have paradigm |
+| has_flaws_cyberpunk_c42_thread_race.json | PASSED | Challenge must have flaws |
 | skip_pack.json | PASSED | Pack/composite file, skipping validation |
-| era_cyberpunk_tier1 | PASSED | Loaded 13 challenges from cyberpunk_tier1 |
+| era_cyberpunk_tier1 | PASSED | Loaded 14 challenges from cyberpunk_tier1 |
 | has_id_cosmic_01_airlock.json | PASSED | Challenge must have id |
 | has_paradigm_cosmic_01_airlock.json | PASSED | Challenge must have paradigm |
 | has_flaws_cosmic_01_airlock.json | PASSED | Challenge must have flaws |
@@ -259,13 +264,16 @@ Duration: 4ms
 | has_id_cosmic_08_valve.json | PASSED | Challenge must have id |
 | has_paradigm_cosmic_08_valve.json | PASSED | Challenge must have paradigm |
 | has_flaws_cosmic_08_valve.json | PASSED | Challenge must have flaws |
+| has_id_cosmic_v81_ast_parser.json | PASSED | Challenge must have id |
+| has_paradigm_cosmic_v81_ast_parser.json | PASSED | Challenge must have paradigm |
+| has_flaws_cosmic_v81_ast_parser.json | PASSED | Challenge must have flaws |
 | skip_pack.json | PASSED | Pack/composite file, skipping validation |
-| era_cosmic_tier1 | PASSED | Loaded 9 challenges from cosmic_tier1 |
-| total_challenges | PASSED | Total challenges loaded: 32 |
+| era_cosmic_tier1 | PASSED | Loaded 10 challenges from cosmic_tier1 |
+| total_challenges | PASSED | Total challenges loaded: 35 |
 
 ### [PASS] ChallengeCompile (challenge)
 
-Duration: 79ms
+Duration: 156ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -274,7 +282,7 @@ Duration: 79ms
 
 ### [PASS] ChallengeExecute (challenge)
 
-Duration: 20ms
+Duration: 21ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -284,7 +292,7 @@ Duration: 20ms
 
 ### [PASS] ChallengeScoring (challenge)
 
-Duration: 413ms
+Duration: 640ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -294,7 +302,7 @@ Duration: 413ms
 
 ### [PASS] SaveCreateLoad (save)
 
-Duration: 629ms
+Duration: 657ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -303,7 +311,7 @@ Duration: 629ms
 
 ### [PASS] SaveRestartReload (save)
 
-Duration: 1225ms
+Duration: 1280ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -314,7 +322,7 @@ Duration: 1225ms
 
 ### [PASS] SaveCorruptedHandling (save)
 
-Duration: 30193ms
+Duration: 30244ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -323,7 +331,7 @@ Duration: 30193ms
 
 ### [PASS] RewardXP (reward)
 
-Duration: 667ms
+Duration: 855ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -334,7 +342,7 @@ Duration: 667ms
 
 ### [PASS] RewardCredits (reward)
 
-Duration: 617ms
+Duration: 648ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -343,7 +351,7 @@ Duration: 617ms
 
 ### [PASS] RewardReputation (reward)
 
-Duration: 419ms
+Duration: 445ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -351,7 +359,7 @@ Duration: 419ms
 
 ### [PASS] RewardLuck (reward)
 
-Duration: 623ms
+Duration: 652ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -359,7 +367,7 @@ Duration: 623ms
 
 ### [PASS] RewardUnlocks (reward)
 
-Duration: 464ms
+Duration: 506ms
 
 | Step | Status | Details |
 |------|--------|--------|
@@ -367,23 +375,23 @@ Duration: 464ms
 
 ### [PASS] RegressionDetection (regression)
 
-Duration: 1ms
+Duration: 2ms
 
 | Step | Status | Details |
 |------|--------|--------|
-| challenge_count_stable | PASSED | Current: 32, Previous: 32 |
+| challenge_count_stable | PASSED | Current: 35, Previous: 35 |
 | no_challenges_removed | PASSED | Removed challenges: [] |
 | endpoints_stable | PASSED | Endpoints: 3 -> 3 |
-| regression_check_complete | PASSED | Compared against baseline from 2026-07-11T14:24:58+05:30 |
+| regression_check_complete | PASSED | Compared against baseline from 2026-07-13T02:43:59+05:30 |
 
 ### [PASS] ContinuousPlaythrough (e2e)
 
-Duration: 1550ms
+Duration: 1468ms
 
 | Step | Status | Details |
 |------|--------|--------|
 | phase1_build | PASSED | Backend binary compiled |
-| phase1_launch | PASSED | Server launched on port 58811 |
+| phase1_launch | PASSED | Server launched on port 53275 |
 | phase2_connect | PASSED | WebSocket client connected |
 | phase3_mission_started | PASSED | Should receive initial snapshot |
 | phase3_mission | PASSED | Mission loaded: magitech_01_breach (Paradigm: MAGITECH) |
@@ -393,24 +401,24 @@ Duration: 1550ms
 | phase5_has_triggers | PASSED | Triggers: [invoke_binding] |
 | phase6_round_0 | PASSED | Event: invoke_binding \| Vigilance: 0.00 \| Complete: false |
 | phase6_round_1 | PASSED | Event: invoke_binding \| Vigilance: 0.10 \| Complete: false |
-| phase6_round_2 | PASSED | Event: surge_mana \| Vigilance: 0.20 \| Complete: false |
+| phase6_round_2 | PASSED | Event: invoke_binding \| Vigilance: 0.20 \| Complete: false |
 | phase6_round_3 | PASSED | Event: invoke_binding \| Vigilance: 0.30 \| Complete: false |
 | phase6_round_4 | PASSED | Event: invoke_binding \| Vigilance: 0.40 \| Complete: false |
-| phase6_round_5 | PASSED | Event: surge_mana \| Vigilance: 0.50 \| Complete: false |
+| phase6_round_5 | PASSED | Event: invoke_binding \| Vigilance: 0.50 \| Complete: false |
 | phase6_round_6 | PASSED | Event: invoke_binding \| Vigilance: 0.60 \| Complete: false |
 | phase6_round_7 | PASSED | Event: invoke_binding \| Vigilance: 0.70 \| Complete: false |
-| phase6_round_8 | PASSED | Event: trigger_release \| Vigilance: 0.80 \| Complete: false |
-| phase6_round_9 | PASSED | Event: invoke_binding \| Vigilance: 0.90 \| Complete: true |
-| phase6_complete | PASSED | Challenge completed after 10 rounds |
-| phase7_cipher | PASSED | Cipher: LOGOS_MGT_77F_BREACH |
-| phase7_complete | PASSED | Mission completed successfully! |
+| phase6_round_8 | PASSED | Event: invoke_binding \| Vigilance: 0.80 \| Complete: false |
+| phase6_round_9 | PASSED | Event: invoke_binding \| Vigilance: 0.90 \| Complete: false |
+| phase6_round_10 | PASSED | Event: invoke_binding \| Vigilance: 1.00 \| Complete: false |
+| phase6_send_done | PASSED | Round 11: connection closed: write tcp 127.0.0.1:53285->127.0.0.1:53275: writ... |
+| phase7_partial | PASSED | Challenge not completed after 11 rounds (expected for automated test) |
 | phase9_save | PASSED | Server stopped (state persisted to DB) |
-| phase10_restart | PASSED | Server restarted on port 58824 |
+| phase10_restart | PASSED | Server restarted on port 53286 |
 | phase11_loaded | PASSED | Should receive snapshot after restart |
 | phase11_reload | PASSED | State reloaded: magitech_01_breach |
 | phase12_paradigm_match | PASSED | Paradigm: MAGITECH -> MAGITECH |
 | phase13_disconnect | PASSED | Final disconnect complete |
-| e2e_complete | PASSED | Full playthrough completed. 10 rounds executed. |
+| e2e_complete | PASSED | Full playthrough completed. 11 rounds executed. |
 
 ---
 Generated by QA Automation Suite | go1.26.4 | darwin/arm64

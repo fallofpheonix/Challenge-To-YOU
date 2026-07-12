@@ -5,7 +5,7 @@
 **Current Project**: Challenge To YOU
 **Status**: Core Engine Complete — Ready for Playtest
 **Last Updated**: 2026-07-10
-**Documentation**: `docs/CHALLENGE-TO-YOU-PLAN.md`
+**Documentation**: `docs/ARCHITECTURE-PHASE1.md`
 
 ---
 

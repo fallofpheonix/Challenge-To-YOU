@@ -1,10 +1,15 @@
 package server
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"sync"
+	"sync/atomic"
+	"syscall"
 	"time"
 
 	"challenge-to-you/backend/internal/ai"
@@ -15,7 +20,9 @@ import (
 	"challenge-to-you/backend/internal/executionengine"
 	pythonexecutor "challenge-to-you/backend/internal/executor/python"
 	"challenge-to-you/backend/internal/missionengine"
+	"challenge-to-you/backend/internal/obs"
 	"challenge-to-you/backend/internal/sandbox"
+	"challenge-to-you/backend/internal/session"
 
 	"github.com/gorilla/websocket"
 )
@@ -30,9 +37,21 @@ type Server struct {
 	challengePath   string
 	missionRegistry *missionengine.MissionRegistry
 	missionManager  *missionengine.MissionManager
+	sessionManager  *session.Manager
 	upgrader        websocket.Upgrader
 
 	globalFabrics map[string]*engine.AxiomaticFabric
+
+	// Observability
+	log     *obs.Logger
+	metrics *obs.Metrics
+
+	// Shutdown infrastructure
+	httpServer   *http.Server
+	ctx          context.Context
+	cancel       context.CancelFunc
+	wg           sync.WaitGroup
+	dbCloseCount atomic.Int32
 }
 
 func NewServer() *Server {
@@ -41,6 +60,8 @@ func NewServer() *Server {
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool { return true },
 		},
+		log:     obs.Default().Component("server"),
+		metrics: obs.NewMetrics(),
 	}
 	s.initDeps()
 	return s
@@ -70,6 +91,7 @@ func (s *Server) initDeps() {
 	var err error
 	s.db, err = db.NewDB(dbPath)
 	if err != nil {
+		s.log.Error("database init failed", "error", err, "class", obs.ClassPersistence)
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
@@ -80,38 +102,138 @@ func (s *Server) initDeps() {
 
 	s.missionRegistry = missionengine.NewMissionRegistry()
 	if err := s.missionRegistry.LoadMissionsFromDir("data/missions"); err != nil {
-		log.Printf("Warning: failed to load missions: %v", err)
+		s.log.Warn("mission load failed", "error", err)
 	}
 	s.missionManager = missionengine.NewMissionManager(s.missionRegistry, s.bus, s.db)
+	s.sessionManager = session.NewManager(30 * time.Minute)
 }
 
+// Start loads the challenge and runs the server until a signal is received.
+// It blocks until shutdown completes.
 func (s *Server) Start() {
+	s.Run()
+}
+
+// Run loads the challenge, starts the HTTP server, and blocks until SIGINT or
+// SIGTERM is received. On signal it performs a deterministic shutdown:
+//
+//	Stop accepting connections → close listeners → notify handlers →
+//	persist state → close database → exit
+func (s *Server) Run() {
+	s.ctx, s.cancel = context.WithCancel(context.Background())
+
 	def, err := engine.LoadChallenge(s.challengePath)
 	if err != nil {
+		s.log.Error("challenge load failed", "path", s.challengePath, "error", err)
 		log.Fatalf("Failed to load challenge %s: %v", s.challengePath, err)
 	}
 
 	fabric := def.BuildFabric()
 
-	http.HandleFunc("/rift", func(w http.ResponseWriter, r *http.Request) {
-		s.handleRift(w, r, def, fabric)
-	})
-	http.HandleFunc("/api/languages", s.handleListLanguages)
-	http.HandleFunc("/api/challenges", s.handleListChallenges)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/rift", func(w http.ResponseWriter, r *http.Request) {
+		requestID := obs.NewRequestID()
+		s.metrics.TotalRequests.Add(1)
+		s.metrics.ActiveWebSockets.Add(1)
+		defer s.metrics.ActiveWebSockets.Add(-1)
 
-	log.Printf("Challenge Engine online — challenge: %s (%s)", def.ID, def.Name)
-	log.Printf("Registered languages: %v", s.compilerManager.ListLanguages())
+		conn, err := s.upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			s.log.Error("rift upgrade failed", "request_id", requestID, "error", err)
+			return
+		}
+
+		ctx := obs.WithRequestID(s.ctx, requestID)
+		s.log.Lifecycle("ClientConnected", "request_id", requestID, "remote", r.RemoteAddr)
+
+		s.wg.Add(1)
+		go func() {
+			defer s.wg.Done()
+			defer conn.Close()
+			s.handleRift(ctx, r, conn, def, fabric)
+		}()
+	})
+	mux.HandleFunc("/api/languages", s.handleListLanguages)
+	mux.HandleFunc("/api/challenges", s.handleListChallenges)
+	mux.HandleFunc("/debug/runtime", obs.DebugHandler(s.metrics))
+	mux.HandleFunc("/metrics", obs.MetricsHandler(s.metrics))
+
+	s.log.Lifecycle("ServerStarted", "challenge_id", def.ID, "challenge_name", def.Name)
+	s.log.Info("languages registered", "count", len(s.compilerManager.ListLanguages()))
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
+
 	// ReadHeaderTimeout bounds slow-header (Slowloris) attacks. WriteTimeout is
 	// left unset because WebSocket connections are intentionally long-lived.
-	srv := &http.Server{
+	s.httpServer = &http.Server{
 		Addr:              ":" + port,
+		Handler:           mux,
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       120 * time.Second,
 	}
-	log.Fatal(srv.ListenAndServe())
+
+	// Start server in a goroutine so we can listen for signals.
+	errCh := make(chan error, 1)
+	go func() {
+		s.log.Info("listening", "port", port)
+		errCh <- s.httpServer.ListenAndServe()
+	}()
+
+	// Wait for shutdown signal or server error.
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case sig := <-sigCh:
+		s.log.Lifecycle("ShutdownStarted", "signal", sig.String())
+	case err := <-errCh:
+		if err != nil && err != http.ErrServerClosed {
+			s.log.Error("server error", "error", err)
+			log.Fatalf("Server error: %v", err)
+		}
+	}
+
+	s.shutdown()
+}
+
+// shutdown performs the deterministic shutdown sequence.
+func (s *Server) shutdown() {
+	shutdownStart := time.Now()
+
+	// 1. Stop accepting new connections (in-flight requests get a deadline).
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownCancel()
+	if err := s.httpServer.Shutdown(shutdownCtx); err != nil {
+		s.log.Error("http shutdown error", "error", err)
+	}
+
+	// 2. Cancel server context — signals all active handlers to exit.
+	s.cancel()
+
+	// 3. Wait for all handlers to finish (with timeout).
+	done := make(chan struct{})
+	go func() {
+		s.wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		s.log.Info("all handlers drained")
+	case <-time.After(15 * time.Second):
+		s.log.Warn("handler drain timeout — forcing shutdown")
+	}
+
+	// 4. Close database (checkpoints WAL, releases file descriptors).
+	s.dbCloseCount.Add(1)
+	if err := s.db.Close(); err != nil {
+		s.log.Error("database close error", "error", err)
+	}
+
+	duration := time.Since(shutdownStart)
+	s.metrics.ShutdownDuration.Store(int64(duration))
+	s.log.Lifecycle("ShutdownCompleted", "duration_ms", duration.Milliseconds())
 }

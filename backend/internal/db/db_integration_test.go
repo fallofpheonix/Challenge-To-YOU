@@ -4,7 +4,6 @@
 package db_test
 
 import (
-	"os"
 	"testing"
 
 	"go.uber.org/goleak"

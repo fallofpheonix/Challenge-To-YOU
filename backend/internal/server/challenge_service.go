@@ -5,11 +5,6 @@ import (
 	"challenge-to-you/backend/internal/generator"
 )
 
-type session struct {
-	challenge *engine.ChallengeDefinition
-	fabric    *engine.AxiomaticFabric
-}
-
 type eventType int
 
 const (

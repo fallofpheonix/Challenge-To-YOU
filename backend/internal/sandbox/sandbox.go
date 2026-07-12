@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,6 +11,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"challenge-to-you/backend/internal/obs"
 
 	"github.com/dop251/goja"
 )
@@ -35,6 +36,8 @@ func hardenCmd(cmd *exec.Cmd, workDir string) {
 	cmd.Cancel = func() error { return killProcessGroup(cmd) }
 }
 
+var log = obs.Default().Component("sandbox")
+
 var (
 	auditLogMu sync.Mutex
 	auditLogID atomic.Int64
@@ -47,7 +50,7 @@ func nextAuditID() int64 {
 func auditLog(entry string) {
 	auditLogMu.Lock()
 	defer auditLogMu.Unlock()
-	log.Printf("[SANDBOX-AUDIT] %s", entry)
+	log.Info("sandbox_audit", "entry", entry)
 }
 
 type Interface interface {

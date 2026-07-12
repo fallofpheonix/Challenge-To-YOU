@@ -1,11 +1,13 @@
 # Documentation Summary: Challenge To YOU
 
-## Date: 2026-07-10 (updated 2026-07-12)
+## Date: 2026-07-10 (updated 2026-07-13)
 ## Status: Implemented — backend builds, tests pass, all CI green
 
 > Implementation status and requirement coverage are tracked in
 > [`TRACEABILITY-AND-CONFLICTS.md`](TRACEABILITY-AND-CONFLICTS.md). The
 > authoritative architecture is [`ARCHITECTURE-PHASE1.md`](ARCHITECTURE-PHASE1.md).
+> The current design governance lives in [`docs/quality/design_constitution.md`](quality/design_constitution.md)
+> and [`docs/quality/validation_system.md`](quality/validation_system.md).
 
 ---
 
@@ -27,6 +29,12 @@
 | **UNIVERSAL-LOGIC-ENGINE.md** | Logic-engine specification | `docs/` |
 | **LOCAL-LLM-INTEGRATION.md** | Ollama/LLM integration spec | `docs/` |
 | **LAUNCH.md** | Build & run guide | Root |
+| **design_constitution.md** | Stable design constitution | `docs/quality/` |
+| **validation_system.md** | Prototype validation gates and metrics | `docs/quality/` |
+| **research_log.md** | Hypotheses, evidence, and rejected ideas | `docs/quality/` |
+| **decision_log.md** | Permanent design decisions from validated evidence | `docs/quality/` |
+| **design_freeze_0.md** | Design freeze milestone and allowed work | `docs/quality/` |
+| **prototypes/P1_fault_injection/** | Self-contained scaffold for Prototype P1 | `prototypes/` |
 
 ---
 
