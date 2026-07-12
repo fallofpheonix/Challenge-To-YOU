@@ -4,20 +4,26 @@
 
 This document specifies the interface between the **Go backend** and **Godot frontend** for Challenge To YOU.
 
+> ⚠️ **Status correction (2026-07-12):** the primary/fallback below are **inverted
+> relative to the implementation**. The live transport is **WebSocket** (the GDExtension
+> native path was never built). The authoritative wire protocol is
+> [`ARCHITECTURE-PHASE1.md`](ARCHITECTURE-PHASE1.md) §10; the GDExtension function
+> signatures in this document describe the *original* design and are retained for context.
+
 ---
 
 ## Communication Protocol
 
-### Primary: GDExtension (Desktop)
+### Live transport: WebSocket
+- **Type**: JSON messages over WebSocket
+- **Port**: 127.0.0.1:8080
+- **Usage**: the actual client↔backend link (`internal/server`, `client/scripts/network_bridge.gd`)
+
+### Original design (not built): GDExtension native
 - **Type**: Direct function calls
 - **Language**: Go shared library → Godot GDExtension
 - **Latency**: ~1ms (native calls)
-- **Usage**: Primary communication for desktop builds
-
-### Fallback: WebSocket (Future)
-- **Type**: JSON messages over WebSocket
-- **Port**: 127.0.0.1:8080
-- **Usage**: Network multiplayer, remote debugging
+- **Status**: superseded by WebSocket; signatures below are historical
 
 ---
 
@@ -392,7 +398,7 @@ type Error struct {
 
 ---
 
-## WebSocket Protocol (Future)
+## WebSocket Protocol (live transport)
 
 ### Connection
 

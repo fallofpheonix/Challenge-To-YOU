@@ -3,7 +3,7 @@
 ## Quick Start
 
 ### Prerequisites
-- Go 1.21+
+- Go 1.25+
 - Godot 4.x
 - Ollama (optional — for AI Archon taunts)
 

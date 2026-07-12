@@ -1,7 +1,11 @@
 # Documentation Summary: Challenge To YOU
 
-## Date: 2026-07-10
-## Status: Planning Complete — Ready for Implementation
+## Date: 2026-07-10 (updated 2026-07-12)
+## Status: Implemented — backend builds, tests pass, all CI green
+
+> Implementation status and requirement coverage are tracked in
+> [`TRACEABILITY-AND-CONFLICTS.md`](TRACEABILITY-AND-CONFLICTS.md). The
+> authoritative architecture is [`ARCHITECTURE-PHASE1.md`](ARCHITECTURE-PHASE1.md).
 
 ---
 
@@ -17,6 +21,12 @@
 | **API.md** | Go ↔ Godot interface specification | `docs/` |
 | **README.md** | Project overview and quickstart | Root |
 | **CONTEXT.md** | Project context and glossary | Root |
+| **ARCHITECTURE-PHASE1.md** | Authoritative current architecture | `docs/` |
+| **TRACEABILITY-AND-CONFLICTS.md** | Requirement→code matrix + conflict report | `docs/` |
+| **GAME-DESIGN.md** | Game mechanics and design | `docs/` |
+| **UNIVERSAL-LOGIC-ENGINE.md** | Logic-engine specification | `docs/` |
+| **LOCAL-LLM-INTEGRATION.md** | Ollama/LLM integration spec | `docs/` |
+| **LAUNCH.md** | Build & run guide | Root |
 
 ---
 
@@ -29,8 +39,8 @@
 
 ### Tech Stack
 - **Frontend**: Godot 4 (GDScript/C#)
-- **Backend**: Go 1.26+
-- **Sandbox**: WASM (Extism/Wasmer)
+- **Backend**: Go 1.25+
+- **Sandbox**: hardened host subprocess (WASM/Docker isolation intentionally deferred to a post-alpha phase — see TRACEABILITY-AND-CONFLICTS.md)
 - **AI**: Ollama + Llama 3
 
 ### Scope (v1)
@@ -63,6 +73,14 @@
 ---
 
 ## Next Steps
+
+> **Note (2026-07-12):** the checklist below is the *original* week-by-week plan and
+> is kept for historical reference. The core engineering items (project structure, Go
+> backend, generator, Luck system, Magitech DSL, modes, save/progression, client link)
+> are **done** — see [`TRACEABILITY-AND-CONFLICTS.md`](TRACEABILITY-AND-CONFLICTS.md)
+> and `verification_report.md`. The remaining unchecked items are business/marketing or
+> roadmap tasks (Steam fee, art/audio, later eras), not pending engineering work. The
+> "GDExtension bridge" item was superseded by the WebSocket transport.
 
 ### Immediate (Today)
 1. [ ] Create project folder structure
@@ -154,4 +172,4 @@ All future conversations, decisions, and changes will be documented in:
 ---
 
 *Documented by: AI Assistant*
-*Status: Complete — Ready for Implementation*
+*Status: Implemented — verified build/tests/CI green (see TRACEABILITY-AND-CONFLICTS.md)*

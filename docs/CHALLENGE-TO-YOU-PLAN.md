@@ -1,5 +1,14 @@
 # Challenge To YOU — Complete Implementation Plan
 
+> **Implementation status (2026-07-12):** The core is built and verified — the
+> Go backend builds, the full test suite passes, and all CI workflows are green.
+> Two design details in this plan have evolved: the **sandbox** runs player code
+> in a hardened host **subprocess** (WASM is intentionally deferred, as noted in
+> this plan's own Post-MVP section), and the client↔backend link uses a
+> **WebSocket** server. See [`TRACEABILITY-AND-CONFLICTS.md`](TRACEABILITY-AND-CONFLICTS.md)
+> for the requirement→code coverage matrix and
+> [`ARCHITECTURE-PHASE1.md`](ARCHITECTURE-PHASE1.md) for the authoritative architecture.
+
 ## Project Overview
 
 **Challenge To YOU** is a desktop-first, roguelike hacking game where players solve procedurally generated coding challenges across multiple fantasy/sci-fi eras. The core mechanic is **Emergent Multi-Layer Systems** — combining broken/unrelated code to create glitches, loopholes, and side-effects that produce passcodes.
@@ -638,5 +647,5 @@ All design decisions, conversations, and changes will be documented in:
 
 ---
 
-*Last updated: 2026-07-10*
-*Status: Approved — Ready for Implementation*
+*Last updated: 2026-07-12*
+*Status: Core implemented and verified (build/tests/CI green); roadmap milestones 5–9 and Phase 2/3 remain future work as documented above.*

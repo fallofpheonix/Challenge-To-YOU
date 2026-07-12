@@ -50,7 +50,7 @@
 1. **Receive Challenge**: Game generates random challenge from seed + luck
 2. **Analyze Code Blocks**: Player reads the "junk code" modules
 3. **Write Code**: Player writes solution in the editor
-4. **Execute & Analyze**: Code runs in WASM sandbox, AI analyzes approach
+4. **Execute & Analyze**: Code runs in secure sandbox, AI analyzes approach
 5. **Get Passcode**: System generates passcode from code interactions
 6. **Unlock Next Era**: Passcode advances progression
 
@@ -300,7 +300,7 @@ ensure_glitch_exists(code, modules)
 
 ### How Passcodes Are Generated
 
-1. **Code Execution**: Player's code runs in WASM sandbox
+1. **Code Execution**: Player's code runs in secure sandbox
 2. **Glitch Detection**: System identifies intentional exploits
 3. **Style Analysis**: AI/AST analyzes coding approach
 4. **Factor Combination**: Multiple factors combined into seed

@@ -20,7 +20,7 @@ A roguelike coding puzzle game across multiple fantasy/sci-fi eras.
 | Layer | Technology |
 |-------|------------|
 | Frontend | Godot 4 (GDScript) |
-| Backend | Go 1.26+ |
+| Backend | Go 1.25+ |
 | WebSocket | gorilla/websocket |
 | AI | Ollama (local LLM) |
 
@@ -28,7 +28,7 @@ A roguelike coding puzzle game across multiple fantasy/sci-fi eras.
 
 ### Prerequisites
 
-- Go 1.26+
+- Go 1.25+
 - Godot 4.x
 - Ollama (optional, for AI features)
 

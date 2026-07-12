@@ -15,9 +15,22 @@ All unit tests in `backend/` execute and complete with 100% success rate:
 - `challenge-to-you/backend/internal/ai` — `PASS`
 - `challenge-to-you/backend/internal/db` — `PASS`
 - `challenge-to-you/backend/internal/engine` — `PASS`
+- `challenge-to-you/backend/internal/eventbus` — `PASS`
+- `challenge-to-you/backend/internal/gameloop` — `PASS`
 - `challenge-to-you/backend/internal/generator` — `PASS`
 - `challenge-to-you/backend/internal/missionengine` — `PASS`
 - `challenge-to-you/backend/internal/sandbox` — `PASS`
+
+### 3. CI & Cross-Platform
+- **GitHub Actions**: all 5 workflows green — CI, Go Build & Release, Quality, Lint, Security.
+- **Cross-compile**: `GOOS=windows` and native (darwin/linux) builds both succeed.
+- **Static analysis**: `go vet` clean; `gosec` clean at MEDIUM+ (design-inherent G204/G304/G122 excluded with justification); `govulncheck` clean (Go pinned to 1.25.12).
+
+### 4. Security Hardening (code-execution sandbox)
+- Untrusted subprocesses run with a minimal environment (no host-secret inheritance) — regression-tested.
+- Timeout kills the whole process group (no orphaned children); direct-argv exec removes injection surface.
+- goja VM is interrupted on timeout (no goroutine leak); HTTP server sets `ReadHeaderTimeout`.
+- Filesystem writes/dirs tightened to `0600`/`0750`.
 
 ---
 
