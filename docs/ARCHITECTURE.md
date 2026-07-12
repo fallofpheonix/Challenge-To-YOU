@@ -1,5 +1,19 @@
 # Architecture Document: Challenge To YOU
 
+> ⚠️ **HISTORICAL DESIGN DOCUMENT.** This file captures the *original* pre-implementation
+> design and no longer matches the codebase. It is retained for context only.
+>
+> **The authoritative architecture is [`ARCHITECTURE-PHASE1.md`](ARCHITECTURE-PHASE1.md)**;
+> see [`TRACEABILITY-AND-CONFLICTS.md`](TRACEABILITY-AND-CONFLICTS.md) for the full
+> conflict resolution and requirement→code mapping. Key divergences from this document:
+> - **Transport:** the game uses a **WebSocket** server (`internal/server`), *not* the
+>   GDExtension/native-shared-library model described below.
+> - **Sandbox:** code executes in a **hardened host subprocess** (`internal/sandbox`);
+>   WASM/Extism is intentionally deferred to a post-alpha phase.
+> - **Packages:** the `analyzer` / `passcode` / `narrative` / `pscript` packages below do
+>   **not** exist. Their responsibilities live in `internal/{ai,engine,compiler,content}`
+>   (e.g. the passcode is the `LogosCipher` produced in `internal/engine`).
+
 ## System Overview
 
 **Challenge To YOU** is a desktop-first roguelike hacking game built with:
