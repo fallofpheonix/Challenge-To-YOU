@@ -1,0 +1,12 @@
+{
+  "bundle_id": "cty-magitech-001",
+  "bundle_name": "Magitech Challenge 001: The Breach",
+  "description": "Example golden bundle for regression testing.",
+  "spec_version": "1.0.0",
+  "created_at": "2026-07-13T00:00:00Z",
+  "checksums": {
+    "challenge": "sha256:a8f67589c4bb1642c9919507a6a3567cd82c1ff16dbe3cfd3a94cafa881d8dbf",
+    "world": "sha256:76808c2354fb21519a19fb8f3463a3b57c1658adb1eb3e25595586e345c78cb8",
+    "bundle": "sha256:bc41eb8a4543b1c5cd6087ed7eef5551929a7582b3bd6ffc5368395e8d5ebd5e"
+  }
+}

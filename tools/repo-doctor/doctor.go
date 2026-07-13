@@ -23,6 +23,29 @@ type DoctorScanner struct {
 	WorkspaceRoot string
 }
 
+var excludedDirs = map[string]struct{}{
+	".git":     {},
+	".gocache": {},
+	"brain":    {},
+	"coverage": {},
+	"dist":     {},
+	"docs":     {},
+	"phoenix":  {},
+	"qa":       {},
+	"refs":     {},
+	"research": {},
+	"tools":    {},
+}
+
+var excludedFiles = map[string]struct{}{
+	"challenge_validation.json": {},
+	"challenge_validation.md":   {},
+	"doctor_report.json":        {},
+	"doctor_report.md":          {},
+	"sandbox":                   {},
+	"sandbox_server_test":       {},
+}
+
 func NewDoctorScanner(root string) *DoctorScanner {
 	return &DoctorScanner{WorkspaceRoot: root}
 }
@@ -38,7 +61,7 @@ func (ds *DoctorScanner) Scan() (*ScanReport, error) {
 	}
 
 	seenIDs := make(map[string]string)
-	hasTestMap := make(map[string]bool)
+	hasPackageTest := make(map[string]bool)
 	var goFiles []string
 	pkgDirs := make(map[string]bool)
 
@@ -47,7 +70,7 @@ func (ds *DoctorScanner) Scan() (*ScanReport, error) {
 			return err
 		}
 		if d.IsDir() {
-			if d.Name() == ".git" || d.Name() == "docs" || d.Name() == "brain" || d.Name() == "tools" || d.Name() == "phoenix" {
+			if _, excluded := excludedDirs[d.Name()]; excluded {
 				return filepath.SkipDir
 			}
 			return nil
@@ -55,12 +78,17 @@ func (ds *DoctorScanner) Scan() (*ScanReport, error) {
 
 		// Track test files
 		name := d.Name()
+		if _, excluded := excludedFiles[name]; excluded {
+			return nil
+		}
+
 		if strings.HasSuffix(name, "_test.go") {
-			base := strings.TrimSuffix(name, "_test.go")
-			hasTestMap[base] = true
+			hasPackageTest[filepath.Dir(path)] = true
 		} else if strings.HasSuffix(name, ".go") {
-			goFiles = append(goFiles, path)
 			pkgDirs[filepath.Dir(path)] = true
+			if name != "doc.go" {
+				goFiles = append(goFiles, path)
+			}
 		}
 
 		// Check large files (> 50KB or > 1000 lines)
@@ -88,8 +116,7 @@ func (ds *DoctorScanner) Scan() (*ScanReport, error) {
 
 	// Verify missing test files
 	for _, goFile := range goFiles {
-		base := strings.TrimSuffix(filepath.Base(goFile), ".go")
-		if !hasTestMap[base] {
+		if !hasPackageTest[filepath.Dir(goFile)] {
 			report.MissingTests = append(report.MissingTests, goFile)
 		}
 	}

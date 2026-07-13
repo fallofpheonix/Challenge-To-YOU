@@ -1,0 +1,44 @@
+{
+  "id": "magitech_world_001",
+  "name": "The Ancient Firewall",
+  "era": "MAGITECH",
+  "start_room": "entrance",
+  "rooms": {
+    "entrance": {
+      "description": "You stand before a towering wall of glowing runes. The ancient firewall pulses with protective magic.",
+      "exits": ["corridor"],
+      "objects": [
+        {
+          "id": "rune_001",
+          "name": "Buffer Rune",
+          "description": "A glowing rune inscribed with memory allocation symbols.",
+          "interactable": true
+        }
+      ]
+    },
+    "corridor": {
+      "description": "A narrow passage lined with flickering runes. The air hums with magical energy.",
+      "exits": ["entrance", "core"],
+      "objects": [
+        {
+          "id": "rune_002",
+          "name": "Cascade Rune",
+          "description": "A rune that resonates with nearby magical disturbances.",
+          "interactable": true
+        }
+      ]
+    },
+    "core": {
+      "description": "The heart of the firewall. A massive crystalline structure pulses with power.",
+      "exits": ["corridor"],
+      "objects": [
+        {
+          "id": "rune_003",
+          "name": "Breach Rune",
+          "description": "The final rune. When the firewall falls, this rune grants access.",
+          "interactable": true
+        }
+      ]
+    }
+  }
+}

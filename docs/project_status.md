@@ -19,11 +19,31 @@ Alpha                 ░░░░░░░░░░░░   0%
 
 | Milestone | Status | Evidence |
 |-----------|--------|----------|
-| M1: Architecture | ✅ Complete | Ownership, DI, shutdown, obs wired |
-| M2: Governance | ✅ Complete | Constitution, validation, decision log |
-| M3: Observability | ✅ Complete | Structured logging, metrics, debug endpoints |
-| M3.5: Prototype Discovery | ⏳ Next | Build P1, test with players |
-| M4: Gameplay Systems | ❌ Blocked | Awaiting prototype evidence |
+| M1: Architecture | Complete | Ownership, DI, shutdown, obs wired |
+| M2: Governance | Complete | Constitution, validation, decision log |
+| M3: Observability | In progress | Structured logging, metrics, debug endpoints; direct logging migration pending |
+| M3.5: Prototype Discovery | Next | Build P1, test with 10-20 players, record evidence |
+| M4: Gameplay Systems | Blocked | Awaiting prototype evidence |
+
+## M3 Exit Criteria
+
+- Backend `log.Fatalf` removed or confined to approved bootstrap locations.
+- Phoenix direct `log.Printf` and `log.Println` calls migrated to structured logging.
+- `obs.Classify()` or `obs.Classifyf()` used at applicable error creation boundaries.
+- CI rejects new direct logging outside approved wrappers or bootstrap locations.
+- `make verify` passes.
+- `go test -race` passes.
+- QA suite remains green.
+
+## M3.5 Exit Criteria
+
+- One atomic interaction implemented.
+- One research hypothesis documented.
+- 10-20 independent playtest sessions completed.
+- Experiment metrics collected.
+- Player quotes recorded.
+- Results documented.
+- One Go / Iterate / Kill decision recorded in `docs/quality/decision_log.md`.
 
 ## Risk Register
 
@@ -40,6 +60,6 @@ Alpha                 ░░░░░░░░░░░░   0%
 
 | Gate | Status |
 |------|--------|
-| `make verify` | ✅ |
-| `go test -race` | ✅ |
-| QA suite (28/28) | ✅ |
+| `make verify` | Passing |
+| `go test -race` | Passing |
+| QA suite (28/28) | Passing |

@@ -1,0 +1,66 @@
+{
+  "vectors": [
+    {
+      "name": "generation_determinism",
+      "description": "Same seed produces same challenge",
+      "inputs": {
+        "seed": 42,
+        "luck": 0.5,
+        "paradigm": "MAGITECH"
+      },
+      "expected": {
+        "challenge_id": "magitech_001",
+        "flaw_count": 3,
+        "win_condition_key": "access_level",
+        "win_condition_value": 3
+      }
+    },
+    {
+      "name": "flaw_trigger_order",
+      "description": "Flaws trigger in correct order based on conditions",
+      "inputs": {
+        "initial_state": {
+          "firewall_integrity": 100,
+          "access_level": 0,
+          "alert_status": "NORMAL"
+        },
+        "actions": [
+          {"type": "EXECUTE_RUNE", "target": "rune_001"},
+          {"type": "EXECUTE_RUNE", "target": "rune_002"},
+          {"type": "EXECUTE_RUNE", "target": "rune_003"}
+        ]
+      },
+      "expected": {
+        "flaws_triggered": ["flaw_001", "flaw_002", "flaw_003"],
+        "final_state": {
+          "firewall_integrity": 0,
+          "access_level": 3,
+          "alert_status": "NORMAL"
+        }
+      }
+    },
+    {
+      "name": "fallback_mutation",
+      "description": "Fallback mutations trigger when conditions not met",
+      "inputs": {
+        "initial_state": {
+          "firewall_integrity": 50,
+          "access_level": 0,
+          "alert_status": "NORMAL"
+        },
+        "actions": [
+          {"type": "EXECUTE_RUNE", "target": "rune_001"}
+        ]
+      },
+      "expected": {
+        "flaws_triggered": [],
+        "fallback_triggered": true,
+        "final_state": {
+          "firewall_integrity": 50,
+          "access_level": 0,
+          "alert_status": "ELEVATED"
+        }
+      }
+    }
+  ]
+}

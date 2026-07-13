@@ -1,0 +1,109 @@
+{
+  "schema_version": "2.0.0",
+  "id": "magitech_001",
+  "name": "The Breach",
+  "paradigm": "MAGITECH",
+  "description": "Infiltrate the ancient firewall by exploiting buffer overflow vulnerabilities in the rune sequences.",
+  "skill_type": "breach",
+  "logos_token": "BREACH_RUNE",
+  "difficulty": 0.3,
+  "modes": ["ARCHITECT", "GHOST", "SABOTEUR"],
+  "initial_state": {
+    "firewall_integrity": 100,
+    "access_level": 0,
+    "alert_status": "NORMAL"
+  },
+  "flaws": [
+    {
+      "id": "flaw_001",
+      "trigger_event": "EXECUTE_RUNE",
+      "name": "Overflow the Buffer",
+      "flavor_text": "The ancient rune overflows its allocated memory space.",
+      "conditions": [
+        {
+          "state_key": "firewall_integrity",
+          "operator": "EQUALS",
+          "value": 100
+        }
+      ],
+      "mutations": [
+        {
+          "target_state_key": "firewall_integrity",
+          "mutation_value": -25
+        }
+      ],
+      "fallback_mutations": [
+        {
+          "target_state_key": "alert_status",
+          "mutation_value": "ELEVATED"
+        }
+      ]
+    },
+    {
+      "id": "flaw_002",
+      "trigger_event": "EXECUTE_RUNE",
+      "name": "Cascade Failure",
+      "flavor_text": "The weakened firewall cascades under repeated assault.",
+      "conditions": [
+        {
+          "state_key": "firewall_integrity",
+          "operator": "LESS_THAN",
+          "value": 75
+        },
+        {
+          "state_key": "firewall_integrity",
+          "operator": "GREATER_THAN",
+          "value": 0
+        }
+      ],
+      "mutations": [
+        {
+          "target_state_key": "firewall_integrity",
+          "mutation_value": -30
+        },
+        {
+          "target_state_key": "access_level",
+          "mutation_value": 1
+        }
+      ],
+      "fallback_mutations": [
+        {
+          "target_state_key": "alert_status",
+          "mutation_value": "HIGH"
+        }
+      ]
+    },
+    {
+      "id": "flaw_003",
+      "trigger_event": "EXECUTE_RUNE",
+      "name": "Final Breach",
+      "flavor_text": "The firewall shatters, granting full access.",
+      "conditions": [
+        {
+          "state_key": "firewall_integrity",
+          "operator": "EQUALS",
+          "value": 0
+        }
+      ],
+      "mutations": [
+        {
+          "target_state_key": "access_level",
+          "mutation_value": 3
+        }
+      ],
+      "fallback_mutations": []
+    }
+  ],
+  "win_condition": {
+    "target_state_key": "access_level",
+    "expected_value": 3
+  },
+  "template_code": "# The Breach - Magitech Era\n# Infiltrate the ancient firewall\n# \n# Goal: Reduce firewall_integrity to 0\n#       Then achieve access_level 3\n#\n# Available runes:\n#   EXECUTE_RUNE - Trigger a flaw\n#\n# Watch for:\n#   alert_status - ELEVATED/HIGH triggers guards\n#   firewall_integrity - Must reach 0 for final breach\n\n",
+  "validation_script": "",
+  "expected_answer": "",
+  "bundle_metadata": {
+    "bundle_id": "cty-magitech-001",
+    "bundle_version": "1.0.0",
+    "content_hash": "sha256:ac1feaa0da90300485d1674b1c5f79f70f8b4f14bd61c2860c8459aa3add074d"
+  }
+}
