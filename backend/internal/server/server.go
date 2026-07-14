@@ -101,8 +101,27 @@ func (s *Server) initDeps() {
 	}
 
 	s.missionRegistry = missionengine.NewMissionRegistry()
-	if err := s.missionRegistry.LoadMissionsFromDir("data/missions"); err != nil {
-		s.log.Warn("mission load failed", "error", err)
+	// Resolve the missions dir relative to the working directory. The server may
+	// be launched from the repo root or from backend/, so try both before warning.
+	missionsDir := os.Getenv("MISSIONS_PATH")
+	candidates := []string{missionsDir, filepath.Join("data", "missions"), filepath.Join("..", "data", "missions")}
+	loaded := false
+	for _, dir := range candidates {
+		if dir == "" {
+			continue
+		}
+		if _, statErr := os.Stat(dir); statErr != nil {
+			continue
+		}
+		if err := s.missionRegistry.LoadMissionsFromDir(dir); err != nil {
+			s.log.Warn("mission load failed", "dir", dir, "error", err)
+		} else {
+			loaded = true
+		}
+		break
+	}
+	if !loaded {
+		s.log.Warn("no missions directory found", "tried", candidates)
 	}
 	s.missionManager = missionengine.NewMissionManager(s.missionRegistry, s.bus, s.db)
 	s.sessionManager = session.NewManager(30 * time.Minute)
